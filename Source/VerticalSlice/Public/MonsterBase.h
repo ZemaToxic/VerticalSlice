@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+//#include "Perception/AIPerceptionComponent.h"
 #include "MonsterBase.generated.h"
 
 UCLASS()
@@ -21,7 +22,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterBase")
 		float maxHealth = 100;
-
 	
 
 protected:
