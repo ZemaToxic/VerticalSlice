@@ -16,12 +16,17 @@ class VERTICALSLICE_API AGunBase : public AActor
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "Muzzle", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* Muzzle;
+
+	bool Shooting = false;
+
+	float Range = 100.0f;
 	
 public:	
 	// Sets default values for this actor's properties
 	AGunBase();
 
 	void Shoot();
+	void StopShoot();
 
 protected:
 

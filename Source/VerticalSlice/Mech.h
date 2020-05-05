@@ -79,6 +79,9 @@ class VERTICALSLICE_API AMech : public ACharacter
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		class AGunBase* Gun = 0;
 
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
+		bool GunSnapping = false;
+
 public:
 	// Sets default values for this character's properties
 	AMech();
@@ -102,6 +105,7 @@ protected:
 	void Melee();
 
 	void Shoot();
+	void StopShoot();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
