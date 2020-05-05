@@ -26,5 +26,16 @@ void AGunBase::Shoot()
 {
 	FVector gunDir = Muzzle->GetForwardVector();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Gun Direction: %s"), *gunDir.ToString()));
+	
+	FHitResult hit;
+
+	GetWorld()->LineTraceSingleByChannel(hit, GetActorLocation(), GetActorLocation() + (gunDir * Range), ECollisionChannel::ECC_Visibility);
+
+	DrawDebugLine(GetWorld(), Muzzle->GetComponentLocation(), Muzzle->GetComponentLocation() + (gunDir * Range), FColor::Emerald, false, 0.5f);
+}
+
+void AGunBase::StopShoot()
+{
+	Shooting = false;
 }
 
