@@ -2,6 +2,7 @@
 
 
 #include "MonsterBase.h"
+//#include "AIControllerBase.h"
 
 // Sets default values
 AMonsterBase::AMonsterBase()
@@ -16,11 +17,13 @@ void AMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//AAIControllerBase* AIController = Cast<AAIControllerBase>(GetController());
+
 	health = maxHealth;
 	
 }
 
-void AMonsterBase::GetDamaged(float _damage)
+void AMonsterBase::Damage(float _damage)
 {
 	health -= _damage;
 }

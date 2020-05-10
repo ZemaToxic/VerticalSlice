@@ -23,6 +23,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterBase")
 		float maxHealth = 100;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	class UBehaviorTree* BehaviorTreeComp;
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,7 +32,7 @@ protected:
 
 	// Functions
 	UFUNCTION(BlueprintCallable, Category = "MonsterBase")
-		void GetDamaged(float _damage);
+		void Damage(float _damage);
 
 public:	
 	// Called every frame
