@@ -23,9 +23,15 @@ void AMonsterBase::BeginPlay()
 	
 }
 
-void AMonsterBase::Damage(float _damage)
+// Called when the monster takes damage
+void AMonsterBase::DamageMonster(float _damage)
 {
 	health -= _damage;
+}
+
+// Called when the monster successfully hits the player
+void AMonsterBase::DamagePlayer()
+{
 }
 
 // Called every frame

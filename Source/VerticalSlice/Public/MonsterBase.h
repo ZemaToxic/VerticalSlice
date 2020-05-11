@@ -17,11 +17,15 @@ public:
 	AMonsterBase();
 
 	// Properties
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterBase")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 		float health;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterBase")
-		float maxHealth = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
+		float maxHealth = 100.f;
+
+	// the amount of damage the monster will deal to the player when it hits it
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
+		float damage = 10.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UBehaviorTree* BehaviorTreeComp;
@@ -31,8 +35,12 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Functions
-	UFUNCTION(BlueprintCallable, Category = "MonsterBase")
-		void Damage(float _damage);
+	UFUNCTION(BlueprintCallable, Category = "Monster")
+		void DamageMonster(float _damage);
+
+	UFUNCTION(BlueprintCallable, Category = "Monster")
+		void DamagePlayer();
+
 
 public:	
 	// Called every frame
