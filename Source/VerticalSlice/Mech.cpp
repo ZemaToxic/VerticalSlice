@@ -75,13 +75,14 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Melee", IE_Pressed, this, &AMech::Melee);
 
+	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMech::Shoot);
+	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMech::StopShoot);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-
-	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMech::Shoot);
 }
 
 void AMech::MoveForward(float Value)
@@ -113,7 +114,7 @@ void AMech::MoveRight(float Value)
 	}
 }
 
-void AMech::Aim()
+void AMech::Aim_Implementation()
 {
 	if (Sprinting)
 	{
@@ -126,9 +127,11 @@ void AMech::Aim()
 	Aiming = true;
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
+
+	GunSnapping = true;
 }
 
-void AMech::StopAim()
+void AMech::StopAim_Implementation()
 {
 	if (!Sprinting)
 	{
@@ -139,6 +142,8 @@ void AMech::StopAim()
 		Aiming = false;
 		bUseControllerRotationYaw = false;
 		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+
+		GunSnapping = false;
 	}
 }
 
@@ -178,6 +183,10 @@ void AMech::Melee()
 	FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);
 	FCollisionQueryParams ignoredActor;
 	ignoredActor.AddIgnoredActor(this);
+	if (Gun)
+	{
+		ignoredActor.AddIgnoredActor(Gun);
+	}
 	
 	// draw collision box
 	DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
@@ -209,6 +218,14 @@ void AMech::Shoot()
 	}
 }
 
+void AMech::StopShoot()
+{
+	if (Gun)
+	{
+		Gun->StopShoot();
+	}
+}
+
 // Called every frame
 void AMech::Tick(float DeltaTime)
 {
@@ -235,6 +252,18 @@ void AMech::Tick(float DeltaTime)
 	{
 		CameraCurrentFOV = CameraBaseFOV;
 		CameraCurrentFOVChange = true;
+	}
+
+	FRotator GunRotation = Gun->GetActorRotation();
+
+	if (GunSnapping)
+	{
+		FRotator CameraRotation = FollowCamera->GetComponentRotation();
+		Gun->SetActorRotation(FRotator(CameraRotation.Pitch, GunRotation.Yaw, GunRotation.Roll));
+	}
+	else if (Gun->GetActorRotation() != FRotator(0, GunRotation.Yaw, GunRotation.Roll))
+	{
+		Gun->SetActorRotation(FRotator(0, GunRotation.Yaw, GunRotation.Roll));
 	}
 }
 
