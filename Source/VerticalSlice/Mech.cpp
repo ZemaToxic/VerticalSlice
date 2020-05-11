@@ -75,13 +75,14 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Melee", IE_Pressed, this, &AMech::Melee);
 
+	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMech::Shoot);
+	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMech::StopShoot);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-
-	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMech::Shoot);
 }
 
 void AMech::MoveForward(float Value)
@@ -113,7 +114,7 @@ void AMech::MoveRight(float Value)
 	}
 }
 
-void AMech::Aim()
+void AMech::Aim_Implementation()
 {
 	if (Sprinting)
 	{
@@ -130,7 +131,7 @@ void AMech::Aim()
 	GunSnapping = true;
 }
 
-void AMech::StopAim()
+void AMech::StopAim_Implementation()
 {
 	if (!Sprinting)
 	{
@@ -219,7 +220,10 @@ void AMech::Shoot()
 
 void AMech::StopShoot()
 {
-
+	if (Gun)
+	{
+		Gun->StopShoot();
+	}
 }
 
 // Called every frame

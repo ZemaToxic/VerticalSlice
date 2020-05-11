@@ -11,6 +11,8 @@ class VERTICALSLICE_API AMech : public ACharacter
 {
 	GENERATED_BODY()
 
+public:
+
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraBoom;
@@ -18,6 +20,8 @@ class VERTICALSLICE_API AMech : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* FollowCamera;
+
+public:
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Camera")
 		float BoomBaseTarget = 300;
@@ -76,7 +80,7 @@ class VERTICALSLICE_API AMech : public ACharacter
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<class AGunBase> GunClass;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Gun")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun")
 		class AGunBase* Gun = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
@@ -96,8 +100,11 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
-	void Aim();
-	void StopAim();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
+		void Aim();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
+		void StopAim();
 
 	void Sprint();
 	void StopSprint();
