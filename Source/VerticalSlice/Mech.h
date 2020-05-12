@@ -80,7 +80,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<class AGunBase> GunClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun")
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		class AGunBase* Gun = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
