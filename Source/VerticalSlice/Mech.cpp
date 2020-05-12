@@ -180,19 +180,13 @@ void AMech::Melee()
 	FVector SweepEnd = SweepStart + (MeleeDir*0.1);
 
 	// create a collision sphere
-	FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);
-	FCollisionQueryParams ignoredActor;
-	ignoredActor.AddIgnoredActor(this);
-	if (Gun)
-	{
-		ignoredActor.AddIgnoredActor(Gun);
-	}
+	FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);	
 	
 	// draw collision box
 	DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
 
 	// check if something got hit in the sweep
-	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, ignoredActor);
+	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, Gun);
 
 	if (isHit)
 	{
