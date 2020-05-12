@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "GunBase.h"
+
 #include <vector>
 
-#include "GunBase.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/SceneComponent.h"
@@ -58,14 +59,43 @@ void AGunBase::ShootRaycasts_Implementation()
 
 		FVector shotEnd = shotStart + (gunDir * Range) + (Muzzle->GetUpVector() * FMath::FRandRange(LowerSpread.Y, UpperSpread.Y)) + (Muzzle->GetRightVector() * FMath::FRandRange(LowerSpread.X, UpperSpread.X));
 
-		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd, ECollisionChannel::ECC_Visibility);
+		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd, ECollisionChannel::ECC_Visibility, ignoredActors);
 
 		DrawDebugLine(GetWorld(), shotStart, shotEnd, FColor::Emerald, false, 0.5f);
 
-		hitResults.push_back(currHit);
+		if (currHit.bBlockingHit)
+		{
+			hitResults.push_back(currHit);
+		}
 	}
 
+	if (hitResults.size() == 0)
+	{
+		return;
+	}
+
+	for (auto& hit : hitResults)
+	{
+		if (GEngine)
+		{
+			// screen log information on what was hit
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *hit.Actor->GetName()));
+
+			// uncommnet to see more info on sweeped actor
+			// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+		}
+	}
 	//evaluate hit result
+}
+
+void AGunBase::BeginPlay()
+{
+	ignoredActors.AddIgnoredActor(this);
+	AActor* player = GetWorld()->GetFirstPlayerController()->GetPawn();
+	if (player)
+	{
+		ignoredActors.AddIgnoredActor(player);
+	}
 }
 
 void AGunBase::Tick(float DeltaTime)
