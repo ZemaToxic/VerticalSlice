@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "GunBase.h"
+
+#include <vector>
+
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/SceneComponent.h"
@@ -11,6 +13,8 @@
 // Sets default values
 AGunBase::AGunBase()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
 
 	GunMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GunMesh"));
@@ -24,7 +28,87 @@ AGunBase::AGunBase()
 
 void AGunBase::Shoot()
 {
+	SecondsBetweenShots = 1 / ShotsPerSecond;
+
+	ShootRaycasts();
+
+	ShootingTimer = 0.0f;
+
+	Shooting = Automatic;
+}
+
+void AGunBase::StopShoot()
+{
+	ShootingTimer = 0.0f;
+
+	Shooting = false;
+}
+
+void AGunBase::ShootRaycasts_Implementation()
+{
 	FVector gunDir = Muzzle->GetForwardVector();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Gun Direction: %s"), *gunDir.ToString()));
+
+	FVector shotStart = Muzzle->GetComponentLocation();
+
+	std::vector<FHitResult> hitResults;
+	FHitResult currHit;
+
+	for (int i = 0; i < BulletsPerShot; i++)
+	{
+		FVector randomSpreadVec = FVector(0, FMath::FRandRange(LowerSpread.X, UpperSpread.X), FMath::FRandRange(LowerSpread.Y, UpperSpread.Y));
+
+		FVector shotEnd = shotStart + (gunDir * Range) + (Muzzle->GetUpVector() * FMath::FRandRange(LowerSpread.Y, UpperSpread.Y)) + (Muzzle->GetRightVector() * FMath::FRandRange(LowerSpread.X, UpperSpread.X));
+
+		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd, ECollisionChannel::ECC_Visibility, ignoredActors);
+
+		DrawDebugLine(GetWorld(), shotStart, shotEnd, FColor::Emerald, false, 0.5f);
+
+		if (currHit.bBlockingHit)
+		{
+			hitResults.push_back(currHit);
+		}
+	}
+
+	if (hitResults.size() == 0)
+	{
+		return;
+	}
+
+	for (auto& hit : hitResults)
+	{
+		if (GEngine)
+		{
+			// screen log information on what was hit
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *hit.Actor->GetName()));
+
+			// uncommnet to see more info on sweeped actor
+			// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+		}
+	}
+	//evaluate hit result
+}
+
+void AGunBase::BeginPlay()
+{
+	ignoredActors.AddIgnoredActor(this);
+	AActor* player = GetWorld()->GetFirstPlayerController()->GetPawn();
+	if (player)
+	{
+		ignoredActors.AddIgnoredActor(player);
+	}
+}
+
+void AGunBase::Tick(float DeltaTime)
+{
+	if (Shooting)
+	{
+		if (ShootingTimer >= SecondsBetweenShots)
+		{
+			ShootRaycasts();
+
+			ShootingTimer = 0.0f;
+		}
+		ShootingTimer += DeltaTime;
+	}
 }
 

@@ -37,7 +37,7 @@ AMech::AMech()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = 300; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
@@ -56,6 +56,8 @@ void AMech::BeginPlay()
 		Gun = GetWorld()->SpawnActor<AGunBase>(GunClass);
 		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("GunSocket"));
 	}
+
+	BoomCurrentTarget = BoomBaseTarget;
 }
 
 // Called to bind functionality to input
@@ -75,13 +77,14 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Melee", IE_Pressed, this, &AMech::Melee);
 
+	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMech::Shoot);
+	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMech::StopShoot);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-
-	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMech::Shoot);
 }
 
 void AMech::MoveForward(float Value)
@@ -113,7 +116,7 @@ void AMech::MoveRight(float Value)
 	}
 }
 
-void AMech::Aim()
+void AMech::Aim_Implementation()
 {
 	if (Sprinting)
 	{
@@ -126,9 +129,11 @@ void AMech::Aim()
 	Aiming = true;
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
+
+	GunSnapping = true;
 }
 
-void AMech::StopAim()
+void AMech::StopAim_Implementation()
 {
 	if (!Sprinting)
 	{
@@ -139,6 +144,8 @@ void AMech::StopAim()
 		Aiming = false;
 		bUseControllerRotationYaw = false;
 		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+
+		GunSnapping = false;
 	}
 }
 
@@ -175,15 +182,13 @@ void AMech::Melee()
 	FVector SweepEnd = SweepStart + (MeleeDir*0.1);
 
 	// create a collision sphere
-	FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);
-	FCollisionQueryParams ignoredActor;
-	ignoredActor.AddIgnoredActor(this);
+	FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);	
 	
 	// draw collision box
 	DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
 
 	// check if something got hit in the sweep
-	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, ignoredActor);
+	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, Gun->ignoredActors);
 
 	if (isHit)
 	{
@@ -206,6 +211,14 @@ void AMech::Shoot()
 	if (Gun)
 	{
 		Gun->Shoot();
+	}
+}
+
+void AMech::StopShoot()
+{
+	if (Gun)
+	{
+		Gun->StopShoot();
 	}
 }
 
@@ -235,6 +248,18 @@ void AMech::Tick(float DeltaTime)
 	{
 		CameraCurrentFOV = CameraBaseFOV;
 		CameraCurrentFOVChange = true;
+	}
+
+	FRotator GunRotation = Gun->GetActorRotation();
+
+	if (GunSnapping)
+	{
+		FRotator CameraRotation = FollowCamera->GetComponentRotation();
+		Gun->SetActorRotation(FRotator(CameraRotation.Pitch, GunRotation.Yaw, GunRotation.Roll));
+	}
+	else if (Gun->GetActorRotation() != FRotator(0, GunRotation.Yaw, GunRotation.Roll))
+	{
+		Gun->SetActorRotation(FRotator(0, GunRotation.Yaw, GunRotation.Roll));
 	}
 }
 

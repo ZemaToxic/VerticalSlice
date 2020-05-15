@@ -11,6 +11,8 @@ class VERTICALSLICE_API AMech : public ACharacter
 {
 	GENERATED_BODY()
 
+private:
+
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraBoom;
@@ -18,6 +20,8 @@ class VERTICALSLICE_API AMech : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* FollowCamera;
+
+private:
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Camera")
 		float BoomBaseTarget = 300;
@@ -79,6 +83,9 @@ class VERTICALSLICE_API AMech : public ACharacter
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		class AGunBase* Gun = 0;
 
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
+		bool GunSnapping = false;
+
 public:
 	// Sets default values for this character's properties
 	AMech();
@@ -93,8 +100,11 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
-	void Aim();
-	void StopAim();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
+		void Aim();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
+		void StopAim();
 
 	void Sprint();
 	void StopSprint();
@@ -102,6 +112,7 @@ protected:
 	void Melee();
 
 	void Shoot();
+	void StopShoot();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
