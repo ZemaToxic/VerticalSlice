@@ -44,6 +44,11 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
 		float SecondsBetweenShots = 0;
 
+
+public:
+
+	FCollisionQueryParams ignoredActors;
+
 public:	
 	// Sets default values for this actor's properties
 	AGunBase();
@@ -55,6 +60,8 @@ public:
 		void ShootRaycasts();
 
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaTime) override;
 
 public:
