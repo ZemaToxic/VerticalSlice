@@ -11,7 +11,7 @@ class VERTICALSLICE_API AMech : public ACharacter
 {
 	GENERATED_BODY()
 
-public:
+private:
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -21,7 +21,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* FollowCamera;
 
-public:
+private:
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Camera")
 		float BoomBaseTarget = 300;
@@ -80,7 +80,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<class AGunBase> GunClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun")
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		class AGunBase* Gun = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
