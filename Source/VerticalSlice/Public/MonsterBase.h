@@ -39,12 +39,12 @@ protected:
 
 	// Functions
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
-		void DamageMonster(float _damage, FVector _hitLoc, FName _boneHit);
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
 		void DamagePlayer();
 
-public:	
+public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
+		void DamageMonster(float _damage, FVector _hitLoc, FName _boneHit);
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

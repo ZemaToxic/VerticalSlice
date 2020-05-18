@@ -75,7 +75,7 @@ private:
 		float MeleeDamage = 10;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
-		 FVector MeleeRange = FVector(30,30,70);
+		 FVector MeleeRange = FVector(150,150,450);
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<class AGunBase> GunClass;
@@ -111,7 +111,7 @@ private:
 		float DashStamina = 20;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
-		float DashForce = 200;
+		float DashForce = 10000;
 
 public:
 	// Sets default values for this character's properties
