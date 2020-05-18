@@ -29,6 +29,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	// used for testing Workshop UI. Can remove once we have an inventory system
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
+	float Cash = 5000;
+
 protected:
 
 	/** Resets HMD orientation in VR. */
