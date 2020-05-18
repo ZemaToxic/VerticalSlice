@@ -20,22 +20,22 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
 		bool Shooting = false;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Variables")
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float Range = 100.0f;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Variables")
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		FVector2D UpperSpread = FVector2D(0,0);
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Variables")
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		FVector2D LowerSpread = FVector2D(0, 0);
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Variables")
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		int BulletsPerShot = 1;
 	
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Variables")
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float ShotsPerSecond = 1;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Variables")
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		bool Automatic = false;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
@@ -44,6 +44,14 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
 		float SecondsBetweenShots = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
+		int CurrentMagsize = 30;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+		int MaxMagsize = 30;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float Damage = 30;
 
 public:
 
@@ -59,11 +67,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Shoot")
 		void ShootRaycasts();
 
+	void Reload(int& ammoPool);
+
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void Tick(float DeltaTime) override;
-
 public:
-
+	virtual void Tick(float DeltaTime) override;
 };

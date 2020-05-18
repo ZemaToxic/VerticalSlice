@@ -2,6 +2,8 @@
 
 #include "GunBase.h"
 
+#include "MonsterBase.h"
+
 #include <vector>
 
 #include "Components/StaticMeshComponent.h"
@@ -14,6 +16,7 @@
 AGunBase::AGunBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
 
@@ -29,6 +32,11 @@ AGunBase::AGunBase()
 void AGunBase::Shoot()
 {
 	SecondsBetweenShots = 1 / ShotsPerSecond;
+
+	if (CurrentMagsize <= 0) {
+		Shooting = false;
+		return;
+	}
 
 	ShootRaycasts();
 
@@ -46,6 +54,8 @@ void AGunBase::StopShoot()
 
 void AGunBase::ShootRaycasts_Implementation()
 {
+	CurrentMagsize--;
+
 	FVector gunDir = Muzzle->GetForwardVector();
 
 	FVector shotStart = Muzzle->GetComponentLocation();
@@ -76,20 +86,35 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	for (auto& hit : hitResults)
 	{
-		if (GEngine)
+		AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
+		if (HitActor)
 		{
-			// screen log information on what was hit
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *hit.Actor->GetName()));
-
-			// uncommnet to see more info on sweeped actor
-			// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+			HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
 		}
 	}
-	//evaluate hit result
+}
+
+void AGunBase::Reload(int& ammoPool)
+{
+	if (CurrentMagsize <= MaxMagsize && !Shooting)
+	{
+		if (ammoPool - (MaxMagsize - CurrentMagsize) >= 0)
+		{
+			ammoPool -= MaxMagsize - CurrentMagsize;
+			CurrentMagsize = MaxMagsize;
+		}
+		else
+		{
+			CurrentMagsize += ammoPool;
+			ammoPool = 0;
+		}
+	}
 }
 
 void AGunBase::BeginPlay()
 {
+	Super::BeginPlay();
+
 	ignoredActors.AddIgnoredActor(this);
 	AActor* player = GetWorld()->GetFirstPlayerController()->GetPawn();
 	if (player)
@@ -100,12 +125,17 @@ void AGunBase::BeginPlay()
 
 void AGunBase::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
+
 	if (Shooting)
 	{
 		if (ShootingTimer >= SecondsBetweenShots)
 		{
+			if (CurrentMagsize <= 0) {
+				Shooting = false;
+				return;
+			}
 			ShootRaycasts();
-
 			ShootingTimer = 0.0f;
 		}
 		ShootingTimer += DeltaTime;
