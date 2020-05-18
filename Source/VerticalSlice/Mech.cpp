@@ -80,6 +80,10 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMech::Shoot);
 	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMech::StopShoot);
 
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMech::Reload);
+
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMech::Dash);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
@@ -146,6 +150,26 @@ void AMech::StopAim_Implementation()
 		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
 		GunSnapping = false;
+	}
+}
+
+void AMech::Damage(float dmg)
+{
+	if (CurrentHealth - dmg >= 0)
+	{
+		CurrentHealth -= dmg;
+	}
+	else
+	{
+		CurrentHealth = 0;
+	}
+}
+
+void AMech::Dash()
+{
+	if (CurrentStamina - DashStamina > 0)
+	{
+		LaunchCharacter(GetActorForwardVector() * DashForce, false, false);
 	}
 }
 
@@ -222,6 +246,14 @@ void AMech::StopShoot()
 	}
 }
 
+void AMech::Reload()
+{
+	if (Gun)
+	{
+		Gun->Reload(CurrentAmmo);
+	}
+}
+
 // Called every frame
 void AMech::Tick(float DeltaTime)
 {
@@ -260,6 +292,29 @@ void AMech::Tick(float DeltaTime)
 	else if (Gun->GetActorRotation() != FRotator(0, GunRotation.Yaw, GunRotation.Roll))
 	{
 		Gun->SetActorRotation(FRotator(0, GunRotation.Yaw, GunRotation.Roll));
+	}
+
+	if (Sprinting)
+	{
+		if (CurrentStamina > 0)
+		{
+			CurrentStamina--;
+		}
+		else
+		{
+			StopSprint();
+		}
+	}
+	else if (CurrentStamina < MaxStamina)
+	{
+		if (CurrentStamina + StaminaRechargeRate < MaxStamina)
+		{
+			CurrentStamina += StaminaRechargeRate;
+		}
+		else
+		{
+			CurrentStamina = MaxStamina;
+		}
 	}
 }
 

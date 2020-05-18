@@ -30,17 +30,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UBehaviorTree* BehaviorTreeComp;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
+		TArray<FString> WeakspotsScript;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	// Functions
-	UFUNCTION(BlueprintCallable, Category = "Monster")
-		void DamageMonster(float _damage);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
+		void DamageMonster(float _damage, FVector _hitLoc, FName _boneHit);
 
-	UFUNCTION(BlueprintCallable, Category = "Monster")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
 		void DamagePlayer();
-
 
 public:	
 	// Called every frame
