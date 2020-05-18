@@ -24,13 +24,24 @@ void AMonsterBase::BeginPlay()
 }
 
 // Called when the monster takes damage
-void AMonsterBase::DamageMonster(float _damage)
+void AMonsterBase::DamageMonster_Implementation(float _damage, FVector _hitLoc, FName _boneHit)
 {
 	health -= _damage;
+	
+	/*bool isCrit = false;
+
+	for each (FString Weakspot in WeakspotsScript)
+	{
+		if (Weakspot == _boneHit.ToString())
+		{
+			isCrit = true;
+			break;
+		}
+	}*/
 }
 
 // Called when the monster successfully hits the player
-void AMonsterBase::DamagePlayer()
+void AMonsterBase::DamagePlayer_Implementation()
 {
 }
 
