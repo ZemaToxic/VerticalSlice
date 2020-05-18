@@ -80,11 +80,38 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<class AGunBase> GunClass;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Gun")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
 		class AGunBase* Gun = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
 		bool GunSnapping = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		int CurrentAmmo = 100;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
+		int MaxAmmo = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float CurrentHealth = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float MaxHealth = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float CurrentStamina = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float MaxStamina = 100;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
+		float StaminaRechargeRate = 1;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
+		float DashStamina = 20;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
+		float DashForce = 200;
 
 public:
 	// Sets default values for this character's properties
@@ -106,6 +133,12 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
 		void StopAim();
 
+	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
+		void Damage(float dmg);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
+		void Dash();
+
 	void Sprint();
 	void StopSprint();
 
@@ -113,6 +146,8 @@ protected:
 
 	void Shoot();
 	void StopShoot();
+
+	void Reload();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
