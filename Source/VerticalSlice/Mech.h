@@ -6,6 +6,23 @@
 #include "GameFramework/Character.h"
 #include "Mech.generated.h"
 
+UENUM()
+enum MechUpgrades
+{
+	StaminaRegen,
+	MoreAmmo,
+};
+
+UENUM()
+enum AbilityUpgrades
+{
+	ShorterCooldown,
+	ExtraCharge,
+	Dragonbreath,
+};
+
+
+
 UCLASS()
 class VERTICALSLICE_API AMech : public ACharacter
 {
@@ -136,8 +153,13 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
 		void Damage(float dmg);
 
-	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
-		void Dash();
+	void Dash();
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void Upgrade(MechUpgrades upgrade);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void UpgradeAbilities(AbilityUpgrades upgrade);
 
 	void Sprint();
 	void StopSprint();

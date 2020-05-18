@@ -175,6 +175,34 @@ void AMech::Dash()
 	}
 }
 
+void AMech::Upgrade(MechUpgrades upgrade)
+{
+	switch (upgrade)
+	{
+	case StaminaRegen:
+		break;
+	case MoreAmmo:
+		break;
+	default:
+		break;
+	}
+}
+
+void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
+{
+	switch (upgrade)
+	{
+	case ShorterCooldown:
+		break;
+	case ExtraCharge:
+		break;
+	case Dragonbreath:
+		break;
+	default:
+		break;
+	}
+}
+
 void AMech::Sprint()
 {
 	if (Aiming)
