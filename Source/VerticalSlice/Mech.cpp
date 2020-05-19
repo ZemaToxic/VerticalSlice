@@ -3,6 +3,8 @@
 
 #include "Mech.h"
 #include "GunBase.h"
+#include "MonsterBase.h"
+
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -173,6 +175,34 @@ void AMech::Dash()
 	}
 }
 
+void AMech::Upgrade(MechUpgrades upgrade)
+{
+	switch (upgrade)
+	{
+	case StaminaRegen:
+		break;
+	case MoreAmmo:
+		break;
+	default:
+		break;
+	}
+}
+
+void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
+{
+	switch (upgrade)
+	{
+	case ShorterCooldown:
+		break;
+	case ExtraCharge:
+		break;
+	case Dragonbreath:
+		break;
+	default:
+		break;
+	}
+}
+
 void AMech::Sprint()
 {
 	if (Aiming)
@@ -219,12 +249,10 @@ void AMech::Melee()
 		// loop through TArray
 		for (auto& Hit : OutHits)
 		{
-			if (GEngine)
+			AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
+			if (HitActor)
 			{
-				// screen log information on what was hit
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *Hit.Actor->GetName()));
-				// uncommnet to see more info on sweeped actor
-				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+				HitActor->DamageMonster(MeleeDamage, Hit.Location, Hit.BoneName);
 			}
 		}
 	}

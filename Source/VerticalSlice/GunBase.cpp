@@ -2,6 +2,8 @@
 
 #include "GunBase.h"
 
+#include "MonsterBase.h"
+
 #include <vector>
 
 #include "Components/StaticMeshComponent.h"
@@ -84,16 +86,12 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	for (auto& hit : hitResults)
 	{
-		if (GEngine)
+		AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
+		if (HitActor)
 		{
-			// screen log information on what was hit
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *hit.Actor->GetName()));
-
-			// uncommnet to see more info on sweeped actor
-			// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+			HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
 		}
 	}
-	//evaluate hit result
 }
 
 void AGunBase::Reload(int& ammoPool)
@@ -110,6 +108,21 @@ void AGunBase::Reload(int& ammoPool)
 			CurrentMagsize += ammoPool;
 			ammoPool = 0;
 		}
+	}
+}
+
+void AGunBase::Upgrade(GunUpgrades upgrade)
+{
+	switch (upgrade)
+	{
+	case BetterFireRate:
+		break;
+	case FasterReload:
+		break;
+	case BetterDamage:
+		break;
+	default:
+		break;
 	}
 }
 
