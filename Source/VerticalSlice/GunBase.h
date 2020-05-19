@@ -6,6 +6,15 @@
 #include "GameFramework/Actor.h"
 #include "GunBase.generated.h"
 
+UENUM()
+enum GunUpgrades
+{
+	BetterFireRate,
+	FasterReload,
+	BetterDamage,
+};
+
+
 UCLASS()
 class VERTICALSLICE_API AGunBase : public AActor
 {
@@ -68,6 +77,9 @@ public:
 		void ShootRaycasts();
 
 	void Reload(int& ammoPool);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void Upgrade(GunUpgrades upgrade);
 
 protected:
 	virtual void BeginPlay() override;

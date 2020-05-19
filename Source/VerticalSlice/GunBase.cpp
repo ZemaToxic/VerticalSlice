@@ -111,6 +111,21 @@ void AGunBase::Reload(int& ammoPool)
 	}
 }
 
+void AGunBase::Upgrade(GunUpgrades upgrade)
+{
+	switch (upgrade)
+	{
+	case BetterFireRate:
+		break;
+	case FasterReload:
+		break;
+	case BetterDamage:
+		break;
+	default:
+		break;
+	}
+}
+
 void AGunBase::BeginPlay()
 {
 	Super::BeginPlay();
