@@ -3,6 +3,8 @@
 
 #include "Mech.h"
 #include "GunBase.h"
+#include "MonsterBase.h"
+
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -80,6 +82,10 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AMech::Shoot);
 	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AMech::StopShoot);
 
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMech::Reload);
+
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMech::Dash);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
@@ -149,6 +155,54 @@ void AMech::StopAim_Implementation()
 	}
 }
 
+void AMech::Damage(float dmg)
+{
+	if (CurrentHealth - dmg >= 0)
+	{
+		CurrentHealth -= dmg;
+	}
+	else
+	{
+		CurrentHealth = 0;
+	}
+}
+
+void AMech::Dash()
+{
+	if (CurrentStamina - DashStamina > 0)
+	{
+		LaunchCharacter(GetActorForwardVector() * DashForce, false, false);
+	}
+}
+
+void AMech::Upgrade(MechUpgrades upgrade)
+{
+	switch (upgrade)
+	{
+	case StaminaRegen:
+		break;
+	case MoreAmmo:
+		break;
+	default:
+		break;
+	}
+}
+
+void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
+{
+	switch (upgrade)
+	{
+	case ShorterCooldown:
+		break;
+	case ExtraCharge:
+		break;
+	case Dragonbreath:
+		break;
+	default:
+		break;
+	}
+}
+
 void AMech::Sprint()
 {
 	if (Aiming)
@@ -195,12 +249,10 @@ void AMech::Melee()
 		// loop through TArray
 		for (auto& Hit : OutHits)
 		{
-			if (GEngine)
+			AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
+			if (HitActor)
 			{
-				// screen log information on what was hit
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *Hit.Actor->GetName()));
-				// uncommnet to see more info on sweeped actor
-				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+				HitActor->DamageMonster(MeleeDamage, Hit.Location, Hit.BoneName);
 			}
 		}
 	}
@@ -219,6 +271,14 @@ void AMech::StopShoot()
 	if (Gun)
 	{
 		Gun->StopShoot();
+	}
+}
+
+void AMech::Reload()
+{
+	if (Gun)
+	{
+		Gun->Reload(CurrentAmmo);
 	}
 }
 
@@ -260,6 +320,29 @@ void AMech::Tick(float DeltaTime)
 	else if (Gun->GetActorRotation() != FRotator(0, GunRotation.Yaw, GunRotation.Roll))
 	{
 		Gun->SetActorRotation(FRotator(0, GunRotation.Yaw, GunRotation.Roll));
+	}
+
+	if (Sprinting)
+	{
+		if (CurrentStamina > 0)
+		{
+			CurrentStamina--;
+		}
+		else
+		{
+			StopSprint();
+		}
+	}
+	else if (CurrentStamina < MaxStamina)
+	{
+		if (CurrentStamina + StaminaRechargeRate < MaxStamina)
+		{
+			CurrentStamina += StaminaRechargeRate;
+		}
+		else
+		{
+			CurrentStamina = MaxStamina;
+		}
 	}
 }
 

@@ -6,6 +6,23 @@
 #include "GameFramework/Character.h"
 #include "Mech.generated.h"
 
+UENUM()
+enum MechUpgrades
+{
+	StaminaRegen,
+	MoreAmmo,
+};
+
+UENUM()
+enum AbilityUpgrades
+{
+	ShorterCooldown,
+	ExtraCharge,
+	Dragonbreath,
+};
+
+
+
 UCLASS()
 class VERTICALSLICE_API AMech : public ACharacter
 {
@@ -75,16 +92,43 @@ private:
 		float MeleeDamage = 10;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
-		 FVector MeleeRange = FVector(30,30,70);
+		 FVector MeleeRange = FVector(150,150,450);
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<class AGunBase> GunClass;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Gun")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
 		class AGunBase* Gun = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
 		bool GunSnapping = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		int CurrentAmmo = 100;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
+		int MaxAmmo = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float CurrentHealth = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float MaxHealth = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float CurrentStamina = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float MaxStamina = 100;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
+		float StaminaRechargeRate = 1;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
+		float DashStamina = 20;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
+		float DashForce = 10000;
 
 public:
 	// Sets default values for this character's properties
@@ -106,6 +150,17 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
 		void StopAim();
 
+	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
+		void Damage(float dmg);
+
+	void Dash();
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void Upgrade(MechUpgrades upgrade);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void UpgradeAbilities(AbilityUpgrades upgrade);
+
 	void Sprint();
 	void StopSprint();
 
@@ -113,6 +168,8 @@ protected:
 
 	void Shoot();
 	void StopShoot();
+
+	void Reload();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
