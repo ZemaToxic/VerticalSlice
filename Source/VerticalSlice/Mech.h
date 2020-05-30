@@ -7,15 +7,17 @@
 #include "Mech.generated.h"
 
 UENUM()
-enum MechUpgrades
+enum class MechUpgrades : uint8
 {
+	None,
 	StaminaRegen,
 	MoreAmmo,
 };
 
 UENUM()
-enum AbilityUpgrades
+enum class AbilityUpgrades : uint8
 {
+	None,
 	ShorterCooldown,
 	ExtraCharge,
 	Dragonbreath,
@@ -136,11 +138,18 @@ private:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
 		float MoveForwardAxis = 0;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | PlayerClass")
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Player")
 		TSubclassOf<class AVerticalSliceCharacter> PlayerClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Player", meta = (AllowPrivateAccess = "true"))
 		class AVerticalSliceCharacter* PlayerChar = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
+		TEnumAsByte<MechUpgrades> LastMechUpgrade = MechUpgrades::None;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
+		TEnumAsByte<AbilityUpgrades> LastAbilityUpgrade = AbilityUpgrades::None;
+
 
 public:
 	// Sets default values for this character's properties
