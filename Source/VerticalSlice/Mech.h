@@ -73,7 +73,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Camera")
 		bool CameraCurrentFOVChange = true;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
 		bool Aiming = false;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
@@ -130,6 +130,18 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
 		float DashForce = 10000;
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
+		float MoveRightAxis = 0;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
+		float MoveForwardAxis = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | PlayerClass")
+		TSubclassOf<class AVerticalSliceCharacter> PlayerClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
+		class AVerticalSliceCharacter* PlayerChar = 0;
+
 public:
 	// Sets default values for this character's properties
 	AMech();
@@ -170,6 +182,8 @@ protected:
 	void StopShoot();
 
 	void Reload();
+
+	void Dismount();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
