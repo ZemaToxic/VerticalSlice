@@ -87,6 +87,8 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMech::Dash);
 
+	PlayerInputComponent->BindAction("Mount/Dismount", IE_Pressed, this, &AMech::Dismount);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
@@ -182,9 +184,9 @@ void AMech::Upgrade(MechUpgrades upgrade)
 {
 	switch (upgrade)
 	{
-	case StaminaRegen:
+	case MechUpgrades::StaminaRegen:
 		break;
-	case MoreAmmo:
+	case MechUpgrades::MoreAmmo:
 		break;
 	default:
 		break;
@@ -196,11 +198,11 @@ void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
 {
 	switch (upgrade)
 	{
-	case ShorterCooldown:
+	case AbilityUpgrades::ShorterCooldown:
 		break;
-	case ExtraCharge:
+	case AbilityUpgrades::ExtraCharge:
 		break;
-	case Dragonbreath:
+	case AbilityUpgrades::Dragonbreath:
 		break;
 	default:
 		break;
@@ -292,7 +294,13 @@ void AMech::Dismount()
 	if (PlayerClass)
 	{
 		FActorSpawnParameters spawnParams;
-		PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, GetActorForwardVector()*100,GetActorRotation(), spawnParams);
+		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 100;
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
+
+		PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, spawnLoc,GetActorRotation(), spawnParams);
 		AController* controller = GetController();
 		controller->UnPossess();
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
