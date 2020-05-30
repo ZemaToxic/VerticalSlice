@@ -189,6 +189,7 @@ void AMech::Upgrade(MechUpgrades upgrade)
 	default:
 		break;
 	}
+	LastMechUpgrade = upgrade;
 }
 
 void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
@@ -204,6 +205,7 @@ void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
 	default:
 		break;
 	}
+	LastAbilityUpgrade = upgrade;
 }
 
 void AMech::Sprint()

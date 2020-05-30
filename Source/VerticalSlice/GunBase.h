@@ -9,7 +9,7 @@
 UENUM()
 enum GunUpgrades
 {
-	BetterFireRate,
+	BetterFireRate = 1,
 	FasterReload,
 	BetterDamage,
 };
@@ -62,6 +62,8 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float Damage = 30;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
+		int LastGunUpgrade = 0;
 public:
 
 	FCollisionQueryParams ignoredActors;

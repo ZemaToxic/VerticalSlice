@@ -9,14 +9,14 @@
 UENUM()
 enum MechUpgrades
 {
-	StaminaRegen,
+	StaminaRegen = 1,
 	MoreAmmo,
 };
 
 UENUM()
 enum AbilityUpgrades
 {
-	ShorterCooldown,
+	ShorterCooldown = 1,
 	ExtraCharge,
 	Dragonbreath,
 };
@@ -136,11 +136,18 @@ private:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
 		float MoveForwardAxis = 0;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | PlayerClass")
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Player")
 		TSubclassOf<class AVerticalSliceCharacter> PlayerClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Player", meta = (AllowPrivateAccess = "true"))
 		class AVerticalSliceCharacter* PlayerChar = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
+		int LastMechUpgrade = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
+		int LastAbilityUpgrade = 0;
+
 
 public:
 	// Sets default values for this character's properties
