@@ -124,6 +124,7 @@ void AGunBase::Upgrade(GunUpgrades upgrade)
 	default:
 		break;
 	}
+	LastGunUpgrade = upgrade;
 }
 
 void AGunBase::BeginPlay()
