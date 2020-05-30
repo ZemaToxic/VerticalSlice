@@ -4,6 +4,7 @@
 #include "Mech.h"
 #include "GunBase.h"
 #include "MonsterBase.h"
+#include "VerticalSliceCharacter.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -95,6 +96,7 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMech::MoveForward(float Value)
 {
+	MoveForwardAxis = Value;
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is forward
@@ -109,6 +111,7 @@ void AMech::MoveForward(float Value)
 
 void AMech::MoveRight(float Value)
 {
+	MoveRightAxis = Value;
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is right
@@ -279,6 +282,19 @@ void AMech::Reload()
 	if (Gun)
 	{
 		Gun->Reload(CurrentAmmo);
+	}
+}
+
+void AMech::Dismount()
+{
+	if (PlayerClass)
+	{
+		FActorSpawnParameters spawnParams;
+		PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, GetActorForwardVector()*100,GetActorRotation(), spawnParams);
+		AController* controller = GetController();
+		controller->UnPossess();
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+		controller->Possess(Cast<APawn>(PlayerChar));
 	}
 }
 
