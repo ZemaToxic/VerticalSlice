@@ -7,16 +7,18 @@
 #include "Mech.generated.h"
 
 UENUM()
-enum MechUpgrades
+enum class MechUpgrades : uint8
 {
-	StaminaRegen = 1,
+	None,
+	StaminaRegen,
 	MoreAmmo,
 };
 
 UENUM()
-enum AbilityUpgrades
+enum class AbilityUpgrades : uint8
 {
-	ShorterCooldown = 1,
+	None,
+	ShorterCooldown,
 	ExtraCharge,
 	Dragonbreath,
 };
@@ -143,10 +145,10 @@ private:
 		class AVerticalSliceCharacter* PlayerChar = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		int LastMechUpgrade = 0;
+		TEnumAsByte<MechUpgrades> LastMechUpgrade = MechUpgrades::None;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		int LastAbilityUpgrade = 0;
+		TEnumAsByte<AbilityUpgrades> LastAbilityUpgrade = AbilityUpgrades::None;
 
 
 public:
