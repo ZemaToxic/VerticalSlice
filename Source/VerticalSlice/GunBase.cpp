@@ -115,15 +115,16 @@ void AGunBase::Upgrade(GunUpgrades upgrade)
 {
 	switch (upgrade)
 	{
-	case BetterFireRate:
+	case GunUpgrades::BetterFireRate:
 		break;
-	case FasterReload:
+	case GunUpgrades::FasterReload:
 		break;
-	case BetterDamage:
+	case GunUpgrades::BetterDamage:
 		break;
 	default:
 		break;
 	}
+	LastGunUpgrade = upgrade;
 }
 
 void AGunBase::BeginPlay()

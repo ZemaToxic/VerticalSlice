@@ -4,6 +4,7 @@
 #include "Mech.h"
 #include "GunBase.h"
 #include "MonsterBase.h"
+#include "VerticalSliceCharacter.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -86,6 +87,8 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMech::Dash);
 
+	PlayerInputComponent->BindAction("Mount/Dismount", IE_Pressed, this, &AMech::Dismount);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
@@ -95,6 +98,7 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMech::MoveForward(float Value)
 {
+	MoveForwardAxis = Value;
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is forward
@@ -109,6 +113,7 @@ void AMech::MoveForward(float Value)
 
 void AMech::MoveRight(float Value)
 {
+	MoveRightAxis = Value;
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is right
@@ -179,28 +184,30 @@ void AMech::Upgrade(MechUpgrades upgrade)
 {
 	switch (upgrade)
 	{
-	case StaminaRegen:
+	case MechUpgrades::StaminaRegen:
 		break;
-	case MoreAmmo:
+	case MechUpgrades::MoreAmmo:
 		break;
 	default:
 		break;
 	}
+	LastMechUpgrade = upgrade;
 }
 
 void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
 {
 	switch (upgrade)
 	{
-	case ShorterCooldown:
+	case AbilityUpgrades::ShorterCooldown:
 		break;
-	case ExtraCharge:
+	case AbilityUpgrades::ExtraCharge:
 		break;
-	case Dragonbreath:
+	case AbilityUpgrades::Dragonbreath:
 		break;
 	default:
 		break;
 	}
+	LastAbilityUpgrade = upgrade;
 }
 
 void AMech::Sprint()
@@ -279,6 +286,25 @@ void AMech::Reload()
 	if (Gun)
 	{
 		Gun->Reload(CurrentAmmo);
+	}
+}
+
+void AMech::Dismount()
+{
+	if (PlayerClass)
+	{
+		FActorSpawnParameters spawnParams;
+		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 100;
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
+
+		PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, spawnLoc,GetActorRotation(), spawnParams);
+		AController* controller = GetController();
+		controller->UnPossess();
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+		controller->Possess(Cast<APawn>(PlayerChar));
 	}
 }
 

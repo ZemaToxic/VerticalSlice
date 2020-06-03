@@ -7,8 +7,9 @@
 #include "GunBase.generated.h"
 
 UENUM()
-enum GunUpgrades
+enum class GunUpgrades : uint8
 {
+	None,
 	BetterFireRate,
 	FasterReload,
 	BetterDamage,
@@ -62,6 +63,8 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float Damage = 30;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
+		TEnumAsByte<GunUpgrades> LastGunUpgrade = GunUpgrades::None;
 public:
 
 	FCollisionQueryParams ignoredActors;
