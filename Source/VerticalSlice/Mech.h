@@ -102,6 +102,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
 		class AGunBase* Gun = 0;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
+		TSubclassOf<class AGunBase> ShotgunClass;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
+		class AGunBase* Shotgun = 0;
+
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
 		bool GunSnapping = false;
 
@@ -145,11 +151,22 @@ private:
 		class AVerticalSliceCharacter* PlayerChar = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		TEnumAsByte<MechUpgrades> LastMechUpgrade = MechUpgrades::None;
+		MechUpgrades LastMechUpgrade = MechUpgrades::None;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		TEnumAsByte<AbilityUpgrades> LastAbilityUpgrade = AbilityUpgrades::None;
+		AbilityUpgrades LastAbilityUpgrade = AbilityUpgrades::None;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		class UAnimMontage* AimShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		class UAnimMontage* HipShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		class UAnimMontage* ShotgunShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		class UAnimMontage* MeleeAnim = 0;
 
 public:
 	// Sets default values for this character's properties
@@ -197,7 +214,9 @@ protected:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:	
+public:
+	void Mount();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
