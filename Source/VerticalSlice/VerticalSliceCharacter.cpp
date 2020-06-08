@@ -107,10 +107,10 @@ void AVerticalSliceCharacter::Mount()
 {
 	if (PlayerMech)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Woo");
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Woo");
 		if (GetActorLocation().Equals(PlayerMech->GetActorLocation(), MountRange))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Range");
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Range");
 			AController* controller = GetController();
 			controller->UnPossess();
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
