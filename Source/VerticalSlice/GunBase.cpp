@@ -2,6 +2,7 @@
 
 #include "GunBase.h"
 
+#include "Mech.h"
 #include "MonsterBase.h"
 
 #include <vector>
@@ -29,6 +30,14 @@ AGunBase::AGunBase()
 	Muzzle->SetHiddenInGame(true);
 }
 
+void AGunBase::init(AMech* mech)
+{
+	if (mech)
+	{
+		AttachedMech = mech;
+	}
+}
+
 void AGunBase::Shoot()
 {
 	SecondsBetweenShots = 1 / ShotsPerSecond;
@@ -52,9 +61,31 @@ void AGunBase::StopShoot()
 	Shooting = false;
 }
 
+void AGunBase::setShootAnim(UAnimMontage* newAnim)
+{
+	if (newAnim)
+	{
+		shootingAnimation = newAnim;
+	}
+}
+
 void AGunBase::ShootRaycasts_Implementation()
 {
 	CurrentMagsize--;
+
+	if (shootingAnimation)
+	{
+		UAnimInstance* mechAnimInst = AttachedMech->GetMesh()->GetAnimInstance();
+
+		if (!mechAnimInst->Montage_IsPlaying(shootingAnimation))
+		{
+			mechAnimInst->Montage_Play(shootingAnimation);
+		}
+		else
+		{
+			mechAnimInst->Montage_SetPosition(shootingAnimation, 0.0f);
+		}
+	}
 
 	FVector gunDir = Muzzle->GetForwardVector();
 
@@ -71,7 +102,7 @@ void AGunBase::ShootRaycasts_Implementation()
 
 		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd, ECollisionChannel::ECC_Visibility, ignoredActors);
 
-		DrawDebugLine(GetWorld(), shotStart, shotEnd, FColor::Emerald, false, 0.5f);
+		//DrawDebugLine(GetWorld(), shotStart, shotEnd, FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{

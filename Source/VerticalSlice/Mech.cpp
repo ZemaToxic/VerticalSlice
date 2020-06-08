@@ -58,6 +58,16 @@ void AMech::BeginPlay()
 	{
 		Gun = GetWorld()->SpawnActor<AGunBase>(GunClass);
 		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("GunSocket"));
+		Gun->init(this);
+		Gun->setShootAnim(HipShoot);
+	}
+
+	if (ShotgunClass)
+	{
+		Shotgun = GetWorld()->SpawnActor<AGunBase>(GunClass);
+		Shotgun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("ShotgunSocket"));
+		Shotgun->init(this);
+		Shotgun->setShootAnim(ShotgunShoot);
 	}
 
 	BoomCurrentTarget = BoomBaseTarget;
@@ -141,6 +151,8 @@ void AMech::Aim_Implementation()
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
 
+	Gun->setShootAnim(AimShoot);
+
 	GunSnapping = true;
 }
 
@@ -148,6 +160,7 @@ void AMech::StopAim_Implementation()
 {
 	if (!Sprinting)
 	{
+		Gun->setShootAnim(HipShoot);
 		BoomCurrentTarget = BoomBaseTarget;
 		BoomCurrentTargetChange = true;
 		CameraCurrentFOV = CameraBaseFOV;
@@ -236,6 +249,21 @@ void AMech::Melee()
 	// create tarray for hit results
 	TArray<FHitResult> OutHits;
 
+	if (MeleeAnim)
+	{
+		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
+		if (!mechAnim->Montage_IsPlaying(MeleeAnim))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "play");
+			mechAnim->Montage_Play(MeleeAnim);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "pos");
+			mechAnim->Montage_SetPosition(MeleeAnim, 0.0f);
+		}
+	}
+	
 	FVector MeleeDir = GetActorForwardVector();
 
 	// start and end locations
@@ -246,7 +274,7 @@ void AMech::Melee()
 	FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);	
 	
 	// draw collision box
-	DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
+	//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
 
 	// check if something got hit in the sweep
 	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, Gun->ignoredActors);
@@ -283,9 +311,14 @@ void AMech::StopShoot()
 
 void AMech::Reload()
 {
-	if (Gun)
+	if (ReloadAnim)
 	{
-		Gun->Reload(CurrentAmmo);
+		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
+		if (!(mechAnim->Montage_IsPlaying(ReloadAnim)))
+		{
+			mechAnim->Montage_Play(ReloadAnim);
+			reloading = true;
+		}
 	}
 }
 
@@ -301,11 +334,20 @@ void AMech::Dismount()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
 
 		PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, spawnLoc,GetActorRotation(), spawnParams);
+		PlayerChar->initalise(this);
+
 		AController* controller = GetController();
 		controller->UnPossess();
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 		controller->Possess(Cast<APawn>(PlayerChar));
+		StopAim();
+		StopSprint();
 	}
+}
+
+void AMech::Mount()
+{
+	PlayerChar = 0;
 }
 
 // Called every frame
@@ -336,12 +378,12 @@ void AMech::Tick(float DeltaTime)
 		CameraCurrentFOVChange = true;
 	}
 
-	FRotator GunRotation = Gun->GetActorRotation();
+	FRotator GunRotation = GetMesh()->GetSocketRotation("GunSocket");
 
 	if (GunSnapping)
 	{
 		FRotator CameraRotation = FollowCamera->GetComponentRotation();
-		Gun->SetActorRotation(FRotator(CameraRotation.Pitch, GunRotation.Yaw, GunRotation.Roll));
+		Gun->SetActorRotation(FRotator(CameraRotation.Pitch, CameraRotation.Yaw, GunRotation.Roll));
 	}
 	else if (Gun->GetActorRotation() != FRotator(0, GunRotation.Yaw, GunRotation.Roll))
 	{
@@ -368,6 +410,27 @@ void AMech::Tick(float DeltaTime)
 		else
 		{
 			CurrentStamina = MaxStamina;
+		}
+	}
+
+
+	if (ReloadAnim && reloading)
+	{
+		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
+		if (mechAnim->Montage_IsPlaying(ReloadAnim))
+		{
+			if (mechAnim->Montage_GetPosition(ReloadAnim) > reloadPoint)
+			{
+				if (Gun)
+				{
+					Gun->Reload(CurrentAmmo);
+				}
+				reloading = false;
+			}
+		}
+		else
+		{
+			reloading = false;
 		}
 	}
 }
