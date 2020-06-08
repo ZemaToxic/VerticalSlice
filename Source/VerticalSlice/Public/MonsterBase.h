@@ -10,6 +10,7 @@
 UENUM()
 enum class MonsterDrops : uint8
 {
+	NOTHING,
 	SHARPFANG,
 	HARDENEDSPIKE,
 	ROUGHHIDE,

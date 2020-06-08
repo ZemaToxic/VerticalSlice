@@ -32,3 +32,14 @@ void AGM_Base::SellAllParts()
 		Part.Value = 0;
 	}
 }
+
+void AGM_Base::AddParts(MonsterDrops _dropType, int _amount)
+{
+	for (auto& Part : partsCollected)
+	{
+		if (_dropType == Part.Key)
+		{
+			Part.Value += _amount;
+		}
+	}
+}

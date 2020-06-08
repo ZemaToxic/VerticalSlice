@@ -24,4 +24,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void SellAllParts();
+
+	UFUNCTION(BlueprintCallable)
+		void AddParts(MonsterDrops _dropType, int _amount);
 };
