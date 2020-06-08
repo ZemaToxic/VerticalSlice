@@ -28,11 +28,11 @@ AMech::AMech()
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
@@ -64,13 +64,17 @@ void AMech::BeginPlay()
 
 	if (ShotgunClass)
 	{
-		Shotgun = GetWorld()->SpawnActor<AGunBase>(GunClass);
+		Shotgun = GetWorld()->SpawnActor<AGunBase>(ShotgunClass);
 		Shotgun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("ShotgunSocket"));
 		Shotgun->init(this);
 		Shotgun->setShootAnim(ShotgunShoot);
 	}
 
 	BoomCurrentTarget = BoomBaseTarget;
+
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GunSnapping = true;
 }
 
 // Called to bind functionality to input
@@ -98,6 +102,8 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMech::Dash);
 
 	PlayerInputComponent->BindAction("Mount/Dismount", IE_Pressed, this, &AMech::Dismount);
+
+	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
@@ -148,12 +154,12 @@ void AMech::Aim_Implementation()
 	CameraCurrentFOV = CameraAimFOV;
 	CameraCurrentFOVChange = true;
 	Aiming = true;
-	bUseControllerRotationYaw = true;
+	//bUseControllerRotationYaw = true;
 	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
 
 	Gun->setShootAnim(AimShoot);
 
-	GunSnapping = true;
+	//GunSnapping = true;
 }
 
 void AMech::StopAim_Implementation()
@@ -166,10 +172,10 @@ void AMech::StopAim_Implementation()
 		CameraCurrentFOV = CameraBaseFOV;
 		CameraCurrentFOVChange = true;
 		Aiming = false;
-		bUseControllerRotationYaw = false;
+		//bUseControllerRotationYaw = false;
 		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
-		GunSnapping = false;
+		//GunSnapping = false;
 	}
 }
 
@@ -246,24 +252,22 @@ void AMech::StopSprint()
 
 void AMech::Melee()
 {
-	// create tarray for hit results
-	TArray<FHitResult> OutHits;
-
 	if (MeleeAnim)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!mechAnim->Montage_IsPlaying(MeleeAnim))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "play");
 			mechAnim->Montage_Play(MeleeAnim);
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "pos");
-			mechAnim->Montage_SetPosition(MeleeAnim, 0.0f);
+			return;
 		}
 	}
 	
+	// create tarray for hit results
+	TArray<FHitResult> OutHits;
+
 	FVector MeleeDir = GetActorForwardVector();
 
 	// start and end locations
@@ -281,13 +285,19 @@ void AMech::Melee()
 
 	if (isHit)
 	{
+		TArray<AMonsterBase*> HitMonsters;
 		// loop through TArray
 		for (auto& Hit : OutHits)
 		{
 			AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
 			if (HitActor)
-			{
-				HitActor->DamageMonster(MeleeDamage, Hit.Location, Hit.BoneName);
+			{ 
+				if (!(HitMonsters.Contains(HitActor)))
+				{
+					HitMonsters.Add(HitActor);
+					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "HitMonster");
+					HitActor->DamageMonster(MeleeDamage, Hit.Location, Hit.BoneName);
+				}
 			}
 		}
 	}
@@ -331,7 +341,7 @@ void AMech::Dismount()
 
 		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 100;
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
 
 		PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, spawnLoc,GetActorRotation(), spawnParams);
 		PlayerChar->initalise(this);
@@ -343,6 +353,25 @@ void AMech::Dismount()
 		StopAim();
 		StopSprint();
 	}
+}
+
+void AMech::UseAbility()
+{
+	if (ShotgunShoot && canUseAbility)
+	{
+		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
+		if (!(mechAnim->Montage_IsPlaying(ShotgunShoot)))
+		{
+			Shotgun->ShootRaycasts();
+			canUseAbility = false;
+			GetWorldTimerManager().SetTimer(abilityTimerHandle, this, &AMech::AbilityReset, abilityCooldown);
+		}
+	}
+}
+
+void AMech::AbilityReset()
+{
+	canUseAbility = true;
 }
 
 void AMech::Mount()
