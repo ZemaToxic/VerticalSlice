@@ -171,11 +171,20 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		class UAnimMontage* ReloadAnim = 0;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | Bools")
 		bool reloading = false;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation")
 		float reloadPoint = 4.0f;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | AbilityCooldown")
+		bool canUseAbility = true;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | AbilityCooldown", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle abilityTimerHandle;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | AbilityCooldown")
+		float abilityCooldown = 2.0f;
 
 public:
 	// Sets default values for this character's properties
@@ -220,7 +229,9 @@ protected:
 
 	void Dismount();
 
-	void ShootShotgun();
+	void UseAbility();
+
+	void AbilityReset();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
