@@ -239,6 +239,15 @@ protected:
 public:
 	void Mount();
 
+	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+		void giveAmmo(bool Max, int amount = 0);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+		void giveHealth(bool Max, int amount = 0);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+		void giveStamina(bool Max, int amount = 0);
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

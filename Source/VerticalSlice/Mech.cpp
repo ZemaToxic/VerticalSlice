@@ -374,6 +374,42 @@ void AMech::AbilityReset()
 	canUseAbility = true;
 }
 
+void AMech::giveAmmo(bool Max, int amount)
+{
+	if (Max)
+	{
+		CurrentAmmo = MaxAmmo;
+	}
+	else
+	{
+		CurrentAmmo = (CurrentAmmo + amount < MaxAmmo) ? CurrentAmmo + amount : MaxAmmo;
+	}
+}
+
+void AMech::giveHealth(bool Max, int amount)
+{
+	if (Max)
+	{
+		CurrentHealth = MaxHealth;
+	}
+	else
+	{
+		CurrentHealth = (CurrentHealth + amount < MaxHealth) ? CurrentHealth + amount : MaxHealth;
+	}
+}
+
+void AMech::giveStamina(bool Max, int amount)
+{
+	if (Max)
+	{
+		CurrentStamina = MaxStamina;
+	}
+	else
+	{
+		CurrentStamina = (CurrentStamina + amount < MaxStamina) ? CurrentStamina + amount : MaxStamina;
+	}
+}
+
 void AMech::Mount()
 {
 	PlayerChar = 0;
