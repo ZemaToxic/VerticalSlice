@@ -168,6 +168,15 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		class UAnimMontage* MeleeAnim = 0;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		class UAnimMontage* ReloadAnim = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
+		bool reloading = false;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation")
+		float reloadPoint = 4.0f;
+
 public:
 	// Sets default values for this character's properties
 	AMech();

@@ -62,6 +62,14 @@ void AMech::BeginPlay()
 		Gun->setShootAnim(HipShoot);
 	}
 
+	if (ShotgunClass)
+	{
+		Shotgun = GetWorld()->SpawnActor<AGunBase>(GunClass);
+		Shotgun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("ShotgunSocket"));
+		Shotgun->init(this);
+		Shotgun->setShootAnim(ShotgunShoot);
+	}
+
 	BoomCurrentTarget = BoomBaseTarget;
 }
 
@@ -246,10 +254,12 @@ void AMech::Melee()
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!mechAnim->Montage_IsPlaying(MeleeAnim))
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "play");
 			mechAnim->Montage_Play(MeleeAnim);
 		}
 		else
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "pos");
 			mechAnim->Montage_SetPosition(MeleeAnim, 0.0f);
 		}
 	}
@@ -301,9 +311,14 @@ void AMech::StopShoot()
 
 void AMech::Reload()
 {
-	if (Gun)
+	if (ReloadAnim)
 	{
-		Gun->Reload(CurrentAmmo);
+		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
+		if (!(mechAnim->Montage_IsPlaying(ReloadAnim)))
+		{
+			mechAnim->Montage_Play(ReloadAnim);
+			reloading = true;
+		}
 	}
 }
 
@@ -395,6 +410,27 @@ void AMech::Tick(float DeltaTime)
 		else
 		{
 			CurrentStamina = MaxStamina;
+		}
+	}
+
+
+	if (ReloadAnim && reloading)
+	{
+		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
+		if (mechAnim->Montage_IsPlaying(ReloadAnim))
+		{
+			if (mechAnim->Montage_GetPosition(ReloadAnim) > reloadPoint)
+			{
+				if (Gun)
+				{
+					Gun->Reload(CurrentAmmo);
+				}
+				reloading = false;
+			}
+		}
+		else
+		{
+			reloading = false;
 		}
 	}
 }
