@@ -233,7 +233,7 @@ void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
 		Shotgun->setBulletsPerShot(Shotgun->getBulletsPerShot() * 2);
 		break;
 	case AbilityUpgrades::Dragonbreath:
-		Shotgun->setDamage(Shotgun->getDamage() * 1.5);
+		Shotgun->Upgrade(GunUpgrades::BetterDamage);
 		break;
 	default:
 		break;
