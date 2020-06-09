@@ -366,7 +366,7 @@ void AMech::Dismount()
 
 void AMech::UseAbility()
 {
-	if (ShotgunShoot && canUseAbility)
+	if (ShotgunShoot && canUseAbility && Shotgun)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!(mechAnim->Montage_IsPlaying(ShotgunShoot)))
