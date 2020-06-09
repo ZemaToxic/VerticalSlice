@@ -152,7 +152,7 @@ void AGunBase::Upgrade(GunUpgrades upgrade)
 	switch (upgrade)
 	{
 	case GunUpgrades::BetterFireRate:
-		ShotsPerSecond *= 2;
+		ShotsPerSecond *= 1.2;
 		break;
 	case GunUpgrades::FasterReload:
 		if (AttachedMech)
@@ -161,7 +161,7 @@ void AGunBase::Upgrade(GunUpgrades upgrade)
 		}
 		break;
 	case GunUpgrades::BetterDamage:
-		Damage *= 2;
+		Damage *= 1.5;
 		break;
 	default:
 		break;
