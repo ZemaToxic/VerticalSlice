@@ -122,9 +122,10 @@ void AGunBase::ShootRaycasts_Implementation()
 		if (HitActor)
 		{
 			HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
-			if (HitPS)
+			if (HitPS && Cast<USceneComponent>(hit.GetComponent()))
 			{
-				UGameplayStatics::SpawnEmitterAttached(HitPS, Cast<USceneComponent>(HitActor), NAME_None, hit.Location - HitActor->GetActorLocation());
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
 			}
 		}
 	}
