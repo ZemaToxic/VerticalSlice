@@ -54,6 +54,12 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
 		float SecondsBetweenShots = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
+		int CurrentMagsize = 30;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+		int MaxMagsize = 30;
+
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float Damage = 30;
 
@@ -63,17 +69,14 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		class AMech* AttachedMech = 0;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
-		class UAnimMontage* shootingAnimation = 0;
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Effects", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* shootingAnimation = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects", meta = (AllowPrivateAccess = "true"))
+		UParticleSystem* HitPS = 0;
 public:
 
 	FCollisionQueryParams ignoredActors;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
-		int CurrentMagsize = 30;
-
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		int MaxMagsize = 30;
 
 public:	
 	// Sets default values for this actor's properties
@@ -90,6 +93,13 @@ public:
 		void ShootRaycasts();
 
 	void Reload(int& ammoPool);
+	bool hasMaxMag() { return CurrentMagsize == MaxMagsize; }
+
+	void setDamage(float newDamage) { Damage = newDamage; }
+	float getDamage() { return Damage; }
+
+	void setBulletsPerShot(float newBPS) { BulletsPerShot = newBPS; }
+	float getBulletsPerShot() { return BulletsPerShot; }
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void Upgrade(GunUpgrades upgrade);
