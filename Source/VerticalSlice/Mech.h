@@ -158,19 +158,19 @@ private:
 		AbilityUpgrades LastAbilityUpgrade = AbilityUpgrades::None;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
-		class UAnimMontage* AimShoot = 0;
+		UAnimMontage* AimShoot = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
-		class UAnimMontage* HipShoot = 0;
+		UAnimMontage* HipShoot = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
-		class UAnimMontage* ShotgunShoot = 0;
+		UAnimMontage* ShotgunShoot = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
-		class UAnimMontage* MeleeAnim = 0;
+		UAnimMontage* MeleeAnim = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
-		class UAnimMontage* ReloadAnim = 0;
+		UAnimMontage* ReloadAnim = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | Bools")
 		bool reloading = false;

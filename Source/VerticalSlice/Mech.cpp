@@ -197,7 +197,9 @@ void AMech::Dash()
 	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()))
 	{
 		CurrentStamina -= DashStamina;
-		LaunchCharacter(GetActorForwardVector() * DashForce, false, false);
+		FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
+		launchDir.Normalize();
+		LaunchCharacter(launchDir * DashForce, false, false);
 	}
 }
 
@@ -366,7 +368,7 @@ void AMech::Dismount()
 
 void AMech::UseAbility()
 {
-	if (ShotgunShoot && canUseAbility)
+	if (ShotgunShoot && canUseAbility && Shotgun)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!(mechAnim->Montage_IsPlaying(ShotgunShoot)))

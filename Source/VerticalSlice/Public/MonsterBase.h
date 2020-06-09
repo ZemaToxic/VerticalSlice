@@ -47,7 +47,7 @@ public:
 		TArray<FString> WeakspotsScript;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
-		TEnumAsByte<MonsterDrops> MonsterDrop = MonsterDrops::SHARPFANG;
+		MonsterDrops MonsterDrop = MonsterDrops::SHARPFANG;
 
 protected:
 	// Called when the game starts or when spawned
