@@ -75,6 +75,7 @@ void AMech::BeginPlay()
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GunSnapping = true;
+	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 }
 
 // Called to bind functionality to input
@@ -193,8 +194,9 @@ void AMech::Damage(float dmg)
 
 void AMech::Dash()
 {
-	if (CurrentStamina - DashStamina > 0)
+	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()))
 	{
+		CurrentStamina -= DashStamina;
 		LaunchCharacter(GetActorForwardVector() * DashForce, false, false);
 	}
 }
@@ -204,8 +206,13 @@ void AMech::Upgrade(MechUpgrades upgrade)
 	switch (upgrade)
 	{
 	case MechUpgrades::StaminaRegen:
+		StaminaRechargeRate *= 2;
 		break;
 	case MechUpgrades::MoreAmmo:
+		MaxAmmo *= 2;
+		break;
+	case MechUpgrades::FasterReload:
+		reloadAnimationRate *= 2;
 		break;
 	default:
 		break;
@@ -218,6 +225,7 @@ void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
 	switch (upgrade)
 	{
 	case AbilityUpgrades::ShorterCooldown:
+		abilityCooldown /= 2;
 		break;
 	case AbilityUpgrades::ExtraCharge:
 		break;
@@ -321,12 +329,13 @@ void AMech::StopShoot()
 
 void AMech::Reload()
 {
-	if (ReloadAnim)
+	if (ReloadAnim && Gun->CurrentMagsize == Gun->MaxMagsize)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!(mechAnim->Montage_IsPlaying(ReloadAnim)))
 		{
-			mechAnim->Montage_Play(ReloadAnim);
+			mechAnim->Montage_Play(ReloadAnim, reloadAnimationRate);
+			currentReloadPoint = reloadAnimationRate * reloadPoint;
 			reloading = true;
 		}
 	}
@@ -372,6 +381,42 @@ void AMech::UseAbility()
 void AMech::AbilityReset()
 {
 	canUseAbility = true;
+}
+
+void AMech::giveAmmo(bool Max, int amount)
+{
+	if (Max)
+	{
+		CurrentAmmo = MaxAmmo;
+	}
+	else
+	{
+		CurrentAmmo = (CurrentAmmo + amount < MaxAmmo) ? CurrentAmmo + amount : MaxAmmo;
+	}
+}
+
+void AMech::giveHealth(bool Max, int amount)
+{
+	if (Max)
+	{
+		CurrentHealth = MaxHealth;
+	}
+	else
+	{
+		CurrentHealth = (CurrentHealth + amount < MaxHealth) ? CurrentHealth + amount : MaxHealth;
+	}
+}
+
+void AMech::giveStamina(bool Max, int amount)
+{
+	if (Max)
+	{
+		CurrentStamina = MaxStamina;
+	}
+	else
+	{
+		CurrentStamina = (CurrentStamina + amount < MaxStamina) ? CurrentStamina + amount : MaxStamina;
+	}
 }
 
 void AMech::Mount()
@@ -448,7 +493,7 @@ void AMech::Tick(float DeltaTime)
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (mechAnim->Montage_IsPlaying(ReloadAnim))
 		{
-			if (mechAnim->Montage_GetPosition(ReloadAnim) > reloadPoint)
+			if (mechAnim->Montage_GetPosition(ReloadAnim) > currentReloadPoint)
 			{
 				if (Gun)
 				{
