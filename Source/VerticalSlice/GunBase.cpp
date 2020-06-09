@@ -11,6 +11,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/SceneComponent.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Engine.h"
 
 // Sets default values
@@ -121,6 +122,10 @@ void AGunBase::ShootRaycasts_Implementation()
 		if (HitActor)
 		{
 			HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
+			if (HitPS)
+			{
+				UGameplayStatics::SpawnEmitterAttached(HitPS, Cast<USceneComponent>(HitActor), NAME_None, hit.Location - HitActor->GetActorLocation());
+			}
 		}
 	}
 }
@@ -147,10 +152,16 @@ void AGunBase::Upgrade(GunUpgrades upgrade)
 	switch (upgrade)
 	{
 	case GunUpgrades::BetterFireRate:
+		ShotsPerSecond *= 1.2;
 		break;
 	case GunUpgrades::FasterReload:
+		if (AttachedMech)
+		{
+			AttachedMech->Upgrade(MechUpgrades::FasterReload);
+		}
 		break;
 	case GunUpgrades::BetterDamage:
+		Damage *= 1.5;
 		break;
 	default:
 		break;
