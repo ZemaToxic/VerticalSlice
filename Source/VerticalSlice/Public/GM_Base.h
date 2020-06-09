@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "MonsterBase.h"
 #include "GM_Base.generated.h"
 
 /**
@@ -16,11 +17,14 @@ class VERTICALSLICE_API AGM_Base : public AGameModeBase
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
-		TMap<FString, int32> partsCollected;
+		TMap<MonsterDrops, int32> partsCollected;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
 		float money;
 
 	UFUNCTION(BlueprintCallable)
 		void SellAllParts();
+
+	UFUNCTION(BlueprintCallable)
+		void AddParts(MonsterDrops _dropType, int _amount);
 };
