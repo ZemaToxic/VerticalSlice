@@ -208,13 +208,13 @@ void AMech::Upgrade(MechUpgrades upgrade)
 	switch (upgrade)
 	{
 	case MechUpgrades::StaminaRegen:
-		StaminaRechargeRate *= 2;
+		StaminaRechargeRate *= 1.2;
 		break;
 	case MechUpgrades::MoreAmmo:
 		MaxAmmo *= 2;
 		break;
 	case MechUpgrades::FasterReload:
-		reloadAnimationRate *= 2;
+		reloadAnimationRate *= 1.5;
 		break;
 	default:
 		break;
@@ -227,11 +227,13 @@ void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
 	switch (upgrade)
 	{
 	case AbilityUpgrades::ShorterCooldown:
-		abilityCooldown /= 2;
+		abilityCooldown /= 0.8;
 		break;
 	case AbilityUpgrades::ExtraCharge:
+		Shotgun->setBulletsPerShot(Shotgun->getBulletsPerShot() * 2);
 		break;
 	case AbilityUpgrades::Dragonbreath:
+		Shotgun->setDamage(Shotgun->getDamage() * 1.5);
 		break;
 	default:
 		break;
@@ -331,13 +333,13 @@ void AMech::StopShoot()
 
 void AMech::Reload()
 {
-	if (ReloadAnim && Gun->CurrentMagsize == Gun->MaxMagsize)
+	if (ReloadAnim && !(Gun->hasMaxMag()))
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!(mechAnim->Montage_IsPlaying(ReloadAnim)))
 		{
 			mechAnim->Montage_Play(ReloadAnim, reloadAnimationRate);
-			currentReloadPoint = reloadAnimationRate * reloadPoint;
+			currentReloadPoint = reloadPoint / reloadAnimationRate;
 			reloading = true;
 		}
 	}
