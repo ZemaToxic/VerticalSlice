@@ -7,6 +7,15 @@
 //#include "Perception/AIPerceptionComponent.h"
 #include "MonsterBase.generated.h"
 
+UENUM()
+enum class MonsterDrops : uint8
+{
+	NOTHING,
+	SHARPFANG,
+	HARDENEDSPIKE,
+	ROUGHHIDE,
+};
+
 UCLASS()
 class VERTICALSLICE_API AMonsterBase : public ACharacter
 {
@@ -26,12 +35,19 @@ public:
 	// the amount of damage the monster will deal to the player when it hits it
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 		float damage = 10.f;
+
+	// isDead
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
+		bool isDead = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UBehaviorTree* BehaviorTreeComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 		TArray<FString> WeakspotsScript;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
+		MonsterDrops MonsterDrop = MonsterDrops::SHARPFANG;
 
 protected:
 	// Called when the game starts or when spawned
