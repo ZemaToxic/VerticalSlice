@@ -70,7 +70,7 @@ void AVerticalSliceCharacter::initalise(AMech* mech)
 	if (mech)
 	{
 		PlayerMech = mech;
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
 	}
 }
 
