@@ -54,12 +54,6 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
 		float SecondsBetweenShots = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
-		int CurrentMagsize = 30;
-
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		int MaxMagsize = 30;
-
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float Damage = 30;
 
@@ -74,6 +68,12 @@ class VERTICALSLICE_API AGunBase : public AActor
 public:
 
 	FCollisionQueryParams ignoredActors;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
+		int CurrentMagsize = 30;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+		int MaxMagsize = 30;
 
 public:	
 	// Sets default values for this actor's properties
