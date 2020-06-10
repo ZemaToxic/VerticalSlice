@@ -69,10 +69,10 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		class AMech* AttachedMech = 0;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Effects")
 		UAnimMontage* shootingAnimation = 0;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects")
 		UParticleSystem* HitPS = 0;
 public:
 
