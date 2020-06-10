@@ -124,7 +124,7 @@ void AGunBase::ShootRaycasts_Implementation()
 			HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
 			if (HitPS && Cast<USceneComponent>(hit.GetComponent()))
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
 			}
 		}

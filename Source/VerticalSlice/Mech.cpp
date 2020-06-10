@@ -360,9 +360,13 @@ void AMech::Dismount()
 		PlayerChar->initalise(this);
 
 		AController* controller = GetController();
+		//AController* controller2 = PlayerChar->GetController();
 		controller->UnPossess();
+		//controller2->UnPossess();
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 		controller->Possess(Cast<APawn>(PlayerChar));
+		//controller2->Possess(Cast<APawn>(this));
+		SpawnDefaultController();
 		StopAim();
 		StopSprint();
 	}
