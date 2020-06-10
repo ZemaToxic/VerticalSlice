@@ -112,10 +112,12 @@ void AVerticalSliceCharacter::Mount()
 		{
 			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Range");
 			AController* controller = GetController();
+			AController* controller2 = PlayerMech->GetController();
 			controller->UnPossess();
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 			controller->Possess(Cast<APawn>(PlayerMech));
 			PlayerMech->Mount();
+			controller2->Destroy();
 			Destroy();
 		}
 	}
