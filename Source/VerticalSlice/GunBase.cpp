@@ -44,7 +44,10 @@ void AGunBase::Shoot()
 	SecondsBetweenShots = 1 / ShotsPerSecond;
 
 	if (CurrentMagsize <= 0) {
-		Shooting = false;
+		if (AttachedMech)
+		{
+			AttachedMech->Reload();
+		}
 		return;
 	}
 
@@ -90,28 +93,33 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	FVector gunDir = Muzzle->GetForwardVector();
 
-	FVector shotStart = Muzzle->GetComponentLocation();
+	shotStart = Muzzle->GetComponentLocation();
 
-	std::vector<FHitResult> hitResults;
+	shotEnd.Empty();
+
+	TArray<FHitResult> hitResults;
 	FHitResult currHit;
 
 	for (int i = 0; i < BulletsPerShot; i++)
 	{
 		FVector randomSpreadVec = FVector(0, FMath::FRandRange(LowerSpread.X, UpperSpread.X), FMath::FRandRange(LowerSpread.Y, UpperSpread.Y));
 
-		FVector shotEnd = shotStart + (gunDir * Range) + (Muzzle->GetUpVector() * FMath::FRandRange(LowerSpread.Y, UpperSpread.Y)) + (Muzzle->GetRightVector() * FMath::FRandRange(LowerSpread.X, UpperSpread.X));
+		shotEnd.Add((FVector)0);
 
-		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd, ECollisionChannel::ECC_Visibility, ignoredActors);
+		shotEnd[i] = shotStart + (gunDir * Range) + (Muzzle->GetUpVector() * FMath::FRandRange(LowerSpread.Y, UpperSpread.Y)) + (Muzzle->GetRightVector() * FMath::FRandRange(LowerSpread.X, UpperSpread.X));
+
+		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[i], ECollisionChannel::ECC_Visibility, ignoredActors);
 
 		//DrawDebugLine(GetWorld(), shotStart, shotEnd, FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{
-			hitResults.push_back(currHit);
+			shotEnd[i] = currHit.Location;
+			hitResults.Add(currHit);
 		}
 	}
 
-	if (hitResults.size() == 0)
+	if (hitResults.Num() == 0)
 	{
 		return;
 	}
