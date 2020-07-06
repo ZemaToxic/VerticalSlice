@@ -74,6 +74,12 @@ class VERTICALSLICE_API AGunBase : public AActor
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects")
 		UParticleSystem* HitPS = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
+		FVector shotStart;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
+		TArray<FVector> shotEnd;
 public:
 
 	FCollisionQueryParams ignoredActors;
