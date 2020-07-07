@@ -80,6 +80,9 @@ class VERTICALSLICE_API AGunBase : public AActor
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
 		TArray<FVector> shotEnd;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
+		TArray<FHitResult> hitResults;
 public:
 
 	FCollisionQueryParams ignoredActors;

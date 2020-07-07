@@ -97,7 +97,7 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	shotEnd.Empty();
 
-	TArray<FHitResult> hitResults;
+	hitResults.Empty();
 	FHitResult currHit;
 
 	for (int i = 0; i < BulletsPerShot; i++)
