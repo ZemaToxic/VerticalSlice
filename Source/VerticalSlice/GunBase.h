@@ -83,6 +83,9 @@ class VERTICALSLICE_API AGunBase : public AActor
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
 		TArray<FHitResult> hitResults;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Aim", meta = (AllowPrivateAccess = "true"))
+		FVector AimLoc;
 public:
 
 	FCollisionQueryParams ignoredActors;

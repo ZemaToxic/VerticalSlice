@@ -93,8 +93,6 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	FVector gunDir = Muzzle->GetForwardVector();
 
-	shotStart = Muzzle->GetComponentLocation();
-
 	shotEnd.Empty();
 
 	hitResults.Empty();
@@ -193,6 +191,8 @@ void AGunBase::BeginPlay()
 void AGunBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	AimLoc = Muzzle->GetComponentLocation() + (Muzzle->GetForwardVector() * Range);
 
 	if (Shooting)
 	{
