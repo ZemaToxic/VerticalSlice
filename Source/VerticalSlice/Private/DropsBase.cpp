@@ -2,9 +2,13 @@
 
 
 #include "DropsBase.h"
+#include "MonsterBase.h"
+
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+
+
 
 // Sets default values
 ADropsBase::ADropsBase()
@@ -34,7 +38,7 @@ void ADropsBase::TimelineProgress(float Value)
 		FVector NewLoc = FMath::Lerp(StartLoc, EndLoc, Value);
 		SetActorLocation(NewLoc);
 	}
-	else
+	else // set the new start and end locations in case the player leaves the magnet radius
 	{
 		StartLoc = EndLoc = GetActorLocation();
 		EndLoc.Z += ZOffset;

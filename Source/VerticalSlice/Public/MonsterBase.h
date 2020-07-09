@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+//#include "DropsBase.h"
 //#include "Perception/AIPerceptionComponent.h"
 #include "MonsterBase.generated.h"
 
@@ -49,6 +50,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 		MonsterDrops MonsterDrop = MonsterDrops::SHARPFANG;
 
+	//UPROPERTY(EditAnywhere, Category = "Drops")
+	//	TArray <TSubclassOf<ADropsBase>> DropTable;
+
+	//UPROPERTY(EditAnywhere, Category = "Drops")
+	//	TSubclassOf<class ADropsBase> ToSpawn;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
+		TSubclassOf <class ADropsBase> DropActor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
+		int32 MaxNumOfDrops = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
+		int32 MinNumOfDrops = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
+		float SpawnRadius = 300.0f;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -57,7 +76,11 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
 		void DamagePlayer();
 
+	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Drops")
+	//	void DropItems();
+
 public:
+	// overridden in BP to call the damage popup widget
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
 		void DamageMonster(float _damage, FVector _hitLoc, FName _boneHit);
 

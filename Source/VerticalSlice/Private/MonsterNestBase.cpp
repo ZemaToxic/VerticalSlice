@@ -38,19 +38,8 @@ void AMonsterNestBase::DropItems_Implementation()
 			ToSpawn = DropTable[DropIndex];
 
 			SpawnDrop();
-
-		/*	GetWorld()->SpawnActor(
-				DropTable[DropIndex].Get()->StaticClass(),
-				GetActorLocation(),
-				GetActorRotation(),
-				FActorSpawnParameters()
-			);*/
 		}
-
 	}
-
-
-
 }
 
 // Called every frame
