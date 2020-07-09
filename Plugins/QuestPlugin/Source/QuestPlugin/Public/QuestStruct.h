@@ -23,6 +23,9 @@ public:
 		FString ObjectiveName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int typeInt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool UsesValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

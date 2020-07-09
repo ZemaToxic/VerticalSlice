@@ -84,8 +84,8 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
 		TArray<FHitResult> hitResults;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Aim", meta = (AllowPrivateAccess = "true"))
-		FVector AimLoc;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+		bool usesBullets = true;
 public:
 
 	FCollisionQueryParams ignoredActors;
@@ -115,6 +115,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void Upgrade(GunUpgrades upgrade);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Aim")
+		void getAimLoc(FVector& AimLoc);
 
 protected:
 	virtual void BeginPlay() override;
