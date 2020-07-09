@@ -16,8 +16,11 @@ ADropsBase::ADropsBase()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SceneComp = CreateDefaultSubobject<USceneComponent>("SceneComponent");
+	SetRootComponent(SceneComp);
+
 	DropMesh = CreateDefaultSubobject<UStaticMeshComponent>("StaticMesh");
-	SetRootComponent(DropMesh);
+	DropMesh->AttachTo(RootComponent);
 
 	PickupSphereComp = CreateDefaultSubobject<USphereComponent>("PickupRadius");
 	PickupSphereComp->SetupAttachment(RootComponent);
@@ -28,7 +31,7 @@ ADropsBase::ADropsBase()
 	MagnetSphereComp->InitSphereRadius(2000.0f);
 	MagnetSphereComp->ShapeColor = FColor::Green;
 
-	
+	RotationRate = FRotator(0.0f, 180.0f, 0.0f);
 }
 
 void ADropsBase::TimelineProgress(float Value)
@@ -86,5 +89,7 @@ void ADropsBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CurveTimeline.TickTimeline(DeltaTime);
+
+	AddActorLocalRotation(RotationRate * DeltaTime);
 }
 

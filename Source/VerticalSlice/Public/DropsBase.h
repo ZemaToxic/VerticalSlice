@@ -23,6 +23,9 @@ public:
 
 	// PROPERTIES
 	UPROPERTY(EditAnywhere, Category = "Components")
+		class USceneComponent* SceneComp;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
 		class UStaticMeshComponent* DropMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
@@ -33,6 +36,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
 		MonsterDrops DropType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rotation")
+		FRotator RotationRate;
+
+
 
 	// FUNCTIONS
 	UFUNCTION()
