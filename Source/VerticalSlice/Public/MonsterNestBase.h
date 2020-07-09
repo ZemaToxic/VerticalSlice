@@ -47,6 +47,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Drops")
 		int32 MinNumOfDrops = 1;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
+		float SpawnRadius = 200.0f;
+
 	/*UPROPERTY(EditAnywhere, Category = "Drops")
 		TMap<AActor*, int32> DropMap;*/
 protected:
@@ -66,5 +69,5 @@ public:
 		void Destroy();
 
 	UFUNCTION(BlueprintCallable)
-		void SpawnDrop();
+		void SpawnDrop(FVector _spawnLoc);
 };

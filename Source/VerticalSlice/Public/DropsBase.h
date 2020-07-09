@@ -37,6 +37,9 @@ public:
 	// FUNCTIONS
 	UFUNCTION()
 		void TimelineProgress(float Value);
+
+	UFUNCTION()
+		void FloatAnim();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

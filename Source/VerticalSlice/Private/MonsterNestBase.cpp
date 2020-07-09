@@ -3,6 +3,7 @@
 
 #include "MonsterNestBase.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AMonsterNestBase::AMonsterNestBase()
@@ -30,14 +31,25 @@ void AMonsterNestBase::DropItems_Implementation()
 		// determine how many parts to drop
 		int32 NumDrops = FMath::RandRange(MinNumOfDrops, MaxNumOfDrops);
 
+		// where it should be spawned in a 360 radius
+		float angle = 0;
+
 		for (int i = 0; i < NumDrops; i++)
 		{
+			FRotator rotator;
+
+			angle = 360 / NumDrops;
+
+			rotator.Yaw = i* angle;
+
+			FVector SpawnLoc = UKismetMathLibrary::GetForwardVector(rotator) * SpawnRadius + GetActorLocation();
+			
 			// get the item to drop
 			int32 DropIndex = FMath::RandRange(0, DropTable.Num() - 1);
 
 			ToSpawn = DropTable[DropIndex];
 
-			SpawnDrop();
+			SpawnDrop(SpawnLoc);
 		}
 	}
 }
@@ -49,7 +61,7 @@ void AMonsterNestBase::Tick(float DeltaTime)
 
 }
 
-void AMonsterNestBase::SpawnDrop()
+void AMonsterNestBase::SpawnDrop(FVector _spawnLoc)
 {
 	if (ToSpawn)
 	{
@@ -61,7 +73,7 @@ void AMonsterNestBase::SpawnDrop()
 
 			FRotator rotator;
 
-			FVector spawnLocation = GetActorLocation();
+			FVector spawnLocation = _spawnLoc;
 
 			world->SpawnActor<ADropsBase>(ToSpawn, spawnLocation, rotator, spawnParams);
 		}

@@ -45,11 +45,8 @@ void ADropsBase::TimelineProgress(float Value)
 	}
 }
 
-// Called when the game starts or when spawned
-void ADropsBase::BeginPlay()
+void ADropsBase::FloatAnim()
 {
-	Super::BeginPlay();
-	
 	// floating functionality using timelines
 	if (CurveFloat)
 	{
@@ -63,6 +60,14 @@ void ADropsBase::BeginPlay()
 
 		CurveTimeline.PlayFromStart();
 	}
+}
+
+// Called when the game starts or when spawned
+void ADropsBase::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	FloatAnim();
 }
 
 // Function used to check if the drop is within range of the player using the MagnetSphereComp radius
