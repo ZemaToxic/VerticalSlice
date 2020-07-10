@@ -12,6 +12,7 @@ enum class MechUpgrades : uint8
 	None,
 	StaminaRegen,
 	MoreAmmo,
+	FasterReload,
 };
 
 UENUM()
@@ -102,6 +103,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
 		class AGunBase* Gun = 0;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
+		TSubclassOf<class AGunBase> ShotgunClass;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
+		class AGunBase* Shotgun = 0;
+
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
 		bool GunSnapping = false;
 
@@ -145,11 +152,46 @@ private:
 		class AVerticalSliceCharacter* PlayerChar = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		TEnumAsByte<MechUpgrades> LastMechUpgrade = MechUpgrades::None;
+		MechUpgrades LastMechUpgrade = MechUpgrades::None;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		TEnumAsByte<AbilityUpgrades> LastAbilityUpgrade = AbilityUpgrades::None;
+		AbilityUpgrades LastAbilityUpgrade = AbilityUpgrades::None;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* AimShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* HipShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* ShotgunShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* MeleeAnim = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* ReloadAnim = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | Bools")
+		bool reloading = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | Animation")
+		float currentReloadPoint = 4.0f;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Watchables | Animation")
+		float reloadPoint = 4.0f;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation")
+		float reloadAnimationRate = 2.0f;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | AbilityCooldown")
+		bool canUseAbility = true;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | AbilityCooldown", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle abilityTimerHandle;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | AbilityCooldown")
+		float abilityCooldown = 2.0f;
 
 public:
 	// Sets default values for this character's properties
@@ -171,16 +213,7 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
 		void StopAim();
 
-	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
-		void Damage(float dmg);
-
 	void Dash();
-
-	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void Upgrade(MechUpgrades upgrade);
-
-	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void UpgradeAbilities(AbilityUpgrades upgrade);
 
 	void Sprint();
 	void StopSprint();
@@ -190,14 +223,39 @@ protected:
 	void Shoot();
 	void StopShoot();
 
-	void Reload();
-
 	void Dismount();
+
+	void UseAbility();
+
+	UFUNCTION()
+		void AbilityReset();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:	
+public:
+	void Mount();
+
+	void Reload();
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+		void giveAmmo(bool Max, int amount = 0);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+		void giveHealth(bool Max, int amount = 0);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+		void giveStamina(bool Max, int amount = 0);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void Upgrade(MechUpgrades upgrade);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void UpgradeAbilities(AbilityUpgrades upgrade);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
+		void Damage(float dmg);
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

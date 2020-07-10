@@ -21,13 +21,13 @@ class VERTICALSLICE_API AGunBase : public AActor
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Mesh", meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* GunMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "Muzzle", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Muzzle", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* Muzzle;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		bool Shooting = false;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
@@ -64,7 +64,28 @@ class VERTICALSLICE_API AGunBase : public AActor
 		float Damage = 30;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
-		TEnumAsByte<GunUpgrades> LastGunUpgrade = GunUpgrades::None;
+		GunUpgrades LastGunUpgrade = GunUpgrades::None;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
+		class AMech* AttachedMech = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Effects")
+		UAnimMontage* shootingAnimation = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects")
+		UParticleSystem* HitPS = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
+		FVector shotStart;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
+		TArray<FVector> shotEnd;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
+		TArray<FHitResult> hitResults;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+		bool usesBullets = true;
 public:
 
 	FCollisionQueryParams ignoredActors;
@@ -73,16 +94,30 @@ public:
 	// Sets default values for this actor's properties
 	AGunBase();
 
+	void init(class AMech* mech);
+
 	void Shoot();
 	void StopShoot();
+
+	void setShootAnim(class UAnimMontage* newAnim);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Shoot")
 		void ShootRaycasts();
 
 	void Reload(int& ammoPool);
+	bool hasMaxMag() { return CurrentMagsize == MaxMagsize; }
+
+	void setDamage(float newDamage) { Damage = newDamage; }
+	float getDamage() { return Damage; }
+
+	void setBulletsPerShot(float newBPS) { BulletsPerShot = newBPS; }
+	float getBulletsPerShot() { return BulletsPerShot; }
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void Upgrade(GunUpgrades upgrade);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Aim")
+		void getAimLoc(FVector& AimLoc);
 
 protected:
 	virtual void BeginPlay() override;

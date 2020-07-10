@@ -1,13 +1,16 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "VerticalSliceCharacter.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
+#include "Mech.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/Controller.h"
+
+#include "Kismet/GameplayStatics.h"
+#include "Engine.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AVerticalSliceCharacter
@@ -16,10 +19,6 @@ AVerticalSliceCharacter::AVerticalSliceCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	// set our turn rates for input
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -60,48 +59,19 @@ void AVerticalSliceCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	PlayerInputComponent->BindAxis("MoveForward", this, &AVerticalSliceCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AVerticalSliceCharacter::MoveRight);
 
-	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
-	// "turn" handles devices that provide an absolute delta, such as a mouse.
-	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
+	PlayerInputComponent->BindAction("Mount/Dismount", IE_Pressed, this, &AVerticalSliceCharacter::Mount);
+
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &AVerticalSliceCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AVerticalSliceCharacter::LookUpAtRate);
-
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AVerticalSliceCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AVerticalSliceCharacter::TouchStopped);
-
-	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AVerticalSliceCharacter::OnResetVR);
 }
 
-
-void AVerticalSliceCharacter::OnResetVR()
+void AVerticalSliceCharacter::initalise(AMech* mech)
 {
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
-}
-
-void AVerticalSliceCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-		Jump();
-}
-
-void AVerticalSliceCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-		StopJumping();
-}
-
-void AVerticalSliceCharacter::TurnAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
-}
-
-void AVerticalSliceCharacter::LookUpAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	if (mech)
+	{
+		PlayerMech = mech;
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+	}
 }
 
 void AVerticalSliceCharacter::MoveForward(float Value)
@@ -130,5 +100,25 @@ void AVerticalSliceCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+	}
+}
+
+void AVerticalSliceCharacter::Mount()
+{
+	if (PlayerMech)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Woo");
+		if (GetActorLocation().Equals(PlayerMech->GetActorLocation(), MountRange))
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Range");
+			AController* controller = GetController();
+			AController* controller2 = PlayerMech->GetController();
+			controller->UnPossess();
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+			controller->Possess(Cast<APawn>(PlayerMech));
+			PlayerMech->Mount();
+			controller2->Destroy();
+			Destroy();
+		}
 	}
 }
