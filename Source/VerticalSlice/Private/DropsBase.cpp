@@ -32,6 +32,7 @@ ADropsBase::ADropsBase()
 	MagnetSphereComp->ShapeColor = FColor::Green;
 
 	RotationRate = FRotator(0.0f, 180.0f, 0.0f);
+	RotationSpeed = 1.0f;
 }
 
 void ADropsBase::TimelineProgress(float Value)
@@ -90,6 +91,6 @@ void ADropsBase::Tick(float DeltaTime)
 
 	CurveTimeline.TickTimeline(DeltaTime);
 
-	AddActorLocalRotation(RotationRate * DeltaTime);
+	AddActorLocalRotation(RotationRate * DeltaTime * RotationSpeed);
 }
 

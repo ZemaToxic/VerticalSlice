@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rotation")
 		FRotator RotationRate;
 
+	UPROPERTY (EditAnywhere, BlueprintReadWrite, Category = "Rotation")
+		float RotationSpeed;
+
 
 
 	// FUNCTIONS
