@@ -194,11 +194,11 @@ void AMech::Damage(float dmg)
 
 void AMech::Dash()
 {
-	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()))
+	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
 	{
+		//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
+		FVector launchDir = this->GetActorRightVector() * MoveRightAxis;
 		CurrentStamina -= DashStamina;
-		FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
-		launchDir.Normalize();
 		LaunchCharacter(launchDir * DashForce, false, false);
 	}
 }
