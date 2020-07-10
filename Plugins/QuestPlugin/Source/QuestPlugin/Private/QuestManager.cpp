@@ -1,0 +1,98 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "QuestManager.h"
+
+#include "Engine.h"
+
+AQuestManager::AQuestManager()
+{
+	static ConstructorHelpers::FObjectFinder<UDataTable> OpenQuests(TEXT("DataTable'/QuestPlugin/Quests.Quests'"));
+	if (OpenQuests.Succeeded())
+	{
+		Quests = OpenQuests.Object;
+	}
+}
+
+AQuestManager::~AQuestManager()
+{
+}
+
+void AQuestManager::LoadQuest(const FName QuestID, bool &success)
+{
+	if (NameToId.Contains(QuestID)) 
+	{ 
+		success = false;
+		return; 
+	}
+
+	FString ContextString;
+	FQuestStruct* ActiveQuestInit = Quests->FindRow<FQuestStruct>(QuestID, ContextString);
+	
+	success = (bool)ActiveQuestInit;
+
+	if (success)
+	{
+		AActiveQuest* newQuest = GetWorld()->SpawnActor<AActiveQuest>();
+		newQuest->initalise(QuestID, ActiveQuestInit, Quests);
+
+		ActiveQuests.Add(newQuest);
+		ActiveQuest = newQuest;
+
+		NameToId.Add(QuestID, ActiveQuests.Num() - 1);
+	}
+}
+
+void AQuestManager::UnloadQuest(int QuestId)
+{
+	if (QuestId < ActiveQuests.Num())
+	{
+		FName currentName = *(NameToId.FindKey(QuestId));
+		NameToId.Remove(currentName);
+		bool ActiveQuestBeingDeleted = (ActiveQuests[QuestId] == ActiveQuest);
+		ActiveQuests[QuestId]->Destroy();
+		ActiveQuests.RemoveAt(QuestId);
+
+		for (int i = QuestId + 1; i < ActiveQuests.Num(); i++)
+		{
+			currentName = *(NameToId.FindKey(i));
+			NameToId[currentName]--;
+		}
+
+		if (ActiveQuestBeingDeleted)
+		{
+			if (ActiveQuests.Num() > 0)
+			{
+				ActiveQuest = ActiveQuests[0];
+			}
+			else
+			{
+				ActiveQuest = NULL;
+			}
+		}
+	}
+}
+
+void AQuestManager::UnloadQuest_Name(FName QuestId)
+{
+	if (NameToId.Contains(QuestId))
+	{
+		UnloadQuest(NameToId[QuestId]);
+	}
+}
+
+void AQuestManager::setActiveQuest(int ActiveQuestId)
+{
+	if (ActiveQuestId < ActiveQuests.Num())
+	{
+		ActiveQuest = ActiveQuests[ActiveQuestId];
+		ActiveQuestName = *(NameToId.FindKey(ActiveQuestId));
+	}
+}
+
+void AQuestManager::setActiveQuest_Name(FName ActiveQuestId)
+{
+	if (NameToId.Contains(ActiveQuestId))
+	{
+		setActiveQuest(NameToId[ActiveQuestId]);
+	}
+}

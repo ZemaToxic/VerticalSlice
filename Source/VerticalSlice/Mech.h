@@ -223,8 +223,6 @@ protected:
 	void Shoot();
 	void StopShoot();
 
-	void Reload();
-
 	void Dismount();
 
 	void UseAbility();
@@ -237,6 +235,8 @@ protected:
 
 public:
 	void Mount();
+
+	void Reload();
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveAmmo(bool Max, int amount = 0);

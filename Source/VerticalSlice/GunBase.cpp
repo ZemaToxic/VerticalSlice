@@ -43,8 +43,11 @@ void AGunBase::Shoot()
 {
 	SecondsBetweenShots = 1 / ShotsPerSecond;
 
-	if (CurrentMagsize <= 0) {
-		Shooting = false;
+	if (CurrentMagsize <= 0 && usesBullets) {
+		if (AttachedMech)
+		{
+			AttachedMech->Reload();
+		}
 		return;
 	}
 
@@ -72,6 +75,7 @@ void AGunBase::setShootAnim(UAnimMontage* newAnim)
 
 void AGunBase::ShootRaycasts_Implementation()
 {
+	
 	CurrentMagsize--;
 
 	if (shootingAnimation)
@@ -90,29 +94,45 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	FVector gunDir = Muzzle->GetForwardVector();
 
-	FVector shotStart = Muzzle->GetComponentLocation();
+	shotEnd.Empty();
 
-	std::vector<FHitResult> hitResults;
+	hitResults.Empty();
 	FHitResult currHit;
+
+	int j = 0;
 
 	for (int i = 0; i < BulletsPerShot; i++)
 	{
 		FVector randomSpreadVec = FVector(0, FMath::FRandRange(LowerSpread.X, UpperSpread.X), FMath::FRandRange(LowerSpread.Y, UpperSpread.Y));
 
-		FVector shotEnd = shotStart + (gunDir * Range) + (Muzzle->GetUpVector() * FMath::FRandRange(LowerSpread.Y, UpperSpread.Y)) + (Muzzle->GetRightVector() * FMath::FRandRange(LowerSpread.X, UpperSpread.X));
+		shotStart = Muzzle->GetComponentLocation();
 
-		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd, ECollisionChannel::ECC_Visibility, ignoredActors);
+		shotEnd.Add((FVector)0);
 
-		//DrawDebugLine(GetWorld(), shotStart, shotEnd, FColor::Emerald, false, 0.5f);
+		float randY = FMath::FRandRange(LowerSpread.Y, UpperSpread.Y);
+		float randX = FMath::FRandRange(LowerSpread.X, UpperSpread.X);
+		
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("X = %f, Y = %f"), randX, randY));
+
+		shotEnd[j] = shotStart + (gunDir * Range) /*+ (Muzzle->GetUpVector() * randY) + (Muzzle->GetRightVector() * randX)*/;
+
+		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECollisionChannel::ECC_Visibility, ignoredActors);
+
+		//DrawDebugLine(GetWorld(), shotStart, shotEnd[i], FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{
-			hitResults.push_back(currHit);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Ono");
+			shotEnd.Pop();
+			j--;
+			hitResults.Add(currHit);
 		}
+		j++;
 	}
 
-	if (hitResults.size() == 0)
+	if (hitResults.Num() == 0)
 	{
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Ono");
 		return;
 	}
 
@@ -168,6 +188,26 @@ void AGunBase::Upgrade(GunUpgrades upgrade)
 		break;
 	}
 	LastGunUpgrade = upgrade;
+}
+
+void AGunBase::getAimLoc(FVector& AimLoc)
+{
+	FHitResult currHit;
+	FVector startAim = Muzzle->GetComponentLocation();
+	FVector endAim = startAim + (Muzzle->GetForwardVector() * Range);
+
+	GetWorld()->LineTraceSingleByChannel(currHit, startAim, endAim, ECollisionChannel::ECC_Visibility, ignoredActors);
+
+	if (currHit.bBlockingHit)
+	{
+		AimLoc = currHit.Location;
+	}
+	else
+	{
+		AimLoc = endAim;
+	}
+
+	//DrawDebugLine(GetWorld(), startAim, AimLoc, FColor::Emerald, false, 0.5f);
 }
 
 void AGunBase::BeginPlay()
