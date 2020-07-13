@@ -31,6 +31,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Custom Variables | Watchables")
 	class AMech* PlayerMech = 0;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		bool climbing = false;
+
 	void initalise(class AMech* mech);
 
 protected:
@@ -41,7 +44,9 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
-	void Mount();
+	void Interact();
+
+	bool Mount();
 
 protected:
 	// APawn interface
