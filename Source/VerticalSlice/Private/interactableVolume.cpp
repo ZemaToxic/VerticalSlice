@@ -4,7 +4,7 @@
 #include "interactableVolume.h"
 
 // Sets default values
-AinteractableVolume::AinteractableVolume()
+AInteractableVolume::AInteractableVolume()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -12,17 +12,15 @@ AinteractableVolume::AinteractableVolume()
 	boxColl = CreateDefaultSubobject<UBoxComponent>(TEXT("boxColl"));
 
 	SetRootComponent(boxColl);
+
+	boxColl->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
 // Called when the game starts or when spawned
-void AinteractableVolume::BeginPlay()
+void AInteractableVolume::BeginPlay()
 {
 	Super::BeginPlay();
 	
-}
-
-void AinteractableVolume::Tick(float DeltaTime)
-{
 }
 
 

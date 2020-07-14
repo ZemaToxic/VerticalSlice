@@ -2,6 +2,7 @@
 
 #include "VerticalSliceCharacter.h"
 #include "Mech.h"
+#include "interactableVolume.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -109,7 +110,18 @@ void AVerticalSliceCharacter::Interact()
 {
 	if (!Mount())
 	{
-
+		FHitResult hit;
+		FVector start = FollowCamera->GetComponentLocation();
+		FVector end = start + (FollowCamera->GetForwardVector() * InteractRange);
+		GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
+		if (hit.bBlockingHit)
+		{
+			AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
+			if (intVol)
+			{
+				intVol->activated = true;
+			}
+		}
 	}
 }
 
@@ -133,4 +145,15 @@ bool AVerticalSliceCharacter::Mount()
 		}
 	}
 	return false;
+}
+
+void AVerticalSliceCharacter::SetClimbing(bool newClimb, FVector Foreward, FVector Up)
+{
+	climbing = newClimb;
+
+	UCharacterMovementComponent* charMovement = GetCharacterMovement();
+
+	charMovement->SetMovementMode((climbing) ? EMovementMode::MOVE_Flying : EMovementMode::MOVE_Walking);
+	charMovement->bConstrainToPlane = climbing;
+	charMovement->SetPlaneConstraintFromVectors(Foreward, Up);
 }

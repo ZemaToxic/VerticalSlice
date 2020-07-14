@@ -7,23 +7,27 @@
 #include "interactableVolume.generated.h"
 
 UCLASS()
-class VERTICALSLICE_API AinteractableVolume : public AActor
+class VERTICALSLICE_API AInteractableVolume : public AActor
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Collision, meta = (AllowPrivateAccess = "true"))
 		class UBoxComponent* boxColl;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Checking, meta = (AllowPrivateAccess = "true"))
+		int id = 0;
+
+public:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Checking)
+		bool activated = false;
 	
 public:	
 	// Sets default values for this actor's properties
-	AinteractableVolume();
+	AInteractableVolume();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 };
