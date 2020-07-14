@@ -256,6 +256,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
 		void Damage(float dmg);
 
+	UFUNCTION(BlueprintCallable, Category = "Custom | Animation")
+		void ChangeInput(bool Enable);
+
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

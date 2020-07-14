@@ -108,6 +108,7 @@ void AVerticalSliceCharacter::MoveRight(float Value)
 
 void AVerticalSliceCharacter::Interact()
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Interact");
 	if (!Mount())
 	{
 		FHitResult hit;

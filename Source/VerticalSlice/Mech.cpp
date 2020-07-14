@@ -192,6 +192,22 @@ void AMech::Damage(float dmg)
 	}
 }
 
+void AMech::ChangeInput(bool Enable)
+{
+	APlayerController* PController = Cast<APlayerController>(GetController());
+	if (PController)
+	{
+		if (Enable)
+		{
+			EnableInput(PController);
+		}
+		else
+		{
+			DisableInput(PController);
+		}
+	}
+}
+
 void AMech::Dash()
 {
 	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
