@@ -2,6 +2,7 @@
 
 #include "VerticalSliceCharacter.h"
 #include "Mech.h"
+#include "interactableVolume.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -59,7 +60,7 @@ void AVerticalSliceCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	PlayerInputComponent->BindAxis("MoveForward", this, &AVerticalSliceCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AVerticalSliceCharacter::MoveRight);
 
-	PlayerInputComponent->BindAction("Mount/Dismount", IE_Pressed, this, &AVerticalSliceCharacter::Mount);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AVerticalSliceCharacter::Interact);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
@@ -82,8 +83,10 @@ void AVerticalSliceCharacter::MoveForward(float Value)
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
+		EAxis::Type Axis = (climbing) ? EAxis::Z : EAxis::X;
+
 		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(Axis);
 		AddMovementInput(Direction, Value);
 	}
 }
@@ -103,7 +106,26 @@ void AVerticalSliceCharacter::MoveRight(float Value)
 	}
 }
 
-void AVerticalSliceCharacter::Mount()
+void AVerticalSliceCharacter::Interact()
+{
+	if (!Mount())
+	{
+		FHitResult hit;
+		FVector start = FollowCamera->GetComponentLocation();
+		FVector end = start + (FollowCamera->GetForwardVector() * InteractRange);
+		GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
+		if (hit.bBlockingHit)
+		{
+			AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
+			if (intVol)
+			{
+				intVol->activated = true;
+			}
+		}
+	}
+}
+
+bool AVerticalSliceCharacter::Mount()
 {
 	if (PlayerMech)
 	{
@@ -119,6 +141,19 @@ void AVerticalSliceCharacter::Mount()
 			PlayerMech->Mount();
 			controller2->Destroy();
 			Destroy();
+			return true;
 		}
 	}
+	return false;
+}
+
+void AVerticalSliceCharacter::SetClimbing(bool newClimb, FVector Foreward, FVector Up)
+{
+	climbing = newClimb;
+
+	UCharacterMovementComponent* charMovement = GetCharacterMovement();
+
+	charMovement->SetMovementMode((climbing) ? EMovementMode::MOVE_Flying : EMovementMode::MOVE_Walking);
+	charMovement->bConstrainToPlane = climbing;
+	charMovement->SetPlaneConstraintFromVectors(Foreward, Up);
 }
