@@ -112,13 +112,13 @@ void AGunBase::ShootRaycasts_Implementation()
 		float randY = FMath::FRandRange(LowerSpread.Y, UpperSpread.Y);
 		float randX = FMath::FRandRange(LowerSpread.X, UpperSpread.X);
 		
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("X = %f, Y = %f"), randX, randY));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("PEW")));
 
-		shotEnd[j] = shotStart + (gunDir * Range) /*+ (Muzzle->GetUpVector() * randY) + (Muzzle->GetRightVector() * randX)*/;
+		shotEnd[j] = shotStart + (gunDir * Range) + (Muzzle->GetUpVector() * randY) + (Muzzle->GetRightVector() * randX);
 
 		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECollisionChannel::ECC_Visibility, ignoredActors);
 
-		//DrawDebugLine(GetWorld(), shotStart, shotEnd[i], FColor::Emerald, false, 0.5f);
+		DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{

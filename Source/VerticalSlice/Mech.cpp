@@ -102,7 +102,7 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMech::Dash);
 
-	PlayerInputComponent->BindAction("Mount/Dismount", IE_Pressed, this, &AMech::Dismount);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMech::Dismount);
 
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
 
@@ -347,7 +347,7 @@ void AMech::Reload()
 
 void AMech::Dismount()
 {
-	if (PlayerClass)
+	if (PlayerClass && !(GetMovementComponent()->IsFalling()))
 	{
 		FActorSpawnParameters spawnParams;
 		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
