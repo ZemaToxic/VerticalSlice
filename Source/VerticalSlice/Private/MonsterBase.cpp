@@ -3,6 +3,8 @@
 
 #include "MonsterBase.h"
 //#include "AIControllerBase.h"
+#include "DropsBase.h"
+
 
 // Sets default values
 AMonsterBase::AMonsterBase()
@@ -22,6 +24,26 @@ void AMonsterBase::BeginPlay()
 	health = maxHealth;
 	
 }
+
+//void AMonsterBase::DropItems_Implementation()
+//{
+//	// make sure the DropTable array is populated
+//	if (DropTable.Num() > 0)
+//	{
+//		// determine how many parts to drop
+//		int32 NumDrops = FMath::RandRange(MinNumOfDrops, MaxNumOfDrops);
+//
+//		for (int i = 0; i < NumDrops; i++)
+//		{
+//			// get the item to drop
+//			int32 DropIndex = FMath::RandRange(0, DropTable.Num() - 1);
+//
+//			ToSpawn = DropTable[DropIndex];
+//
+//			/*SpawnDrop();*/
+//		}
+//	}
+//}
 
 // Called when the monster takes damage
 void AMonsterBase::DamageMonster_Implementation(float _damage, FVector _hitLoc, FName _boneHit)

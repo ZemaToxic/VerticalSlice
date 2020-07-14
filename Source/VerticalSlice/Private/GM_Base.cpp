@@ -33,7 +33,7 @@ void AGM_Base::SellAllParts()
 	}
 }
 
-void AGM_Base::AddParts(MonsterDrops _dropType, int _amount)
+void AGM_Base::AddParts_Implementation(MonsterDrops _dropType, int _amount)
 {
 	for (auto& Part : partsCollected)
 	{
