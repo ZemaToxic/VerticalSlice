@@ -26,10 +26,10 @@ public:
 	float Cash = 5000;
 
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
-		float MountRange = 1000;
+		float MountRange = 300;
 
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
-		float InteractRange = 1000;
+		float InteractRange = 300;
 
 	UPROPERTY(VisibleAnywhere, Category = "Custom Variables | Watchables")
 	class AMech* PlayerMech = 0;
@@ -52,7 +52,7 @@ protected:
 	bool Mount();
 
 	UFUNCTION(BlueprintCallable, category = climbing)
-		void SetClimbing(bool newClimb, FVector Foreward, FVector Up);
+		void SetClimbing(bool newClimb, FVector Forward, FVector Up);
 
 protected:
 	// APawn interface
