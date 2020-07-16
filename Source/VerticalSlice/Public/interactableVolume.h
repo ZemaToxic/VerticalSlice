@@ -19,7 +19,7 @@ class VERTICALSLICE_API AInteractableVolume : public AActor
 
 public:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Checking)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Checking)
 		bool activated = false;
 	
 public:	
