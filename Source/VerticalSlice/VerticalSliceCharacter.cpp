@@ -73,6 +73,9 @@ void AVerticalSliceCharacter::initalise(AMech* mech)
 		PlayerMech = mech;
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
 	}
+	GetWorldTimerManager().SetTimer(InteractCheck, this, &AVerticalSliceCharacter::CheckInteract, 0.1, true);
+
+	collParams.AddIgnoredActor(this);
 }
 
 void AVerticalSliceCharacter::MoveForward(float Value)
@@ -108,21 +111,64 @@ void AVerticalSliceCharacter::MoveRight(float Value)
 
 void AVerticalSliceCharacter::Interact()
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Interact");
 	if (!Mount())
 	{
-		FHitResult hit;
-		FVector start = FollowCamera->GetComponentLocation();
-		FVector end = start + (FollowCamera->GetForwardVector() * InteractRange);
-		GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
-		if (hit.bBlockingHit)
+		TArray<FHitResult> hits;
+		FVector start = GetActorLocation()+FVector(0,0,50);
+		FVector end = start + (GetActorForwardVector());
+
+		FCollisionShape CollShape = FCollisionShape::MakeSphere(InteractRange);
+
+		bool isHit  = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape, collParams);
+		//GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
+		//DrawDebugLine(GetWorld(), start, end, FColor::Emerald, false, 10.0f);
+		if (isHit)
 		{
-			AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
-			if (intVol)
+			for (auto& hit : hits)
 			{
-				intVol->activated = true;
+				if (hit.bBlockingHit)
+				{
+					AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
+					if (intVol)
+					{
+						intVol->activated = true;
+					}
+				}
 			}
 		}
 	}
+}
+
+void AVerticalSliceCharacter::CheckInteract()
+{
+	TArray<FHitResult> hits;
+	FVector start = GetActorLocation() + FVector(0, 0, 50);
+	FVector end = start + (GetActorForwardVector());
+
+	FCollisionShape CollShape = FCollisionShape::MakeSphere(InteractRange);
+
+	bool isHit = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape, collParams);
+	//GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
+	//DrawDebugLine(GetWorld(), start, end, FColor::Emerald, false, 10.0f);
+	if (isHit)
+	{
+		for (auto& hit : hits)
+		{
+			if (hit.bBlockingHit)
+			{
+				AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
+				if (intVol)
+				{
+					nearInteractableObject = true;
+					InteractObjectLocation = intVol->GetActorLocation();
+					return;
+				}
+			}
+		}
+	}
+	InteractObjectLocation = FVector();
+	nearInteractableObject = false;
 }
 
 bool AVerticalSliceCharacter::Mount()
@@ -140,6 +186,7 @@ bool AVerticalSliceCharacter::Mount()
 			controller->Possess(Cast<APawn>(PlayerMech));
 			PlayerMech->Mount();
 			controller2->Destroy();
+			GetWorldTimerManager().ClearTimer(InteractCheck);
 			Destroy();
 			return true;
 		}
@@ -147,7 +194,7 @@ bool AVerticalSliceCharacter::Mount()
 	return false;
 }
 
-void AVerticalSliceCharacter::SetClimbing(bool newClimb, FVector Foreward, FVector Up)
+void AVerticalSliceCharacter::SetClimbing(bool newClimb, FVector Forward, FVector Up)
 {
 	climbing = newClimb;
 
@@ -155,5 +202,6 @@ void AVerticalSliceCharacter::SetClimbing(bool newClimb, FVector Foreward, FVect
 
 	charMovement->SetMovementMode((climbing) ? EMovementMode::MOVE_Flying : EMovementMode::MOVE_Walking);
 	charMovement->bConstrainToPlane = climbing;
-	charMovement->SetPlaneConstraintFromVectors(Foreward, Up);
+	charMovement->SetPlaneConstraintFromVectors(Forward, Up);
+	charMovement->bOrientRotationToMovement = !climbing;
 }
