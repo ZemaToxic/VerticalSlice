@@ -25,19 +25,31 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
 	float Cash = 5000;
 
-	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
-		float MountRange = 1000;
-
-	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
-		float InteractRange = 1000;
-
-	UPROPERTY(VisibleAnywhere, Category = "Custom Variables | Watchables")
-	class AMech* PlayerMech = 0;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
 		bool climbing = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		bool nearInteractableObject = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom Variables | Gameplay")
+		FVector InteractObjectLocation = FVector();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		FTimerHandle InteractCheck;
+
 	void initalise(class AMech* mech);
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
+		float MountRange = 300;
+
+	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
+		float InteractRange = 300;
+
+	UPROPERTY(VisibleAnywhere, Category = "Custom Variables | Watchables")
+		class AMech* PlayerMech = 0;
+
+	FCollisionQueryParams collParams;
 
 protected:
 
@@ -49,10 +61,12 @@ protected:
 
 	void Interact();
 
+	void CheckInteract();
+
 	bool Mount();
 
 	UFUNCTION(BlueprintCallable, category = climbing)
-		void SetClimbing(bool newClimb, FVector Foreward, FVector Up);
+		void SetClimbing(bool newClimb, FVector Forward, FVector Up);
 
 protected:
 	// APawn interface

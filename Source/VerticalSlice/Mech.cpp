@@ -180,7 +180,7 @@ void AMech::StopAim_Implementation()
 	}
 }
 
-void AMech::Damage(float dmg)
+void AMech::Damage_Implementation(float dmg)
 {
 	if (CurrentHealth - dmg >= 0)
 	{
@@ -189,6 +189,22 @@ void AMech::Damage(float dmg)
 	else
 	{
 		CurrentHealth = 0;
+	}
+}
+
+void AMech::ChangeInput(bool Enable)
+{
+	APlayerController* PController = Cast<APlayerController>(GetController());
+	if (PController)
+	{
+		if (Enable)
+		{
+			EnableInput(PController);
+		}
+		else
+		{
+			DisableInput(PController);
+		}
 	}
 }
 
