@@ -75,7 +75,7 @@ void AActiveQuest::checkAllObjectivesComplete(bool& complete)
 	FVector4 TrackedValues;
 	bool AtLoc, AtValue;
 
-	for (int i = 0; i < Quest.Num(); ++i)
+	for (int i = 0; i < Quest.Num(); i++)
 	{
 		Objective = Quest[i];
 		TrackedValues = ObjectiveTracking[i];
@@ -89,6 +89,7 @@ void AActiveQuest::checkAllObjectivesComplete(bool& complete)
 		{
 			AtValue = TrackedValues.W > Objective.ObjectiveCompleteValue;
 		}
+		//UE_LOG(LogTemp, Warning, TEXT("%i"), Quest.Num())
 		if (!AtLoc || !AtValue)
 		{
 			currentObjectivesCompleted = false;
