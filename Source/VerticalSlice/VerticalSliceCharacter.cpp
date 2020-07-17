@@ -2,6 +2,7 @@
 
 #include "VerticalSliceCharacter.h"
 #include "Mech.h"
+#include "interactableVolume.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -59,7 +60,7 @@ void AVerticalSliceCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	PlayerInputComponent->BindAxis("MoveForward", this, &AVerticalSliceCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AVerticalSliceCharacter::MoveRight);
 
-	PlayerInputComponent->BindAction("Mount/Dismount", IE_Pressed, this, &AVerticalSliceCharacter::Mount);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AVerticalSliceCharacter::Interact);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
@@ -72,6 +73,9 @@ void AVerticalSliceCharacter::initalise(AMech* mech)
 		PlayerMech = mech;
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
 	}
+	GetWorldTimerManager().SetTimer(InteractCheck, this, &AVerticalSliceCharacter::CheckInteract, 0.1, true);
+
+	collParams.AddIgnoredActor(this);
 }
 
 void AVerticalSliceCharacter::MoveForward(float Value)
@@ -82,8 +86,10 @@ void AVerticalSliceCharacter::MoveForward(float Value)
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
+		EAxis::Type Axis = (climbing) ? EAxis::Z : EAxis::X;
+
 		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(Axis);
 		AddMovementInput(Direction, Value);
 	}
 }
@@ -103,7 +109,69 @@ void AVerticalSliceCharacter::MoveRight(float Value)
 	}
 }
 
-void AVerticalSliceCharacter::Mount()
+void AVerticalSliceCharacter::Interact()
+{
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Interact");
+	if (!Mount())
+	{
+		TArray<FHitResult> hits;
+		FVector start = GetActorLocation()+FVector(0,0,50);
+		FVector end = start + (GetActorForwardVector());
+
+		FCollisionShape CollShape = FCollisionShape::MakeSphere(InteractRange);
+
+		bool isHit  = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape, collParams);
+		//GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
+		//DrawDebugLine(GetWorld(), start, end, FColor::Emerald, false, 10.0f);
+		if (isHit)
+		{
+			for (auto& hit : hits)
+			{
+				if (hit.bBlockingHit)
+				{
+					AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
+					if (intVol)
+					{
+						intVol->activated = true;
+					}
+				}
+			}
+		}
+	}
+}
+
+void AVerticalSliceCharacter::CheckInteract()
+{
+	TArray<FHitResult> hits;
+	FVector start = GetActorLocation() + FVector(0, 0, 50);
+	FVector end = start + (GetActorForwardVector());
+
+	FCollisionShape CollShape = FCollisionShape::MakeSphere(InteractRange);
+
+	bool isHit = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape, collParams);
+	//GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
+	//DrawDebugLine(GetWorld(), start, end, FColor::Emerald, false, 10.0f);
+	if (isHit)
+	{
+		for (auto& hit : hits)
+		{
+			if (hit.bBlockingHit)
+			{
+				AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
+				if (intVol)
+				{
+					nearInteractableObject = true;
+					InteractObjectLocation = intVol->GetActorLocation();
+					return;
+				}
+			}
+		}
+	}
+	InteractObjectLocation = FVector();
+	nearInteractableObject = false;
+}
+
+bool AVerticalSliceCharacter::Mount()
 {
 	if (PlayerMech)
 	{
@@ -118,7 +186,22 @@ void AVerticalSliceCharacter::Mount()
 			controller->Possess(Cast<APawn>(PlayerMech));
 			PlayerMech->Mount();
 			controller2->Destroy();
+			GetWorldTimerManager().ClearTimer(InteractCheck);
 			Destroy();
+			return true;
 		}
 	}
+	return false;
+}
+
+void AVerticalSliceCharacter::SetClimbing(bool newClimb, FVector Forward, FVector Up)
+{
+	climbing = newClimb;
+
+	UCharacterMovementComponent* charMovement = GetCharacterMovement();
+
+	charMovement->SetMovementMode((climbing) ? EMovementMode::MOVE_Flying : EMovementMode::MOVE_Walking);
+	charMovement->bConstrainToPlane = climbing;
+	charMovement->SetPlaneConstraintFromVectors(Forward, Up);
+	charMovement->bOrientRotationToMovement = !climbing;
 }
