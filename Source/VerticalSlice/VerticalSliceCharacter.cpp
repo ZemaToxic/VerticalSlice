@@ -73,6 +73,9 @@ void AVerticalSliceCharacter::initalise(AMech* mech)
 		PlayerMech = mech;
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
 	}
+	GetWorldTimerManager().SetTimer(InteractCheck, this, &AVerticalSliceCharacter::CheckInteract, 0.1, true);
+
+	collParams.AddIgnoredActor(this);
 }
 
 void AVerticalSliceCharacter::MoveForward(float Value)
@@ -117,7 +120,7 @@ void AVerticalSliceCharacter::Interact()
 
 		FCollisionShape CollShape = FCollisionShape::MakeSphere(InteractRange);
 
-		bool isHit  = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape);
+		bool isHit  = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape, collParams);
 		//GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
 		//DrawDebugLine(GetWorld(), start, end, FColor::Emerald, false, 10.0f);
 		if (isHit)
@@ -137,6 +140,37 @@ void AVerticalSliceCharacter::Interact()
 	}
 }
 
+void AVerticalSliceCharacter::CheckInteract()
+{
+	TArray<FHitResult> hits;
+	FVector start = GetActorLocation() + FVector(0, 0, 50);
+	FVector end = start + (GetActorForwardVector());
+
+	FCollisionShape CollShape = FCollisionShape::MakeSphere(InteractRange);
+
+	bool isHit = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape, collParams);
+	//GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
+	//DrawDebugLine(GetWorld(), start, end, FColor::Emerald, false, 10.0f);
+	if (isHit)
+	{
+		for (auto& hit : hits)
+		{
+			if (hit.bBlockingHit)
+			{
+				AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
+				if (intVol)
+				{
+					nearInteractableObject = true;
+					InteractObjectLocation = intVol->GetActorLocation();
+					return;
+				}
+			}
+		}
+	}
+	InteractObjectLocation = FVector();
+	nearInteractableObject = false;
+}
+
 bool AVerticalSliceCharacter::Mount()
 {
 	if (PlayerMech)
@@ -152,6 +186,7 @@ bool AVerticalSliceCharacter::Mount()
 			controller->Possess(Cast<APawn>(PlayerMech));
 			PlayerMech->Mount();
 			controller2->Destroy();
+			GetWorldTimerManager().ClearTimer(InteractCheck);
 			Destroy();
 			return true;
 		}

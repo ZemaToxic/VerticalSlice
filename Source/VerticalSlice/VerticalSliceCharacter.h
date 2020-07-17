@@ -25,6 +25,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
 	float Cash = 5000;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		bool climbing = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		bool nearInteractableObject = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom Variables | Gameplay")
+		FVector InteractObjectLocation = FVector();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		FTimerHandle InteractCheck;
+
+	void initalise(class AMech* mech);
+
+private:
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
 		float MountRange = 300;
 
@@ -32,12 +47,9 @@ public:
 		float InteractRange = 300;
 
 	UPROPERTY(VisibleAnywhere, Category = "Custom Variables | Watchables")
-	class AMech* PlayerMech = 0;
+		class AMech* PlayerMech = 0;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
-		bool climbing = false;
-
-	void initalise(class AMech* mech);
+	FCollisionQueryParams collParams;
 
 protected:
 
@@ -48,6 +60,8 @@ protected:
 	void MoveRight(float Value);
 
 	void Interact();
+
+	void CheckInteract();
 
 	bool Mount();
 

@@ -180,7 +180,7 @@ void AMech::StopAim_Implementation()
 	}
 }
 
-void AMech::Damage(float dmg)
+void AMech::Damage_Implementation(float dmg)
 {
 	if (CurrentHealth - dmg >= 0)
 	{
