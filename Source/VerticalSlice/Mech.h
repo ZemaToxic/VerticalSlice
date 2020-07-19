@@ -253,8 +253,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void UpgradeAbilities(AbilityUpgrades upgrade);
 
-	UFUNCTION(BlueprintCallable, Category = "Custom | Health")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Health")
 		void Damage(float dmg);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Animation")
+		void ChangeInput(bool Enable);
+
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

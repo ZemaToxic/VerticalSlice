@@ -37,7 +37,7 @@ void AActiveQuest::initalise(FName FirstQuestId, FQuestStruct* QuestInit)
 	FQuestStruct* ObjectiveInit;
 	bool success = true;
 	FQuestStruct Objective = *QuestInit;
-	FVector4 tempVect = (FVector4)0;
+	FVector4 tempVect = FVector4();
 
 	Quest.Add(Objective);
 	ObjectiveTracking.Add(tempVect);
@@ -75,7 +75,7 @@ void AActiveQuest::checkAllObjectivesComplete(bool& complete)
 	FVector4 TrackedValues;
 	bool AtLoc, AtValue;
 
-	for (int i = 0; i < Quest.Num(); ++i)
+	for (int i = 0; i < Quest.Num(); i++)
 	{
 		Objective = Quest[i];
 		TrackedValues = ObjectiveTracking[i];
@@ -87,8 +87,9 @@ void AActiveQuest::checkAllObjectivesComplete(bool& complete)
 		}
 		if (Objective.UsesValue)
 		{
-			AtValue = TrackedValues.W >= Objective.ObjectiveCompleteValue;
+			AtValue = TrackedValues.W > Objective.ObjectiveCompleteValue;
 		}
+		//UE_LOG(LogTemp, Warning, TEXT("%i"), Quest.Num())
 		if (!AtLoc || !AtValue)
 		{
 			currentObjectivesCompleted = false;
@@ -114,7 +115,7 @@ void AActiveQuest::checkObjectiveComplete(int index, bool& complete)
 	}
 	if (Objective.UsesValue)
 	{
-		AtValue = TrackedValues.W >= Objective.ObjectiveCompleteValue;
+		AtValue = TrackedValues.W > Objective.ObjectiveCompleteValue;
 	}
 
 	complete = AtLoc && AtValue;
@@ -205,6 +206,8 @@ void AActiveQuest::addToValue_Name(FName  objective, float addedValue)
 void AActiveQuest::getString(FString formatString, FString& outString, bool debug)
 {
 	//"c, v, m, l, n, d, o"
+
+	//UE_LOG(LogTemp, Warning, TEXT("in getString"));
 
 	outString.Empty();
 	formatString = formatString.ToLower();
@@ -302,8 +305,8 @@ void AActiveQuest::getString(FString formatString, FString& outString, bool debu
 		case Instructions::ENums::CurrentValue:
 		{
 			if (!Quest[currentObjective].UsesValue) { break; }
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "yay");
-			outString.AppendInt(ObjectiveTracking[currentObjective].W);
+			//UE_LOG(LogTemp, Warning, TEXT("%i"), ObjectiveTracking[currentObjective].W - 1);
+			outString.AppendInt(ObjectiveTracking[currentObjective].W - 1);
 			currentString.Empty();
 			currentInstruction.Empty();
 			break;
