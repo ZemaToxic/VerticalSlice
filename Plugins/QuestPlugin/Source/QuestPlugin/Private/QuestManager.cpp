@@ -96,3 +96,41 @@ void AQuestManager::setActiveQuest_Name(FName ActiveQuestId)
 		setActiveQuest(NameToId[ActiveQuestId]);
 	}
 }
+
+void AQuestManager::ProjectWorldToScreenQP(APlayerController const* Player, const FVector& WorldPosition, FVector2D& ScreenPos) const
+{
+	FVector Projected;
+	bool bTargetBehindCamera = false;
+
+	// Custom Projection Function
+	ULocalPlayer* const LP = Player ? Player->GetLocalPlayer() : nullptr;
+	if (LP && LP->ViewportClient)
+	{
+		// get the projection data
+		FSceneViewProjectionData ProjectionData;
+		if (LP->GetProjectionData(LP->ViewportClient->Viewport, eSSP_FULL, /*out*/ ProjectionData))
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+			const FMatrix ViewProjectionMatrix = ProjectionData.ComputeViewProjectionMatrix();
+			const FIntRect ViewRectangle = ProjectionData.GetConstrainedViewRect();
+
+			FPlane Result = ViewProjectionMatrix.TransformFVector4(FVector4(WorldPosition, 1.f));
+			if (Result.W < 0.f) { bTargetBehindCamera = true; }
+			if (Result.W == 0.f) { Result.W = 1.f; } // Prevent Divide By Zero
+
+			const float RHW = 1.f / FMath::Abs(Result.W);
+			Projected = FVector(Result.X, Result.Y, Result.Z) * RHW;
+
+			// Normalize to 0..1 UI Space
+			const float NormX = (Projected.X / 2.f) + 0.5f;
+			const float NormY = 1.f - (Projected.Y / 2.f) - 0.5f;
+
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f, %f"), ProjectionData.GetConstrainedViewRect().Width(), ProjectionData.GetConstrainedViewRect().Height()));
+
+			Projected.X = (float)ViewRectangle.Min.X + (NormX * (float)ViewRectangle.Width());
+			Projected.Y = (float)ViewRectangle.Min.Y + (NormY * (float)ViewRectangle.Height());
+		}
+	}
+
+	ScreenPos = FVector2D(Projected.X, Projected.Y);
+}
