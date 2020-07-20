@@ -6,6 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "SpawnPoint.generated.h"
 
+UENUM()
+enum class MonsterSpawnLocations : uint8
+{
+	TEST,
+	WATERPIPE1,
+};
+
 UCLASS()
 class VERTICALSLICE_API ASpawnPoint : public AActor
 {
@@ -22,7 +29,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 		AActor* ActorToSpawn;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+		MonsterSpawnLocations SpawnPointLocation = MonsterSpawnLocations::TEST;
 
 protected:
 	// Called when the game starts or when spawned
