@@ -48,4 +48,7 @@ public:
 	void setActiveQuest(int ActiveQuestId);
 	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Quest Manager")
 	void setActiveQuest_Name(FName ActiveQuestId);
+
+	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Tools")
+		void ProjectWorldToScreenQP(APlayerController const* Player, const FVector& WorldPosition, FVector2D& ScreenPos) const;
 };
