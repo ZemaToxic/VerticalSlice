@@ -1,6 +1,8 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "QuestPlugin.h"
+#include "Engine/LocalPlayer.h"
+#include "SceneView.h"
 
 #define LOCTEXT_NAMESPACE "FQuestPluginModule"
 
