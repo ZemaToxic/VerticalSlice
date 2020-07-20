@@ -11,6 +11,8 @@
 #include "MonsterNestBase.generated.h"
 
 
+
+
 ///** Spawns and returns class T, respects default rotation and translation of root component. */
 //template< class T >
 //T* SpawnActor
