@@ -35,14 +35,28 @@ void AGM_Base::SellAllParts()
 
 void AGM_Base::SpawnMonstersAtLocation_Implementation(MonsterSpawnLocations _loc, int _numbersToSpawn, TSubclassOf<APawn> _monster, UBehaviorTree* _BT)
 {
-	CurrentSpawnLocation = _loc;
-	MonsterToSpawn = _monster;
-	BT = _BT;
+	//CurrentSpawnLocation = _loc;
+	//MonsterToSpawn = _monster;
+	//BT = _BT;
+
+	//for (int i = 0; i < _numbersToSpawn; i++)
+	//{
+	//	SpawnMonsters();
+	//}
+
+	if (_numbersToSpawn <= 0) return;
+
+	FSpawnInfo NewSpawnInfo = FSpawnInfo();
+	NewSpawnInfo.LocationToSpawn = _loc;
+	NewSpawnInfo.MonsterToSpawn = _monster;
+	NewSpawnInfo.BT = _BT;
 
 	for (int i = 0; i < _numbersToSpawn; i++)
 	{
-		SpawnMonsters();
+		SpawnQueue.Add(NewSpawnInfo);
 	}
+
+	SpawnMonsters();
 }
 
 void AGM_Base::AddParts_Implementation(MonsterDrops _dropType, int _amount)
