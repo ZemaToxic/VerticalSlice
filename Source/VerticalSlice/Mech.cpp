@@ -349,7 +349,7 @@ void AMech::StopShoot()
 
 void AMech::Reload()
 {
-	if (ReloadAnim && !(Gun->hasMaxMag()))
+	if (ReloadAnim && !(Gun->hasMaxMag()) && CurrentAmmo > 0)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!(mechAnim->Montage_IsPlaying(ReloadAnim)))
