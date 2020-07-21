@@ -171,7 +171,7 @@ void AVerticalSliceCharacter::CheckInteract()
 	nearInteractableObject = false;
 }
 
-bool AVerticalSliceCharacter::Mount()
+bool AVerticalSliceCharacter::Mount_Implementation()
 {
 	if (PlayerMech)
 	{

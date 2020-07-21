@@ -4,14 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "QuestStruct.h"
 #include "SpawnPoint.generated.h"
-
-UENUM()
-enum class MonsterSpawnLocations : uint8
-{
-	TEST,
-	WATERPIPE1,
-};
 
 UCLASS()
 class VERTICALSLICE_API ASpawnPoint : public AActor
