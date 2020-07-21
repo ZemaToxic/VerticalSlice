@@ -63,9 +63,10 @@ protected:
 
 	void CheckInteract();
 
+	UFUNCTION(BlueprintNativeEvent, category = "Custom | End")
 	bool Mount();
 
-	UFUNCTION(BlueprintCallable, category = climbing)
+	UFUNCTION(BlueprintCallable, category = "Custom | Climbing")
 		void SetClimbing(bool newClimb, FVector Forward, FVector Up);
 
 protected:
