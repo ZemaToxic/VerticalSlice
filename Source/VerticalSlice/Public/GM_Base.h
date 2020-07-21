@@ -8,6 +8,20 @@
 #include "SpawnPoint.h"
 #include "GM_Base.generated.h"
 
+USTRUCT(BlueprintType)
+struct FSpawnInfo
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+		MonsterSpawnLocations LocationToSpawn = MonsterSpawnLocations::WATERPIPE1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+		TSubclassOf<APawn> MonsterToSpawn;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+		UBehaviorTree* BT;
+};
+
 /**
  * 
  */
@@ -28,6 +42,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
 		UBehaviorTree* BT;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+		TArray<FSpawnInfo> SpawnQueue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
 		float money;
