@@ -122,10 +122,15 @@ void AQuestManager::ProjectWorldToScreenQP(APlayerController const* Player, cons
 			Projected = FVector(Result.X, Result.Y, Result.Z) * RHW;
 
 			// Normalize to 0..1 UI Space
-			const float NormX = (Projected.X / 2.f) + 0.5f;
-			const float NormY = 1.f - (Projected.Y / 2.f) - 0.5f;
+			float NormX = (Projected.X / 2.f) + 0.5f;
+			float NormY = 1.f - (Projected.Y / 2.f) - 0.5f;
 
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f, %f"), ProjectionData.GetConstrainedViewRect().Width(), ProjectionData.GetConstrainedViewRect().Height()));
+			if (bTargetBehindCamera)
+			{
+				NormX = FMath::RoundToFloat(NormX);
+			}
+
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *Projected.ToString()));
 
 			Projected.X = (float)ViewRectangle.Min.X + (NormX * (float)ViewRectangle.Width());
 			Projected.Y = (float)ViewRectangle.Min.Y + (NormY * (float)ViewRectangle.Height());
