@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "QuestStruct.h"
 #include "SpawnPoint.generated.h"
 
 UCLASS()
@@ -22,7 +23,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 		AActor* ActorToSpawn;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+		MonsterSpawnLocations SpawnPointLocation = MonsterSpawnLocations::TEST;
 
 protected:
 	// Called when the game starts or when spawned
