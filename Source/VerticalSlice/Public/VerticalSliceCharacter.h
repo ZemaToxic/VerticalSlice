@@ -21,10 +21,6 @@ class AVerticalSliceCharacter : public ACharacter
 public:
 	AVerticalSliceCharacter();
 
-	// used for testing Workshop UI. Can remove once we have an inventory system
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
-	float Cash = 5000;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
 		bool climbing = false;
 
@@ -49,6 +45,12 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Custom Variables | Watchables")
 		class AMech* PlayerMech = 0;
 
+	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
+		float PlayerSprintSpeed = 900.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
+		float PlayerWalkSpeed = 600.0f;
+
 	FCollisionQueryParams collParams;
 
 protected:
@@ -62,6 +64,12 @@ protected:
 	void Interact();
 
 	void CheckInteract();
+
+	void Crouch();
+	void StopCrouch();
+
+	void Sprint();
+	void StopSprint();
 
 	UFUNCTION(BlueprintNativeEvent, category = "Custom | End")
 	bool Mount();

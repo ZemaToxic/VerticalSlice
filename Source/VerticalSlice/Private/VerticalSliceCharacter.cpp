@@ -62,6 +62,12 @@ void AVerticalSliceCharacter::SetupPlayerInputComponent(class UInputComponent* P
 
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AVerticalSliceCharacter::Interact);
 
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AVerticalSliceCharacter::Sprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AVerticalSliceCharacter::StopSprint);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AVerticalSliceCharacter::Crouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AVerticalSliceCharacter::StopCrouch);
+
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 }
@@ -76,6 +82,7 @@ void AVerticalSliceCharacter::initalise(AMech* mech)
 	GetWorldTimerManager().SetTimer(InteractCheck, this, &AVerticalSliceCharacter::CheckInteract, 0.1, true);
 	collParams.AddIgnoredActor(this);
 	SetVisible(false);
+	PlayerWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
 
 void AVerticalSliceCharacter::MoveForward(float Value)
@@ -169,6 +176,26 @@ void AVerticalSliceCharacter::CheckInteract()
 	}
 	InteractObjectLocation = FVector();
 	nearInteractableObject = false;
+}
+
+void AVerticalSliceCharacter::Crouch()
+{
+	GetCharacterMovement()->bWantsToCrouch = true;
+}
+
+void AVerticalSliceCharacter::StopCrouch()
+{
+	GetCharacterMovement()->bWantsToCrouch = false;
+}
+
+void AVerticalSliceCharacter::Sprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = PlayerSprintSpeed;
+}
+
+void AVerticalSliceCharacter::StopSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = PlayerWalkSpeed;
 }
 
 bool AVerticalSliceCharacter::Mount_Implementation()
