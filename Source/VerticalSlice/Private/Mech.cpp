@@ -389,7 +389,7 @@ void AMech::Dismount()
 		}
 		PlayerChar->SetActorLocationAndRotation(spawnLoc, GetActorRotation());
 
-		PlayerChar->SetVisible(true);
+		PlayerChar->SetVisible(true, true, true);
 		AController* controller = GetController();
 		//AController* controller2 = PlayerChar->GetController();
 		controller->UnPossess();
