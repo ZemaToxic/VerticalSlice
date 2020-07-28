@@ -214,6 +214,10 @@ void AMech::ChangeInput(bool Enable)
 	}
 }
 
+void AMech::Mount_Implementation()
+{
+}
+
 void AMech::Dash()
 {
 	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))

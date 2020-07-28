@@ -214,6 +214,7 @@ bool AVerticalSliceCharacter::Mount_Implementation()
 			controller2->Destroy();
 			GetWorldTimerManager().PauseTimer(InteractCheck);
 			SetVisible(false, false, false);
+			PlayerMech->Mount();
 			return true;
 		}
 	}

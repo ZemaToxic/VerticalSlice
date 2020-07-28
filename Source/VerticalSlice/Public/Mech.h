@@ -257,6 +257,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Animation")
 		void ChangeInput(bool Enable);
 
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | Mount")
+		void Mount();
+
+
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
