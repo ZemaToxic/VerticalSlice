@@ -404,6 +404,7 @@ void AMech::Dismount()
 		SpawnDefaultController();
 		StopAim();
 		StopSprint();
+		canMount = false;
 	}
 }
 

@@ -194,6 +194,10 @@ private:
 		float abilityCooldown = 2.0f;
 
 public:
+		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Mount")
+			bool canMount = true;
+
+public:
 	// Sets default values for this character's properties
 	AMech();
 

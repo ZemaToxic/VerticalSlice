@@ -200,8 +200,10 @@ void AVerticalSliceCharacter::StopSprint()
 
 bool AVerticalSliceCharacter::Mount_Implementation()
 {
+	
 	if (PlayerMech)
 	{
+		if (!PlayerMech->canMount) { return false; }
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Woo");
 		if (GetActorLocation().Equals(PlayerMech->GetActorLocation(), MountRange))
 		{
