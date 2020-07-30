@@ -90,8 +90,8 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMech::JumpStart);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMech::JumpEnd);
 
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AMech::Aim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AMech::StopAim);
@@ -211,6 +211,34 @@ void AMech::ChangeInput(bool Enable)
 		{
 			DisableInput(PController);
 		}
+	}
+}
+
+void AMech::JumpStart()
+{
+	//GetMovementComponent()->StopMovementImmediately();
+	JumpInput = true;
+}
+
+void AMech::JumpEnd()
+{
+	if (GetCharacterMovement()->IsFalling())
+	{
+		StopJumping();
+	}
+	JumpInput = false;
+}
+
+void AMech::JumpTakeOff()
+{
+	Jump();
+}
+
+void AMech::JumpLand()
+{
+	if (bPressedJump && JumpInput)
+	{
+		StopJumping();
 	}
 }
 

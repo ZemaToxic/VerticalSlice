@@ -193,6 +193,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | AbilityCooldown")
 		float abilityCooldown = 2.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation | Jump", meta = (AllowPrivateAccess = "true"))
+		bool JumpInput = false;
+
 public:
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Mount")
 			bool canMount = true;
@@ -233,6 +236,15 @@ protected:
 
 	UFUNCTION()
 		void AbilityReset();
+
+	void JumpStart();
+	void JumpEnd();
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Animation | Jump")
+		void JumpTakeOff();
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Animation | Jump")
+		void JumpLand();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
