@@ -139,7 +139,7 @@ void AVerticalSliceCharacter::Interact()
 					AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
 					if (intVol)
 					{
-						intVol->activated = true;
+						intVol->Activate();
 					}
 				}
 			}

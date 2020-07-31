@@ -230,8 +230,6 @@ protected:
 	void Shoot();
 	void StopShoot();
 
-	void Dismount();
-
 	void UseAbility();
 
 	UFUNCTION()
@@ -245,6 +243,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Animation | Jump")
 		void JumpLand();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | Mount")
+		void Dismount();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -275,7 +276,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Custom | Mount")
 		void Mount();
-
 
 
 	// Called every frame

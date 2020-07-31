@@ -399,7 +399,7 @@ void AMech::Reload()
 	}
 }
 
-void AMech::Dismount()
+void AMech::Dismount_Implementation()
 {
 	if (PlayerChar && !(GetMovementComponent()->IsFalling()))
 	{
