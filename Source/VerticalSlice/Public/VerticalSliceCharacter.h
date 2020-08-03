@@ -33,7 +33,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
 		FTimerHandle InteractCheck;
 
-	void initalise(class AMech* mech);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom Variables | Mech")
+		class AMech* PlayerMech = 0;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
@@ -41,9 +42,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
 		float InteractRange = 300;
-
-	UPROPERTY(VisibleAnywhere, Category = "Custom Variables | Watchables")
-		class AMech* PlayerMech = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
 		float PlayerSprintSpeed = 900.0f;
@@ -54,6 +52,9 @@ private:
 	FCollisionQueryParams collParams;
 
 protected:
+
+	UFUNCTION(BlueprintCallable, category = "Init")
+		void initalise(class AMech* mech);
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -88,6 +89,7 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	void SetVisible(bool visibility);
+	UFUNCTION(BlueprintCallable, category = "Custom | Visiblility")
+		void SetVisible(bool visibility, bool collision, bool movement);
 };
 
