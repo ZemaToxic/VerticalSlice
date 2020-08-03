@@ -214,7 +214,7 @@ bool AVerticalSliceCharacter::Mount_Implementation()
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 			controller->Possess(Cast<APawn>(PlayerMech));
 			controller2->Destroy();
-			GetWorldTimerManager().PauseTimer(InteractCheck);
+			//GetWorldTimerManager().PauseTimer(InteractCheck);
 			SetVisible(false, false, false);
 			PlayerMech->Mount();
 			return true;
