@@ -25,3 +25,17 @@ void AInteractableVolume::BeginPlay()
 }
 
 
+bool AInteractableVolume::GetActivated()
+{
+	return activated;
+}
+
+void AInteractableVolume::Activate_Implementation()
+{
+	activated = true;
+}
+
+void AInteractableVolume::Reset_Implementation()
+{
+	activated = false;
+}
