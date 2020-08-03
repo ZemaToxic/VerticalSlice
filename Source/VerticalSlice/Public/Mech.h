@@ -247,7 +247,7 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Animation | Jump")
 		void JumpLand();
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Custom | Mount")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Mount")
 		void Dismount();
 
 	// Called to bind functionality to input
@@ -272,7 +272,7 @@ public:
 		void UpgradeAbilities(AbilityUpgrades upgrade);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Health")
-		void Damage(float dmg);
+		void Damage(float dmg, FVector Loc);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Animation")
 		void ChangeInput(bool Enable);
