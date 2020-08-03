@@ -33,6 +33,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = QuestData, meta = (AllowPrivateAccess = "true"))
 		FName ActiveQuestName;
 
+	UPROPERTY(BlueprintReadOnly, Category = QuestData, meta = (AllowPrivateAccess = "true"))
+		int ActiveQuestId;
+
 	AQuestManager();
 	~AQuestManager();
 
@@ -45,9 +48,9 @@ public:
 	void UnloadQuest_Name(FName QuestId);
 
 	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Quest Manager")
-	void setActiveQuest(int ActiveQuestId);
+	void setActiveQuest(int Id);
 	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Quest Manager")
-	void setActiveQuest_Name(FName ActiveQuestId);
+	void setActiveQuest_Name(FName Id);
 
 	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Tools")
 		void ProjectWorldToScreenQP(APlayerController const* Player, const FVector& WorldPosition, FVector2D& ScreenPos) const;
