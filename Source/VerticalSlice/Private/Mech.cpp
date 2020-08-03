@@ -191,7 +191,7 @@ void AMech::StopAim_Implementation()
 	}
 }
 
-void AMech::Damage_Implementation(float dmg)
+void AMech::Damage_Implementation(float dmg, FVector Loc)
 {
 	if (CurrentHealth - dmg >= 0)
 	{
