@@ -208,6 +208,9 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Custom | Init")
+		void initalise(class AVerticalSliceCharacter* Player);
+
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 

@@ -77,11 +77,11 @@ void AMech::BeginPlay()
 	GunSnapping = true;
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
-	FActorSpawnParameters spawnParams;
+	/*FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, FVector(0,0,0), GetActorRotation(), spawnParams);
-	PlayerChar->initalise(this);
+	PlayerChar->initalise(this);*/
 }
 
 // Called to bind functionality to input
@@ -117,6 +117,11 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+}
+
+void AMech::initalise(AVerticalSliceCharacter* Player)
+{
+	PlayerChar = Player;
 }
 
 void AMech::MoveForward(float Value)

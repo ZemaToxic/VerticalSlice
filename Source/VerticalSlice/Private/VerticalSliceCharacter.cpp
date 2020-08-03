@@ -81,7 +81,7 @@ void AVerticalSliceCharacter::initalise(AMech* mech)
 	}
 	GetWorldTimerManager().SetTimer(InteractCheck, this, &AVerticalSliceCharacter::CheckInteract, 0.1, true);
 	collParams.AddIgnoredActor(this);
-	SetVisible(false, false, false);
+	//SetVisible(false, false, false);
 	PlayerWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
 
