@@ -81,7 +81,7 @@ void AVerticalSliceCharacter::initalise(AMech* mech)
 	}
 	GetWorldTimerManager().SetTimer(InteractCheck, this, &AVerticalSliceCharacter::CheckInteract, 0.1, true);
 	collParams.AddIgnoredActor(this);
-	SetVisible(false, false, false);
+	//SetVisible(false, false, false);
 	PlayerWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
 
@@ -139,7 +139,7 @@ void AVerticalSliceCharacter::Interact()
 					AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
 					if (intVol)
 					{
-						intVol->activated = true;
+						intVol->Activate();
 					}
 				}
 			}
@@ -200,8 +200,10 @@ void AVerticalSliceCharacter::StopSprint()
 
 bool AVerticalSliceCharacter::Mount_Implementation()
 {
+	
 	if (PlayerMech)
 	{
+		if (!PlayerMech->canMount) { return false; }
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Woo");
 		if (GetActorLocation().Equals(PlayerMech->GetActorLocation(), MountRange))
 		{
@@ -214,6 +216,7 @@ bool AVerticalSliceCharacter::Mount_Implementation()
 			controller2->Destroy();
 			GetWorldTimerManager().PauseTimer(InteractCheck);
 			SetVisible(false, false, false);
+			PlayerMech->Mount();
 			return true;
 		}
 	}
