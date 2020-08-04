@@ -36,8 +36,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom Variables | Mech")
 		class AMech* PlayerMech = 0;
 
-	void initalise(class AMech* mech);
-
 private:
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
 		float MountRange = 300;
@@ -54,6 +52,9 @@ private:
 	FCollisionQueryParams collParams;
 
 protected:
+
+	UFUNCTION(BlueprintCallable, category = "Init")
+		void initalise(class AMech* mech);
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);

@@ -37,22 +37,24 @@ void AQuestManager::LoadQuest(const FName QuestID, bool &success)
 
 		ActiveQuests.Add(newQuest);
 		ActiveQuest = newQuest;
+		ActiveQuestName = QuestID;
+		ActiveQuestId = ActiveQuests.Num() - 1;
 
 		NameToId.Add(QuestID, ActiveQuests.Num() - 1);
 	}
 }
 
-void AQuestManager::UnloadQuest(int QuestId)
+void AQuestManager::UnloadQuest(int Id)
 {
-	if (QuestId < ActiveQuests.Num())
+	if (Id < ActiveQuests.Num() && Id >= 0)
 	{
-		FName currentName = *(NameToId.FindKey(QuestId));
+		FName currentName = *(NameToId.FindKey(Id));
 		NameToId.Remove(currentName);
-		bool ActiveQuestBeingDeleted = (ActiveQuests[QuestId] == ActiveQuest);
-		ActiveQuests[QuestId]->Destroy();
-		ActiveQuests.RemoveAt(QuestId);
+		bool ActiveQuestBeingDeleted = (ActiveQuests[Id] == ActiveQuest);
+		ActiveQuests[Id]->Destroy();
+		ActiveQuests.RemoveAt(Id);
 
-		for (int i = QuestId + 1; i < ActiveQuests.Num(); i++)
+		for (int i = Id + 1; i < ActiveQuests.Num(); i++)
 		{
 			currentName = *(NameToId.FindKey(i));
 			NameToId[currentName]--;
@@ -62,7 +64,9 @@ void AQuestManager::UnloadQuest(int QuestId)
 		{
 			if (ActiveQuests.Num() > 0)
 			{
-				ActiveQuest = ActiveQuests[0];
+				ActiveQuestId = ActiveQuests.Num() - 1;
+				ActiveQuestName = *(NameToId.FindKey(ActiveQuestId));
+				ActiveQuest = ActiveQuests[ActiveQuestId];
 			}
 			else
 			{
@@ -72,28 +76,29 @@ void AQuestManager::UnloadQuest(int QuestId)
 	}
 }
 
-void AQuestManager::UnloadQuest_Name(FName QuestId)
+void AQuestManager::UnloadQuest_Name(FName Id)
 {
-	if (NameToId.Contains(QuestId))
+	if (NameToId.Contains(Id))
 	{
-		UnloadQuest(NameToId[QuestId]);
+		UnloadQuest(NameToId[Id]);
 	}
 }
 
-void AQuestManager::setActiveQuest(int ActiveQuestId)
+void AQuestManager::setActiveQuest(int Id)
 {
-	if (ActiveQuestId < ActiveQuests.Num())
+	if (Id < ActiveQuests.Num() && Id >= 0)
 	{
-		ActiveQuest = ActiveQuests[ActiveQuestId];
-		ActiveQuestName = *(NameToId.FindKey(ActiveQuestId));
+		ActiveQuest = ActiveQuests[Id];
+		ActiveQuestName = *(NameToId.FindKey(Id));
+		ActiveQuestId = Id;
 	}
 }
 
-void AQuestManager::setActiveQuest_Name(FName ActiveQuestId)
+void AQuestManager::setActiveQuest_Name(FName Id)
 {
-	if (NameToId.Contains(ActiveQuestId))
+	if (NameToId.Contains(Id))
 	{
-		setActiveQuest(NameToId[ActiveQuestId]);
+		setActiveQuest(NameToId[Id]);
 	}
 }
 

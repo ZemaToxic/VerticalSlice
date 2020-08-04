@@ -77,11 +77,11 @@ void AMech::BeginPlay()
 	GunSnapping = true;
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
-	FActorSpawnParameters spawnParams;
+	/*FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, FVector(0,0,0), GetActorRotation(), spawnParams);
-	PlayerChar->initalise(this);
+	PlayerChar->initalise(this);*/
 }
 
 // Called to bind functionality to input
@@ -90,8 +90,8 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMech::JumpStart);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMech::JumpEnd);
 
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AMech::Aim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AMech::StopAim);
@@ -117,6 +117,11 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+}
+
+void AMech::initalise(AVerticalSliceCharacter* Player)
+{
+	PlayerChar = Player;
 }
 
 void AMech::MoveForward(float Value)
@@ -186,7 +191,7 @@ void AMech::StopAim_Implementation()
 	}
 }
 
-void AMech::Damage_Implementation(float dmg)
+void AMech::Damage_Implementation(float dmg, FVector Loc)
 {
 	if (CurrentHealth - dmg >= 0)
 	{
@@ -212,6 +217,38 @@ void AMech::ChangeInput(bool Enable)
 			DisableInput(PController);
 		}
 	}
+}
+
+void AMech::JumpStart()
+{
+	//GetMovementComponent()->StopMovementImmediately();
+	JumpInput = true;
+}
+
+void AMech::JumpEnd()
+{
+	if (GetCharacterMovement()->IsFalling())
+	{
+		StopJumping();
+	}
+	JumpInput = false;
+}
+
+void AMech::JumpTakeOff()
+{
+	Jump();
+}
+
+void AMech::JumpLand()
+{
+	if (bPressedJump && JumpInput)
+	{
+		StopJumping();
+	}
+}
+
+void AMech::Mount_Implementation()
+{
 }
 
 void AMech::Dash()
@@ -367,7 +404,7 @@ void AMech::Reload()
 	}
 }
 
-void AMech::Dismount()
+void AMech::Dismount_Implementation()
 {
 	if (PlayerChar && !(GetMovementComponent()->IsFalling()))
 	{
@@ -400,6 +437,7 @@ void AMech::Dismount()
 		SpawnDefaultController();
 		StopAim();
 		StopSprint();
+		canMount = false;
 	}
 }
 
