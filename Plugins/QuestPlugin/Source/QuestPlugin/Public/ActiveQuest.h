@@ -25,7 +25,7 @@ private: void initalise(FName FirstQuestId, FQuestStruct* QuestInit);
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Quest")
-	void getStage(int& currentstage) { currentstage = stage; }
+	void getStage(int& currentstage) const { currentstage = stage; }
 
 	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Quest")
 	void checkObjectiveValid(int index, bool& valid);
