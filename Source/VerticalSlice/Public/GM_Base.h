@@ -55,6 +55,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 		void AddParts(MonsterDrops _dropType, int _amount);
 
+	UFUNCTION(BlueprintCallable)
+		bool CheckIfPartsEmpty();
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Spawning")
 		void SpawnMonsters();
 

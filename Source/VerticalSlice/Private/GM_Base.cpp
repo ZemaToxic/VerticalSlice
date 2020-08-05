@@ -39,6 +39,16 @@ void AGM_Base::SellAllParts()
 	}
 }
 
+bool AGM_Base::CheckIfPartsEmpty()
+{
+	for (auto& Part : partsCollected)
+	{
+		if (Part.Value == 0) break;
+		else return false;
+	}
+	return true;
+}
+
 void AGM_Base::SpawnMonstersAtLocation_Implementation(MonsterSpawnLocations _loc, int _numbersToSpawn, TSubclassOf<APawn> _monster, UBehaviorTree* _BT)
 {
 	//CurrentSpawnLocation = _loc;
