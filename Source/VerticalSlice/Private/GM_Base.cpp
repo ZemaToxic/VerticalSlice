@@ -10,7 +10,13 @@
 #pragma endregion
 
 
+/*
+	Sells all the parts the player has collected and converts it to money
 
+	@params void
+	@return void
+	@author Jason Lu
+*/
 void AGM_Base::SellAllParts()
 {
 	for (auto& Part : partsCollected)
@@ -59,6 +65,13 @@ void AGM_Base::SpawnMonstersAtLocation_Implementation(MonsterSpawnLocations _loc
 	SpawnMonsters();
 }
 
+/*
+	Adds Monster Parts to the PartsCollected map
+
+	@params MonsterDrops _dropType, int _amount
+	@return void
+	@author Jason Lu
+*/
 void AGM_Base::AddParts_Implementation(MonsterDrops _dropType, int _amount)
 {
 	for (auto& Part : partsCollected)
