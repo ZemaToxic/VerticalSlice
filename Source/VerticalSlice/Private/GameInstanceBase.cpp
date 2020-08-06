@@ -16,7 +16,7 @@
 	@return void
 	@author Jason Lu
 */
-void UGameInstanceBase::SetData(TMap<MonsterDrops, int32>& _partsCollected, float _PlayerMoney, MechUpgrades _LastMechUpgrade, AbilityUpgrades _LastAbilityUpgrade, GunUpgrades _LastGunUpgrade)
+void UGameInstanceBase::SetData(TMap<MonsterDrops, int32> _partsCollected, float _PlayerMoney, MechUpgrades _LastMechUpgrade, AbilityUpgrades _LastAbilityUpgrade, GunUpgrades _LastGunUpgrade)
 {
 	partsCollected = _partsCollected;
 	PlayerMoney = _PlayerMoney;
