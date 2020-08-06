@@ -2,7 +2,6 @@
 
 
 #include "Mech.h"
-#include "GunBase.h"
 #include "MonsterBase.h"
 #include "VerticalSliceCharacter.h"
 
@@ -298,6 +297,25 @@ void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
 		break;
 	}
 	LastAbilityUpgrade = upgrade;
+}
+
+void AMech::MasterUpgrade(MechUpgrades mechUpgrade, AbilityUpgrades abilityUpgrade, GunUpgrades gunUpgrade)
+{
+	for (uint8 i = 0; i <= (uint8)(mechUpgrade); i++)
+	{
+		Upgrade((MechUpgrades)(i));
+	}
+	for (uint8 i = 0; i <= (uint8)(abilityUpgrade); i++)
+	{
+		UpgradeAbilities((AbilityUpgrades)(i));
+	}
+	if (Gun)
+	{
+		for (uint8 i = 0; i <= (uint8)(gunUpgrade); i++)
+		{
+			Gun->Upgrade((GunUpgrades)(i));
+		}
+	}
 }
 
 void AMech::Sprint()
