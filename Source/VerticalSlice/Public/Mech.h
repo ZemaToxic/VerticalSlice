@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GunBase.h"
 #include "Mech.generated.h"
 
 UENUM()
@@ -273,6 +274,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void UpgradeAbilities(AbilityUpgrades upgrade);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void MasterUpgrade(MechUpgrades mechUpgrade, AbilityUpgrades abilityUpgrade, GunUpgrades gunUpgrade);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Health")
 		void Damage(float dmg, FVector Loc);

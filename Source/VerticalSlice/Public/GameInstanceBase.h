@@ -43,6 +43,6 @@ public:
 	// Functions
 
 	UFUNCTION(BlueprintCallable)
-		void SetData(TMap<MonsterDrops, int32>& _partsCollected, float _PlayerMoney,
+		void SetData(TMap<MonsterDrops, int32> _partsCollected, float _PlayerMoney,
 			MechUpgrades _LastMechUpgrade, AbilityUpgrades _LastAbilityUpgrade, GunUpgrades _LastGunUpgrade);
 };
