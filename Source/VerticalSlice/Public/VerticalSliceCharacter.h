@@ -27,6 +27,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
 		bool nearInteractableObject = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		bool nearMech = false;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom Variables | Gameplay")
 		FVector InteractObjectLocation = FVector();
 
@@ -73,7 +76,7 @@ protected:
 	void StopSprint();
 
 	UFUNCTION(BlueprintNativeEvent, category = "Custom | End")
-	bool Mount();
+		bool Mount();
 
 	UFUNCTION(BlueprintCallable, category = "Custom | Climbing")
 		void SetClimbing(bool newClimb, FVector Forward, FVector Up);

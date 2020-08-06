@@ -118,7 +118,7 @@ void AGunBase::ShootRaycasts_Implementation()
 
 		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECollisionChannel::ECC_Visibility, ignoredActors);
 
-		DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
+		//DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{
