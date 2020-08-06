@@ -35,15 +35,6 @@ public:
 		TMap<MonsterDrops, int32> partsCollected;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
-		MonsterSpawnLocations CurrentSpawnLocation = MonsterSpawnLocations::WATERPIPE1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
-		TSubclassOf<APawn> MonsterToSpawn;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
-		UBehaviorTree* BT;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
 		TArray<FSpawnInfo> SpawnQueue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
@@ -54,6 +45,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 		void AddParts(MonsterDrops _dropType, int _amount);
+
+	UFUNCTION(BlueprintCallable)
+		bool CheckIfPartsEmpty();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Spawning")
 		void SpawnMonsters();
