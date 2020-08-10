@@ -26,6 +26,7 @@ void AActiveQuest::initalise(FName FirstQuestId, FQuestStruct* QuestInit, UDataT
 void AActiveQuest::initalise(FName FirstQuestId, FQuestStruct* QuestInit)
 {
 	stage++;
+	stageName = FirstQuestId;
 	currentObjectivesCompleted = false;
 	Quest.Empty();
 	ObjectiveTracking.Empty();
