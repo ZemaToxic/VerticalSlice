@@ -4,6 +4,7 @@
 
 #include "Mech.h"
 #include "MonsterBase.h"
+#include "ArmorPlateBase2.h"
 
 #include <vector>
 
@@ -137,15 +138,25 @@ void AGunBase::ShootRaycasts_Implementation()
 	}
 
 	for (auto& hit : hitResults)
-	{
-		AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
-		if (HitActor)
+	{	
+		UArmorPlateBase2* ArmorPlate = Cast<UArmorPlateBase2>(hit.GetComponent());
+		if (ArmorPlate)
 		{
-			HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
-			if (HitPS && Cast<USceneComponent>(hit.GetComponent()))
+			ArmorPlate->DamagePlate(Damage);
+		}
+		else
+		{
+			AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
+			if (HitActor)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
+
+
+				HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
+				if (HitPS && Cast<USceneComponent>(hit.GetComponent()))
+				{
+					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
+				}
 			}
 		}
 	}
