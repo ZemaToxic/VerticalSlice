@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 		void DamagePlate(float _Damage, FVector _HitLoc);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		void DestroyPlate();
+
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plate")
@@ -31,7 +34,4 @@ protected:
 	// Array of strings that will be added to the weakspots of the monster once the plate is destroyed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plate")
 		TArray<FString> ExposedWeakspots;
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-		void DestroyPlate();
 };

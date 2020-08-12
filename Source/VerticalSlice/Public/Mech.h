@@ -260,6 +260,8 @@ protected:
 public:
 	void Reload();
 
+	FVector GetCameraLookLocation(float _Range);
+
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveAmmo(bool Max, int amount = 0);
 

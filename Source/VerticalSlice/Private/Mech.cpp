@@ -422,6 +422,20 @@ void AMech::Reload()
 	}
 }
 
+FVector AMech::GetCameraLookLocation(float _Range)
+{
+	FHitResult Hit;
+	FVector TraceStart = FollowCamera->GetComponentLocation();
+	FVector TraceEnd = TraceStart + (FollowCamera->GetForwardVector() * (CameraBoom->TargetArmLength + _Range));
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, Gun->ignoredActors);
+
+	if (Hit.bBlockingHit)
+	{
+		return Hit.Location;
+	}
+	return Hit.TraceEnd;
+}
+
 void AMech::Dismount_Implementation()
 {
 	if (PlayerChar && !(GetMovementComponent()->IsFalling()))
