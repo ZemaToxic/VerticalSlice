@@ -89,6 +89,9 @@ class VERTICALSLICE_API AGunBase : public AActor
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
 		bool usesBullets = true;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		bool DestroysArmourPlate = false;
 public:
 
 	FCollisionQueryParams ignoredActors;

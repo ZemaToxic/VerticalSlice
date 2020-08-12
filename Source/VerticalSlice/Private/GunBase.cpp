@@ -140,25 +140,28 @@ void AGunBase::ShootRaycasts_Implementation()
 	for (auto& hit : hitResults)
 	{
 		float RandDamage = FMath::FRandRange(Damage - DamageRange / 2, Damage + DamageRange / 2);
-		AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
-		if (HitActor)
-	{	
+
 		UArmorPlateBase2* ArmorPlate = Cast<UArmorPlateBase2>(hit.GetComponent());
+
 		if (ArmorPlate)
 		{
-			HitActor->DamageMonster(RandDamage, hit.Location, hit.BoneName);
-			if (HitPS && Cast<USceneComponent>(hit.GetComponent()))
-			ArmorPlate->DamagePlate(Damage);
+			if (DestroysArmourPlate)
+			{
+				ArmorPlate->DestroyPlate();
+			}
+			else
+			{
+				ArmorPlate->DamagePlate(RandDamage/10);
+			}
+			
 		}
 		else
 		{
 			AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
 			if (HitActor)
 			{
-
-
-				HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
-				if (HitPS && Cast<USceneComponent>(hit.GetComponent()))
+				HitActor->DamageMonster(RandDamage, hit.Location, hit.BoneName);
+				if (HitPS)
 				{
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
