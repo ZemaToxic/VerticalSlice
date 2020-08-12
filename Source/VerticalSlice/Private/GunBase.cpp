@@ -151,7 +151,7 @@ void AGunBase::ShootRaycasts_Implementation()
 			}
 			else
 			{
-				ArmorPlate->DamagePlate(RandDamage/10);
+				ArmorPlate->DamagePlate(RandDamage/10, hit.Location);
 			}
 			
 		}

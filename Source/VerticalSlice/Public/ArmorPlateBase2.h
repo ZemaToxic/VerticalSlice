@@ -23,10 +23,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 		void DestroyPlate();
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		void ResetPlate();
+
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plate")
 		float PlateHealth = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plate")
+		float MaxPlateHealth = 50.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plate")
 		bool IsDestroyed = false;
