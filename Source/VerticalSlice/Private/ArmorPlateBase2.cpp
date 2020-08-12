@@ -6,15 +6,15 @@
 
 #include "Engine.h"
 
-void UArmorPlateBase2::DamagePlate_Implementation(float _Damage)
+void UArmorPlateBase2::DamagePlate_Implementation(float _Damage, FVector _HitLoc)
 {
 	if (!IsDestroyed)
 	{
 		PlateHealth -= _Damage;
-		if (GEngine)
+		/*if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
-		}
+		}*/
 		if (PlateHealth <= 0.0f)
 		{
 			DestroyPlate();

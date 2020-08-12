@@ -142,7 +142,7 @@ void AGunBase::ShootRaycasts_Implementation()
 		UArmorPlateBase2* ArmorPlate = Cast<UArmorPlateBase2>(hit.GetComponent());
 		if (ArmorPlate)
 		{
-			ArmorPlate->DamagePlate(Damage);
+			ArmorPlate->DamagePlate(Damage, hit.Location);
 		}
 		else
 		{

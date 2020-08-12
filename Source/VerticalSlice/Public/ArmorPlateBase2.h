@@ -18,7 +18,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-		void DamagePlate(float _Damage);
+		void DamagePlate(float _Damage, FVector _HitLoc);
 
 protected:
 
