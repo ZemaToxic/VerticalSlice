@@ -63,6 +63,9 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float Damage = 30;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float DamageRange = 10;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		GunUpgrades LastGunUpgrade = GunUpgrades::None;
 
@@ -107,7 +110,7 @@ public:
 	void Reload(int& ammoPool);
 	bool hasMaxMag() { return CurrentMagsize == MaxMagsize; }
 
-	void setDamage(float newDamage) { Damage = newDamage; }
+	void setDamage(float _Damage) { Damage = _Damage;}
 	float getDamage() { return Damage; }
 
 	void setBulletsPerShot(float newBPS) { BulletsPerShot = newBPS; }
