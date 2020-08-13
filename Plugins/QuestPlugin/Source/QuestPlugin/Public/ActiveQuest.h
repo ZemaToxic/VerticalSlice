@@ -25,7 +25,10 @@ private: void initalise(FName FirstQuestId, FQuestStruct* QuestInit);
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Quest")
-	void getStage(int& currentstage) { currentstage = stage; }
+	void getStage(int& currentStage) const { currentStage = stage; }
+
+	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Quest")
+	void getStageName(FName& currentStageName) const { currentStageName = stageName; }
 
 	UFUNCTION(BlueprintCallable, Category = "QuestPlugin | Quest")
 	void checkObjectiveValid(int index, bool& valid);
@@ -80,5 +83,6 @@ private:
 	TMap<FName, int> NameToId;
 
 	int stage = 0;
+	FName stageName;
 
 };

@@ -6,6 +6,17 @@
 
 #include "QuestStruct.generated.h"
 
+UENUM()
+enum class MonsterSpawnLocations : uint8
+{
+	TEST,
+	WATERPIPE1,
+	LEVEL2_1,
+	LEVEL2_2,
+	LEVEL2_3,
+	LEVEL2_4,
+};
+
 USTRUCT(BlueprintType)
 struct FQuestStruct : public FTableRowBase
 {
@@ -39,6 +50,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float LocationActivationRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int AmountOfEnemiesSpawned;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		MonsterSpawnLocations SpawnLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int MonsterType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool HasMoreObjectives;

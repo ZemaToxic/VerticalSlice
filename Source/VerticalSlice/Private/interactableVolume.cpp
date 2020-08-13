@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Components/BoxComponent.h"
 #include "interactableVolume.h"
+
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AInteractableVolume::AInteractableVolume()
@@ -24,3 +25,17 @@ void AInteractableVolume::BeginPlay()
 }
 
 
+bool AInteractableVolume::GetActivated()
+{
+	return activated;
+}
+
+void AInteractableVolume::Activate_Implementation()
+{
+	activated = true;
+}
+
+void AInteractableVolume::Reset_Implementation()
+{
+	activated = false;
+}

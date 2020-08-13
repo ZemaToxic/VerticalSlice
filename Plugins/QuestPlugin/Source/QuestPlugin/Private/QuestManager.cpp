@@ -37,32 +37,45 @@ void AQuestManager::LoadQuest(const FName QuestID, bool &success)
 
 		ActiveQuests.Add(newQuest);
 		ActiveQuest = newQuest;
+		ActiveQuestName = QuestID;
+		ActiveQuestId = ActiveQuests.Num() - 1;
 
 		NameToId.Add(QuestID, ActiveQuests.Num() - 1);
 	}
 }
 
-void AQuestManager::UnloadQuest(int QuestId)
+void AQuestManager::UnloadQuest(int Id)
 {
-	if (QuestId < ActiveQuests.Num())
+	if (Id < ActiveQuests.Num() && Id >= 0)
 	{
-		FName currentName = *(NameToId.FindKey(QuestId));
+		int lastId = ActiveQuests.Num() - 1;
+		FName currentName = *(NameToId.FindKey(Id));
 		NameToId.Remove(currentName);
-		bool ActiveQuestBeingDeleted = (ActiveQuests[QuestId] == ActiveQuest);
-		ActiveQuests[QuestId]->Destroy();
-		ActiveQuests.RemoveAt(QuestId);
+		bool ActiveQuestBeingDeleted = (ActiveQuests[Id] == ActiveQuest);
+		ActiveQuests[Id]->Destroy();
+		ActiveQuests.RemoveAt(Id);
 
-		for (int i = QuestId + 1; i < ActiveQuests.Num(); i++)
+		if (Id != lastId)
 		{
-			currentName = *(NameToId.FindKey(i));
-			NameToId[currentName]--;
+			for (int i = lastId; i >= 0; i--)
+			{
+				if (i != Id)
+				{
+					currentName = *(NameToId.FindKey(i));
+					NameToId.Remove(currentName);
+					NameToId.AddByHash(Id, currentName);
+					break;
+				}
+			}
 		}
 
 		if (ActiveQuestBeingDeleted)
 		{
 			if (ActiveQuests.Num() > 0)
 			{
-				ActiveQuest = ActiveQuests[0];
+				ActiveQuestId = ActiveQuests.Num() - 1;
+				ActiveQuestName = *(NameToId.FindKey(ActiveQuestId));
+				ActiveQuest = ActiveQuests[ActiveQuestId];
 			}
 			else
 			{
@@ -72,27 +85,71 @@ void AQuestManager::UnloadQuest(int QuestId)
 	}
 }
 
-void AQuestManager::UnloadQuest_Name(FName QuestId)
+void AQuestManager::UnloadQuest_Name(FName Id)
 {
-	if (NameToId.Contains(QuestId))
+	if (NameToId.Contains(Id))
 	{
-		UnloadQuest(NameToId[QuestId]);
+		UnloadQuest(NameToId[Id]);
 	}
 }
 
-void AQuestManager::setActiveQuest(int ActiveQuestId)
+void AQuestManager::setActiveQuest(int Id)
 {
-	if (ActiveQuestId < ActiveQuests.Num())
+	if (Id < ActiveQuests.Num() && Id >= 0)
 	{
-		ActiveQuest = ActiveQuests[ActiveQuestId];
-		ActiveQuestName = *(NameToId.FindKey(ActiveQuestId));
+		ActiveQuest = ActiveQuests[Id];
+		ActiveQuestName = *(NameToId.FindKey(Id));
+		ActiveQuestId = Id;
 	}
 }
 
-void AQuestManager::setActiveQuest_Name(FName ActiveQuestId)
+void AQuestManager::setActiveQuest_Name(FName Id)
 {
-	if (NameToId.Contains(ActiveQuestId))
+	if (NameToId.Contains(Id))
 	{
-		setActiveQuest(NameToId[ActiveQuestId]);
+		setActiveQuest(NameToId[Id]);
 	}
+}
+
+void AQuestManager::ProjectWorldToScreenQP(APlayerController const* Player, const FVector& WorldPosition, FVector2D& ScreenPos) const
+{
+	FVector Projected;
+	bool bTargetBehindCamera = false;
+
+	// Custom Projection Function
+	ULocalPlayer* const LP = Player ? Player->GetLocalPlayer() : nullptr;
+	if (LP && LP->ViewportClient)
+	{
+		// get the projection data
+		FSceneViewProjectionData ProjectionData;
+		if (LP->GetProjectionData(LP->ViewportClient->Viewport, eSSP_FULL, /*out*/ ProjectionData))
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+			const FMatrix ViewProjectionMatrix = ProjectionData.ComputeViewProjectionMatrix();
+			const FIntRect ViewRectangle = ProjectionData.GetConstrainedViewRect();
+
+			FPlane Result = ViewProjectionMatrix.TransformFVector4(FVector4(WorldPosition, 1.f));
+			if (Result.W < 0.f) { bTargetBehindCamera = true; }
+			if (Result.W == 0.f) { Result.W = 1.f; } // Prevent Divide By Zero
+
+			const float RHW = 1.f / FMath::Abs(Result.W);
+			Projected = FVector(Result.X, Result.Y, Result.Z) * RHW;
+
+			// Normalize to 0..1 UI Space
+			float NormX = (Projected.X / 2.f) + 0.5f;
+			float NormY = 1.f - (Projected.Y / 2.f) - 0.5f;
+
+			if (bTargetBehindCamera)
+			{
+				NormX = FMath::RoundToFloat(NormX);
+			}
+
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *Projected.ToString()));
+
+			Projected.X = (float)ViewRectangle.Min.X + (NormX * (float)ViewRectangle.Width());
+			Projected.Y = (float)ViewRectangle.Min.Y + (NormY * (float)ViewRectangle.Height());
+		}
+	}
+
+	ScreenPos = FVector2D(Projected.X, Projected.Y);
 }
