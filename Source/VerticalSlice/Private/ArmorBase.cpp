@@ -8,6 +8,9 @@
 #include "Engine.h"
 #include "Components/StaticMeshComponent.h"
 
+/*	reduces the health of the plate if it has not been destroyed, if it's health is 
+	reduced <=0 DestroyPlate is called
+*/
 void UArmorBase::DamagePlate_Implementation(float _Damage, FVector _HitLoc)
 {
 	if (!IsDestroyed)
@@ -24,6 +27,7 @@ void UArmorBase::DamagePlate_Implementation(float _Damage, FVector _HitLoc)
 	}
 }
 
+// sets IsDestroyed to true and makes SMRef invisible and ignores all collision
 void UArmorBase::DestroyPlate_Implementation()
 {
 	IsDestroyed = true;

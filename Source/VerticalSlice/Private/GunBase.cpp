@@ -4,7 +4,6 @@
 
 #include "Mech.h"
 #include "MonsterBase.h"
-#include "ArmorPlateBase2.h"
 #include "ArmorBase.h"
 
 #include <vector>
