@@ -3,17 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/StaticMeshComponent.h"
-#include "ArmorPlateBase2.generated.h"
+#include "Components/SphereComponent.h"
+#include "ArmorBase.generated.h"
 
 /**
  * 
  */
-UCLASS()
-class VERTICALSLICE_API UArmorPlateBase2 : public UStaticMeshComponent
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
+class VERTICALSLICE_API UArmorBase : public USphereComponent
 {
 	GENERATED_BODY()
-	
 public:
 
 
@@ -43,4 +42,5 @@ protected:
 	// Array of strings that will be added to the weakspots of the monster once the plate is destroyed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plate")
 		TArray<FString> ExposedWeakspots;
+	
 };

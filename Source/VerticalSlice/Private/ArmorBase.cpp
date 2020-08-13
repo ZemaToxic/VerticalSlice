@@ -1,13 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ArmorPlateBase2.h"
+
+#include "ArmorBase.h"
 
 #include "MonsterBase.h"
 
 #include "Engine.h"
 #include "Components/StaticMeshComponent.h"
 
-void UArmorPlateBase2::DamagePlate_Implementation(float _Damage, FVector _HitLoc)
+void UArmorBase::DamagePlate_Implementation(float _Damage, FVector _HitLoc)
 {
 	if (!IsDestroyed)
 	{
@@ -23,7 +24,7 @@ void UArmorPlateBase2::DamagePlate_Implementation(float _Damage, FVector _HitLoc
 	}
 }
 
-void UArmorPlateBase2::DestroyPlate_Implementation()
+void UArmorBase::DestroyPlate_Implementation()
 {
 	IsDestroyed = true;
 
@@ -34,12 +35,12 @@ void UArmorPlateBase2::DestroyPlate_Implementation()
 	}
 
 	// Set static mesh to invisible and ignore all collision
-	SetVisibility(false, false);
+	//SetVisibility(false, false);
 	SMRef->SetVisibility(false, false);
 	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 }
 
-void UArmorPlateBase2::ResetPlate_Implementation()
+void UArmorBase::ResetPlate_Implementation()
 {
 	// Resetting variables
 	IsDestroyed = false;
@@ -52,7 +53,8 @@ void UArmorPlateBase2::ResetPlate_Implementation()
 	}
 
 	// Set static mesh to visible and block collision for camera
-	SetVisibility(true, false);
+	//SetVisibility(true, false);
 	SMRef->SetVisibility(true, false);
 	SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 }
+
