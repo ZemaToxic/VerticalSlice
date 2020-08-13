@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GunBase.h"
 #include "Mech.generated.h"
 
 UENUM()
@@ -123,6 +124,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		float MaxHealth = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float HealthWarningThreshold = 0.33f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		float CurrentStamina = 100;
@@ -256,6 +260,8 @@ protected:
 public:
 	void Reload();
 
+	FVector GetCameraLookLocation(float _Range);
+
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveAmmo(bool Max, int amount = 0);
 
@@ -270,6 +276,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void UpgradeAbilities(AbilityUpgrades upgrade);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void MasterUpgrade(MechUpgrades mechUpgrade, AbilityUpgrades abilityUpgrade, GunUpgrades gunUpgrade);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Health")
 		void Damage(float dmg, FVector Loc);

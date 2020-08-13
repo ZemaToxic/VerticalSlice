@@ -4,6 +4,7 @@
 
 #include "Mech.h"
 #include "MonsterBase.h"
+#include "ArmorBase.h"
 
 #include <vector>
 
@@ -114,11 +115,11 @@ void AGunBase::ShootRaycasts_Implementation()
 		
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("PEW")));
 
-		shotEnd[j] = shotStart + (gunDir * Range) + (Muzzle->GetUpVector() * randY) + (Muzzle->GetRightVector() * randX);
+		shotEnd[j] = /*shotStart + (gunDir * Range)*/ AttachedMech->GetCameraLookLocation(Range) + (Muzzle->GetUpVector() * randY) + (Muzzle->GetRightVector() * randX);
 
 		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECollisionChannel::ECC_Visibility, ignoredActors);
 
-		DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
+		//DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{
@@ -138,14 +139,33 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	for (auto& hit : hitResults)
 	{
-		AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
-		if (HitActor)
+		float RandDamage = FMath::FRandRange(Damage - DamageRange / 2, Damage + DamageRange / 2);
+
+		UArmorBase* ArmorPlate = Cast<UArmorBase>(hit.GetComponent());
+
+		if (ArmorPlate)
 		{
-			HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
-			if (HitPS && Cast<USceneComponent>(hit.GetComponent()))
+			if (DestroysArmourPlate)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
+				ArmorPlate->DestroyPlate();
+			}
+			else
+			{
+				ArmorPlate->DamagePlate(RandDamage/10, hit.Location);
+			}
+			
+		}
+		else
+		{
+			AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
+			if (HitActor)
+			{
+				HitActor->DamageMonster(RandDamage, hit.Location, hit.BoneName);
+				if (HitPS)
+				{
+					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
+				}
 			}
 		}
 	}
@@ -192,7 +212,7 @@ void AGunBase::Upgrade(GunUpgrades upgrade)
 
 void AGunBase::getAimLoc(FVector& AimLoc)
 {
-	FHitResult currHit;
+	/*FHitResult currHit;
 	FVector startAim = Muzzle->GetComponentLocation();
 	FVector endAim = startAim + (Muzzle->GetForwardVector() * Range);
 
@@ -205,7 +225,9 @@ void AGunBase::getAimLoc(FVector& AimLoc)
 	else
 	{
 		AimLoc = endAim;
-	}
+	}*/
+
+	AimLoc = AttachedMech->GetCameraLookLocation(Range);
 
 	//DrawDebugLine(GetWorld(), startAim, AimLoc, FColor::Emerald, false, 0.5f);
 }

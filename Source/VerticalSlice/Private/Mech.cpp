@@ -2,7 +2,6 @@
 
 
 #include "Mech.h"
-#include "GunBase.h"
 #include "MonsterBase.h"
 #include "VerticalSliceCharacter.h"
 
@@ -300,6 +299,25 @@ void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
 	LastAbilityUpgrade = upgrade;
 }
 
+void AMech::MasterUpgrade(MechUpgrades mechUpgrade, AbilityUpgrades abilityUpgrade, GunUpgrades gunUpgrade)
+{
+	for (uint8 i = 0; i <= (uint8)(mechUpgrade); i++)
+	{
+		Upgrade((MechUpgrades)(i));
+	}
+	for (uint8 i = 0; i <= (uint8)(abilityUpgrade); i++)
+	{
+		UpgradeAbilities((AbilityUpgrades)(i));
+	}
+	if (Gun)
+	{
+		for (uint8 i = 0; i <= (uint8)(gunUpgrade); i++)
+		{
+			Gun->Upgrade((GunUpgrades)(i));
+		}
+	}
+}
+
 void AMech::Sprint()
 {
 	if (Aiming)
@@ -402,6 +420,20 @@ void AMech::Reload()
 			reloading = true;
 		}
 	}
+}
+
+FVector AMech::GetCameraLookLocation(float _Range)
+{
+	FHitResult Hit;
+	FVector TraceStart = FollowCamera->GetComponentLocation();
+	FVector TraceEnd = TraceStart + (FollowCamera->GetForwardVector() * (CameraBoom->TargetArmLength + _Range));
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, Gun->ignoredActors);
+
+	if (Hit.bBlockingHit)
+	{
+		return Hit.Location;
+	}
+	return Hit.TraceEnd;
 }
 
 void AMech::Dismount_Implementation()
