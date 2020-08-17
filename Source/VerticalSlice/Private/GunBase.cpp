@@ -117,9 +117,9 @@ void AGunBase::ShootRaycasts_Implementation()
 
 		shotEnd[j] = /*shotStart + (gunDir * Range)*/ AttachedMech->GetCameraLookLocation(Range) + (Muzzle->GetUpVector() * randY) + (Muzzle->GetRightVector() * randX);
 
-		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECollisionChannel::ECC_Visibility, ignoredActors);
+		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECC_Visibility, ignoredActors);
 
-		//DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
+		DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{
@@ -139,6 +139,7 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	for (auto& hit : hitResults)
 	{
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(hit.Actor.Get()->GetName())));
 		float RandDamage = FMath::FRandRange(Damage - DamageRange / 2, Damage + DamageRange / 2);
 
 		UArmorPlateBase2* ArmorPlate = Cast<UArmorPlateBase2>(hit.GetComponent());

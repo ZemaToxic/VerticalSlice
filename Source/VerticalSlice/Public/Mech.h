@@ -200,6 +200,30 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation | Jump", meta = (AllowPrivateAccess = "true"))
 		bool JumpInput = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation | Melee", meta = (AllowPrivateAccess = "true"))
+		bool IsGroundPounding = false;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float BaseGravityScale = 10;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundGravityScale = 100;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundLaunchZ = 1000;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundRangeScale = 1;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundBaseRange = 1000;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundLaunchPower = 10000;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float AirControlTemp = 0;
+
 public:
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Mount")
 			bool canMount = true;
@@ -256,6 +280,9 @@ protected:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void Landed(const FHitResult& Hit) override;
+	bool GroundPound();
 
 public:
 	void Reload();
