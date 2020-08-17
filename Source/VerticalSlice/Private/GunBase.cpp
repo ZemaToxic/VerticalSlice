@@ -4,7 +4,7 @@
 
 #include "Mech.h"
 #include "MonsterBase.h"
-#include "ArmorPlateBase2.h"
+#include "ArmorBase.h"
 
 #include <vector>
 
@@ -142,7 +142,7 @@ void AGunBase::ShootRaycasts_Implementation()
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(hit.Actor.Get()->GetName())));
 		float RandDamage = FMath::FRandRange(Damage - DamageRange / 2, Damage + DamageRange / 2);
 
-		UArmorPlateBase2* ArmorPlate = Cast<UArmorPlateBase2>(hit.GetComponent());
+		UArmorBase* ArmorPlate = Cast<UArmorBase>(hit.GetComponent());
 
 		if (ArmorPlate)
 		{
@@ -152,7 +152,7 @@ void AGunBase::ShootRaycasts_Implementation()
 			}
 			else
 			{
-				ArmorPlate->DamagePlate(RandDamage/10);
+				ArmorPlate->DamagePlate(RandDamage/10, hit.Location);
 			}
 			
 		}
