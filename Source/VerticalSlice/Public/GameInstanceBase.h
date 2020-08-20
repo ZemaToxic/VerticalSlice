@@ -31,18 +31,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
 		float PlayerMoney = 1000.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrades")
-		MechUpgrades LastMechUpgrade;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+		TMap<FeatureUpgrades, bool> GIFeatureUpgradesMap;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrades")
-		AbilityUpgrades LastAbilityUpgrade;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrades")
-		GunUpgrades LastGunUpgrade;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+		TMap<StatUpgrades, int> GIStatUpgradesMap;
 
 	// Functions
 
 	UFUNCTION(BlueprintCallable)
-		void SetData(TMap<MonsterDrops, int32> _partsCollected, float _PlayerMoney,
-			MechUpgrades _LastMechUpgrade, AbilityUpgrades _LastAbilityUpgrade, GunUpgrades _LastGunUpgrade);
+		void SetData(TMap<MonsterDrops, int32> _partsCollected, float _PlayerMoney, TMap<FeatureUpgrades, bool> _GIFeatureUpgradesMap, TMap<StatUpgrades, int> _GIStatUpgradesMap);
 };

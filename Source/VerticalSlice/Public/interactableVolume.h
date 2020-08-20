@@ -19,7 +19,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Checking, meta = (AllowPrivateAccess = "true"))
 		int id = 0;
 
-	bool activated = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Checking)
+		bool activated = false;
 
 public:
 
