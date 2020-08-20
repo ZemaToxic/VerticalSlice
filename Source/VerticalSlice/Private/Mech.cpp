@@ -321,70 +321,29 @@ void AMech::Mount_Implementation()
 
 void AMech::Dash()
 {
-	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+	if (CurrentCharge - DashCharge > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
 	{
 		//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
-		FVector launchDir = this->GetActorRightVector() * MoveRightAxis;
-		CurrentStamina -= DashStamina;
+		FVector launchDir = GetCharacterMovement()->Velocity;
+		launchDir.Normalize();
+		CurrentCharge -= DashCharge;
 		LaunchCharacter(launchDir * DashForce, false, false);
 	}
 }
 
-void AMech::Upgrade(MechUpgrades upgrade)
+void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 {
-	switch (upgrade)
-	{
-	case MechUpgrades::StaminaRegen:
-		StaminaRechargeRate *= 1.2;
-		break;
-	case MechUpgrades::MoreAmmo:
-		MaxAmmo *= 2;
-		break;
-	case MechUpgrades::FasterReload:
-		reloadAnimationRate *= 1.5;
-		break;
-	default:
-		break;
-	}
-	LastMechUpgrade = upgrade;
+	
 }
 
-void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
+void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount = 1)
 {
-	switch (upgrade)
-	{
-	case AbilityUpgrades::ShorterCooldown:
-		abilityCooldown /= 0.8;
-		break;
-	case AbilityUpgrades::ExtraCharge:
-		Shotgun->setBulletsPerShot(Shotgun->getBulletsPerShot() * 2);
-		break;
-	case AbilityUpgrades::Dragonbreath:
-		Shotgun->Upgrade(GunUpgrades::BetterDamage);
-		break;
-	default:
-		break;
-	}
-	LastAbilityUpgrade = upgrade;
+	
 }
 
-void AMech::MasterUpgrade(MechUpgrades mechUpgrade, AbilityUpgrades abilityUpgrade, GunUpgrades gunUpgrade)
+void AMech::MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap)
 {
-	for (uint8 i = 0; i <= (uint8)(mechUpgrade); i++)
-	{
-		Upgrade((MechUpgrades)(i));
-	}
-	for (uint8 i = 0; i <= (uint8)(abilityUpgrade); i++)
-	{
-		UpgradeAbilities((AbilityUpgrades)(i));
-	}
-	if (Gun)
-	{
-		for (uint8 i = 0; i <= (uint8)(gunUpgrade); i++)
-		{
-			Gun->Upgrade((GunUpgrades)(i));
-		}
-	}
+	
 }
 
 void AMech::Sprint()
@@ -492,17 +451,20 @@ void AMech::Reload()
 	}
 }
 
-FVector AMech::GetCameraLookLocation(float _Range)
+FVector AMech::GetCameraLookLocation(float _Range, float &_Dist)
 {
 	FHitResult Hit;
 	FVector TraceStart = FollowCamera->GetComponentLocation();
-	FVector TraceEnd = TraceStart + (FollowCamera->GetForwardVector() * (CameraBoom->TargetArmLength + _Range));
+	FVector VDist = (FollowCamera->GetForwardVector() * (CameraBoom->TargetArmLength + _Range));
+	_Dist = VDist.Size();;
+	FVector TraceEnd = TraceStart + VDist;
 	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Camera, Gun->ignoredActors);
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s, %s"), *(Hit.Actor.Get()->GetName()) ,*(Hit.GetComponent()->GetName())));
 
 	if (Hit.bBlockingHit)
 	{
+		_Dist = Hit.Distance;
 		return Hit.Location;
 	}
 	return Hit.TraceEnd;
@@ -547,56 +509,89 @@ void AMech::Dismount_Implementation()
 
 void AMech::UseAbility()
 {
-	if (ShotgunShoot && canUseAbility && Shotgun)
+	if (CurrentShotgunShots > 0)
 	{
-		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
-		if (!(mechAnim->Montage_IsPlaying(ShotgunShoot)))
-		{
-			Shotgun->ShootRaycasts();
-			canUseAbility = false;
-			GetWorldTimerManager().SetTimer(abilityTimerHandle, this, &AMech::AbilityReset, abilityCooldown);
-		}
+		CurrentShotgunShots--;
+		Shotgun->ShootRaycasts();
+	}
+	if (!GetWorldTimerManager().IsTimerActive(ShotgunTimerHandle))
+	{
+		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
 	}
 }
 
-void AMech::AbilityReset()
+void AMech::StopAbility()
 {
-	canUseAbility = true;
+}
+
+void AMech::AbilityRecharge()
+{
+	CurrentShotgunShots++;
+	if (CurrentShotgunShots < MaxShotgunShots)
+	{
+		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
+	}
 }
 
 void AMech::giveAmmo(bool Max, int amount)
 {
-	if (Max)
+	if (Max || CurrentAmmo + amount >= MaxAmmo)
 	{
 		CurrentAmmo = MaxAmmo;
 	}
+	else if(CurrentAmmo + amount > 0)
+	{
+		CurrentAmmo += amount;
+	}
 	else
 	{
-		CurrentAmmo = (CurrentAmmo + amount < MaxAmmo) ? CurrentAmmo + amount : MaxAmmo;
+		CurrentAmmo = 0;
 	}
 }
 
 void AMech::giveHealth(bool Max, int amount)
 {
-	if (Max)
+	if (Max || CurrentHealth + amount >= MaxHealth)
 	{
 		CurrentHealth = MaxHealth;
 	}
+	else if (CurrentHealth + amount > 0)
+	{
+		CurrentHealth += amount;
+	}
 	else
 	{
-		CurrentHealth = (CurrentHealth + amount < MaxHealth) ? CurrentHealth + amount : MaxHealth;
+		CurrentHealth = 0;
 	}
 }
 
-void AMech::giveStamina(bool Max, int amount)
+void AMech::giveCharge(bool Max, int amount)
 {
-	if (Max)
+
+	if (Max || CurrentCharge + amount >= MaxCharge)
 	{
-		CurrentStamina = MaxStamina;
+		CurrentCharge = MaxCharge;
 	}
 	else
 	{
-		CurrentStamina = (CurrentStamina + amount < MaxStamina) ? CurrentStamina + amount : MaxStamina;
+		if (CurrentCharge + amount > 0)
+		{
+			CurrentCharge += amount;
+		}
+		else
+		{
+			CurrentCharge = 0;
+		}
+		
+		ChargeRechargeAllowed = false;
+
+		FTimerDelegate TimerCallback;
+		TimerCallback.BindLambda([=]
+			{
+				ChargeRechargeAllowed = true;
+			});
+
+		GetWorldTimerManager().SetTimer(ChargeRechargeTimer, TimerCallback, ChargeRechargeDelay, false);
 	}
 }
 
@@ -640,26 +635,26 @@ void AMech::Tick(float DeltaTime)
 		Gun->SetActorRotation(FRotator(0, GunRotation.Yaw, GunRotation.Roll));
 	}
 
-	if (Sprinting)
+	if (Sprinting && !(GetCharacterMovement()->Velocity.IsZero()))
 	{
-		if (CurrentStamina > 0)
+		if (CurrentCharge > 0)
 		{
-			CurrentStamina--;
+			giveCharge(false, -1);
 		}
 		else
 		{
 			StopSprint();
 		}
 	}
-	else if (CurrentStamina < MaxStamina)
+	else if (ChargeRechargeAllowed && CurrentCharge < MaxCharge)
 	{
-		if (CurrentStamina + StaminaRechargeRate < MaxStamina)
+		if (CurrentCharge + ChargeRechargeRate < MaxCharge)
 		{
-			CurrentStamina += StaminaRechargeRate;
+			CurrentCharge += ChargeRechargeRate;
 		}
 		else
 		{
-			CurrentStamina = MaxStamina;
+			CurrentCharge = MaxCharge;
 		}
 	}
 

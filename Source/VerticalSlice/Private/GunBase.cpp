@@ -42,6 +42,8 @@ void AGunBase::init(AMech* mech)
 
 void AGunBase::Shoot()
 {
+	if (ShootingTimer < SecondsBetweenShots) { return; }
+
 	SecondsBetweenShots = 1 / ShotsPerSecond;
 
 	if (CurrentMagsize <= 0 && usesBullets) {
@@ -61,8 +63,6 @@ void AGunBase::Shoot()
 
 void AGunBase::StopShoot()
 {
-	ShootingTimer = 0.0f;
-
 	Shooting = false;
 }
 
@@ -104,22 +104,26 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	for (int i = 0; i < BulletsPerShot; i++)
 	{
-		FVector randomSpreadVec = FVector(0, FMath::FRandRange(LowerSpread.X, UpperSpread.X), FMath::FRandRange(LowerSpread.Y, UpperSpread.Y));
-
 		shotStart = Muzzle->GetComponentLocation();
 
 		shotEnd.Add((FVector)0);
 
 		float randY = FMath::FRandRange(LowerSpread.Y, UpperSpread.Y);
 		float randX = FMath::FRandRange(LowerSpread.X, UpperSpread.X);
+		FVector RandomSpreadDirection = (AttachedMech->GetFollowCamera()->GetUpVector() * randY) + (AttachedMech->GetFollowCamera()->GetRightVector() * randX);
 		
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("PEW")));
+		
+		float Dist = 0;
 
-		shotEnd[j] = /*shotStart + (gunDir * Range)*/ AttachedMech->GetCameraLookLocation(Range) + (Muzzle->GetUpVector() * randY) + (Muzzle->GetRightVector() * randX);
+		FVector CamLookLoc = AttachedMech->GetCameraLookLocation(MaxRange, Dist);
+
+		shotEnd[j] = CamLookLoc + (RandomSpreadDirection * (Dist/1000));
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%f, %f, %f"), randY, randX, Dist));
 
 		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECC_Visibility, ignoredActors);
 
-		DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
+		//DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{
@@ -140,7 +144,6 @@ void AGunBase::ShootRaycasts_Implementation()
 	for (auto& hit : hitResults)
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(hit.Actor.Get()->GetName())));
-		float RandDamage = FMath::FRandRange(Damage - DamageRange / 2, Damage + DamageRange / 2);
 
 		UArmorBase* ArmorPlate = Cast<UArmorBase>(hit.GetComponent());
 
@@ -152,7 +155,7 @@ void AGunBase::ShootRaycasts_Implementation()
 			}
 			else
 			{
-				ArmorPlate->DamagePlate(RandDamage/10, hit.Location);
+				ArmorPlate->DamagePlate(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size())/10, hit.Location);
 			}
 			
 		}
@@ -161,7 +164,7 @@ void AGunBase::ShootRaycasts_Implementation()
 			AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
 			if (HitActor)
 			{
-				HitActor->DamageMonster(RandDamage, hit.Location, hit.BoneName);
+				HitActor->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size()), hit.Location, hit.BoneName);
 				if (HitPS)
 				{
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
@@ -186,51 +189,24 @@ void AGunBase::Reload(int& ammoPool)
 			CurrentMagsize += ammoPool;
 			ammoPool = 0;
 		}
+		SecondsBetweenShots = 0;
 	}
 }
 
-void AGunBase::Upgrade(GunUpgrades upgrade)
+void AGunBase::UpgradeDamage(float _Multiplier)
 {
-	switch (upgrade)
-	{
-	case GunUpgrades::BetterFireRate:
-		ShotsPerSecond *= 1.2;
-		break;
-	case GunUpgrades::FasterReload:
-		if (AttachedMech)
-		{
-			AttachedMech->Upgrade(MechUpgrades::FasterReload);
-		}
-		break;
-	case GunUpgrades::BetterDamage:
-		Damage *= 1.5;
-		break;
-	default:
-		break;
-	}
-	LastGunUpgrade = upgrade;
 }
 
-void AGunBase::getAimLoc(FVector& AimLoc)
+void AGunBase::UpgradeClipSize(float _Multiplier)
 {
-	/*FHitResult currHit;
-	FVector startAim = Muzzle->GetComponentLocation();
-	FVector endAim = startAim + (Muzzle->GetForwardVector() * Range);
+}
 
-	GetWorld()->LineTraceSingleByChannel(currHit, startAim, endAim, ECollisionChannel::ECC_Visibility, ignoredActors);
+void AGunBase::UpgradeBulletsPerShot(float _Multiplier)
+{
+}
 
-	if (currHit.bBlockingHit)
-	{
-		AimLoc = currHit.Location;
-	}
-	else
-	{
-		AimLoc = endAim;
-	}*/
-
-	AimLoc = AttachedMech->GetCameraLookLocation(Range);
-
-	//DrawDebugLine(GetWorld(), startAim, AimLoc, FColor::Emerald, false, 0.5f);
+void AGunBase::UpgradeRange(float _Multiplier)
+{
 }
 
 void AGunBase::BeginPlay()
@@ -245,22 +221,34 @@ void AGunBase::BeginPlay()
 	}
 }
 
+float AGunBase::CalcDamage(float Dist)
+{
+	float RandDamage = FMath::FRandRange(Damage - DamageRange / 2, Damage + DamageRange / 2);
+
+	float OptimalDist = OptimalRangePercent * MaxRange;
+
+	float Falloff = DamageFalloff * FMath::Sqrt(FMath::Clamp(((Dist - OptimalDist) / (MaxRange - OptimalDist)), 0.0f, 1.0f));
+
+	return RandDamage - Falloff;
+}
+
 void AGunBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (Shooting)
+	if (ShootingTimer < SecondsBetweenShots)
 	{
-		if (ShootingTimer >= SecondsBetweenShots)
-		{
-			if (CurrentMagsize <= 0) {
-				Shooting = false;
-				return;
-			}
-			ShootRaycasts();
-			ShootingTimer = 0.0f;
-		}
 		ShootingTimer += DeltaTime;
 	}
+	else if (Shooting)
+	{
+		if (CurrentMagsize <= 0) {
+			Shooting = false;
+			return;
+		}
+		ShootRaycasts();
+		ShootingTimer = 0.0f;
+	}
+	
 }
 

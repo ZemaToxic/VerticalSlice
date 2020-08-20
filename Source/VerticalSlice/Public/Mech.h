@@ -8,21 +8,38 @@
 #include "Mech.generated.h"
 
 UENUM()
-enum class MechUpgrades : uint8
+enum class FeatureUpgrades : uint8
 {
-	None,
-	StaminaRegen,
-	MoreAmmo,
-	FasterReload,
+	Boosters,
+	Shotgun,
+	Dash,
+	GroundPound,
+	NoChargeRegenDelay,
+	HPRegen,
+	HPPotion,
+	Flamethrower,
+	RocketLauncher,
 };
 
 UENUM()
-enum class AbilityUpgrades : uint8
+enum class StatUpgrades : uint8
 {
-	None,
-	ShorterCooldown,
-	ExtraCharge,
-	Dragonbreath,
+	RifleDamage,
+	RifleReload,
+	RifleClipSize,
+	RifleReserveAmmo,
+	ShotgunDamage,
+	ShotgunCharges,
+	ShotgunPellets,
+	ShotgunRange,
+	MechMaxHP,
+	MechMaxCharge,
+	MechHPRegen,
+	MechChargeRegen,
+	FlamethrowerDamage,
+	FlamethrowerFireDamage,
+	RocketAmount,
+	RocketRadius,
 };
 
 
@@ -120,25 +137,25 @@ private:
 		int MaxAmmo = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
-		float CurrentHealth = 100;
+		float CurrentHealth = 300;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
-		float MaxHealth = 100;
+		float MaxHealth = 300;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		float HealthWarningThreshold = 0.33f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
-		float CurrentStamina = 100;
+		float CurrentCharge = 600;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
-		float MaxStamina = 100;
+		float MaxCharge = 600;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
-		float StaminaRechargeRate = 1;
+		float ChargeRechargeRate = 1;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
-		float DashStamina = 20;
+		float DashCharge = 300;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
 		float DashForce = 10000;
@@ -156,10 +173,10 @@ private:
 		class AVerticalSliceCharacter* PlayerChar = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		MechUpgrades LastMechUpgrade = MechUpgrades::None;
+		TMap<FeatureUpgrades,bool> FeatureUpgradesMap;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		AbilityUpgrades LastAbilityUpgrade = AbilityUpgrades::None;
+		TMap<StatUpgrades, int> StatUpgradesMap;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		UAnimMontage* AimShoot = 0;
@@ -188,14 +205,17 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation")
 		float reloadAnimationRate = 2.0f;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | AbilityCooldown")
-		bool canUseAbility = true;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle ShotgunTimerHandle;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | AbilityCooldown", meta = (AllowPrivateAccess = "true"))
-		FTimerHandle abilityTimerHandle;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		float ShotgunCooldown = 2.0f;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | AbilityCooldown")
-		float abilityCooldown = 2.0f;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		int MaxShotgunShots = 2;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
+		int CurrentShotgunShots = 2;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation | Jump", meta = (AllowPrivateAccess = "true"))
 		bool JumpInput = false;
@@ -223,6 +243,17 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float AirControlTemp = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		bool ChargeRechargeAllowed = true;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle ChargeRechargeTimer;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float ChargeRechargeDelay = 1.0;
+
+
 
 public:
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Mount")
@@ -262,9 +293,8 @@ protected:
 	void StopShoot();
 
 	void UseAbility();
-
-	UFUNCTION()
-		void AbilityReset();
+	void StopAbility();
+	void AbilityRecharge();
 
 	void JumpStart();
 	void JumpEnd();
@@ -287,7 +317,7 @@ protected:
 public:
 	void Reload();
 
-	FVector GetCameraLookLocation(float _Range);
+	FVector GetCameraLookLocation(float _Range, float& _Dist);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveAmmo(bool Max, int amount = 0);
@@ -296,16 +326,16 @@ public:
 		void giveHealth(bool Max, int amount = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
-		void giveStamina(bool Max, int amount = 0);
+		void giveCharge(bool Max, int amount = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void Upgrade(MechUpgrades upgrade);
+		void UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void UpgradeAbilities(AbilityUpgrades upgrade);
+		void UpgradeStats(StatUpgrades _Upgrade, int _Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void MasterUpgrade(MechUpgrades mechUpgrade, AbilityUpgrades abilityUpgrade, GunUpgrades gunUpgrade);
+		void MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Health")
 		void Damage(float dmg, FVector Loc);

@@ -6,15 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "GunBase.generated.h"
 
-UENUM()
-enum class GunUpgrades : uint8
-{
-	None,
-	BetterFireRate,
-	FasterReload,
-	BetterDamage,
-};
-
 
 UCLASS()
 class VERTICALSLICE_API AGunBase : public AActor
@@ -31,7 +22,10 @@ class VERTICALSLICE_API AGunBase : public AActor
 		bool Shooting = false;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
-		float Range = 100.0f;
+		float MaxRange = 100.0f;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float OptimalRangePercent = 0.5f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		FVector2D UpperSpread = FVector2D(0,0);
@@ -66,8 +60,8 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float DamageRange = 10;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
-		GunUpgrades LastGunUpgrade = GunUpgrades::None;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float DamageFalloff = 20;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		class AMech* AttachedMech = 0;
@@ -113,20 +107,15 @@ public:
 	void Reload(int& ammoPool);
 	bool hasMaxMag() { return CurrentMagsize == MaxMagsize; }
 
-	void setDamage(float _Damage) { Damage = _Damage;}
-	float getDamage() { return Damage; }
-
-	void setBulletsPerShot(float newBPS) { BulletsPerShot = newBPS; }
-	float getBulletsPerShot() { return BulletsPerShot; }
-
-	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void Upgrade(GunUpgrades upgrade);
-
-	UFUNCTION(BlueprintCallable, Category = "Custom | Aim")
-		void getAimLoc(FVector& AimLoc);
+	void UpgradeDamage(float _Multiplier);
+	void UpgradeClipSize(float _Multiplier);
+	void UpgradeBulletsPerShot(float _Multiplier);
+	void UpgradeRange(float _Multiplier);
 
 protected:
 	virtual void BeginPlay() override;
+
+	float CalcDamage(float Dist);
 
 public:
 	virtual void Tick(float DeltaTime) override;
