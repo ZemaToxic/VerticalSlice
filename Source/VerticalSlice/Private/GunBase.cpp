@@ -119,7 +119,7 @@ void AGunBase::ShootRaycasts_Implementation()
 
 		shotEnd[j] = CamLookLoc + (RandomSpreadDirection * (Dist/1000));
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%f, %f, %f"), randY, randX, Dist));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%f, %f, %f"), randY, randX, Dist));
 
 		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECC_Visibility, ignoredActors);
 
