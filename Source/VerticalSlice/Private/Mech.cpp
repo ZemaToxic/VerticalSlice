@@ -75,7 +75,8 @@ void AMech::BeginPlay()
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GunSnapping = true;
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
-
+	
+	GetCharacterMovement()->GravityScale = BaseGravityScale;
 	/*FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -116,6 +117,74 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+}
+
+void AMech::Landed(const FHitResult& Hit)
+{
+	if (IsGroundPounding)
+	{
+		// create tarray for hit results
+		TArray<FHitResult> OutHits;
+
+		// start and end locations
+		FVector SweepStart = GetActorLocation();
+		FVector SweepEnd = SweepStart + FVector(0.1,0,0);
+
+		// create a collision sphere
+		FCollisionShape MyGroundPoundColl = FCollisionShape::MakeSphere(GroundPoundBaseRange + (GetCharacterMovement()->Velocity.Size() * GroundPoundRangeScale));
+
+		// draw collision box
+		//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
+
+		// check if something got hit in the sweep
+		bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, MyGroundPoundColl);
+
+		if (isHit)
+		{
+			TArray<AMonsterBase*> HitMonsters;
+			// loop through TArray
+			for (auto& Hit : OutHits)
+			{
+				AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
+				if (HitActor)
+				{
+					if (!(HitMonsters.Contains(HitActor)))
+					{
+						HitMonsters.Add(HitActor);
+
+						//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
+
+						FVector launchDirection = this->GetActorLocation() - HitActor->GetActorLocation();
+						launchDirection.Z = GroundPoundLaunchZ;
+
+						float dist = launchDirection.Size();
+						launchDirection.Normalize();
+
+						HitActor->GetMovementComponent()->StopMovementImmediately();
+						HitActor->LaunchCharacter(launchDirection * (GroundPoundLaunchPower / sqrt(dist)), false, false);
+						HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
+					}
+				}
+			}
+		}
+
+		IsGroundPounding = false;
+		GetCharacterMovement()->GravityScale = BaseGravityScale;
+		GetCharacterMovement()->AirControl = AirControlTemp;
+		//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	}
+}
+
+bool AMech::GroundPound()
+{
+	if (!GetCharacterMovement()->IsFalling()) { return false; }
+	IsGroundPounding = true;
+	GetCharacterMovement()->GravityScale = GroundPoundGravityScale;
+	GetCharacterMovement()->StopMovementImmediately();
+	AirControlTemp = GetCharacterMovement()->AirControl;
+	GetCharacterMovement()->AirControl = 0;
+	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	return true;
 }
 
 void AMech::initalise(AVerticalSliceCharacter* Player)
@@ -252,70 +321,29 @@ void AMech::Mount_Implementation()
 
 void AMech::Dash()
 {
-	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+	if (CurrentCharge - DashCharge > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
 	{
 		//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
-		FVector launchDir = this->GetActorRightVector() * MoveRightAxis;
-		CurrentStamina -= DashStamina;
+		FVector launchDir = GetCharacterMovement()->Velocity;
+		launchDir.Normalize();
+		CurrentCharge -= DashCharge;
 		LaunchCharacter(launchDir * DashForce, false, false);
 	}
 }
 
-void AMech::Upgrade(MechUpgrades upgrade)
+void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 {
-	switch (upgrade)
-	{
-	case MechUpgrades::StaminaRegen:
-		StaminaRechargeRate *= 1.2;
-		break;
-	case MechUpgrades::MoreAmmo:
-		MaxAmmo *= 2;
-		break;
-	case MechUpgrades::FasterReload:
-		reloadAnimationRate *= 1.5;
-		break;
-	default:
-		break;
-	}
-	LastMechUpgrade = upgrade;
+	
 }
 
-void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
+void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount = 1)
 {
-	switch (upgrade)
-	{
-	case AbilityUpgrades::ShorterCooldown:
-		abilityCooldown /= 0.8;
-		break;
-	case AbilityUpgrades::ExtraCharge:
-		Shotgun->setBulletsPerShot(Shotgun->getBulletsPerShot() * 2);
-		break;
-	case AbilityUpgrades::Dragonbreath:
-		Shotgun->Upgrade(GunUpgrades::BetterDamage);
-		break;
-	default:
-		break;
-	}
-	LastAbilityUpgrade = upgrade;
+	
 }
 
-void AMech::MasterUpgrade(MechUpgrades mechUpgrade, AbilityUpgrades abilityUpgrade, GunUpgrades gunUpgrade)
+void AMech::MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap)
 {
-	for (uint8 i = 0; i <= (uint8)(mechUpgrade); i++)
-	{
-		Upgrade((MechUpgrades)(i));
-	}
-	for (uint8 i = 0; i <= (uint8)(abilityUpgrade); i++)
-	{
-		UpgradeAbilities((AbilityUpgrades)(i));
-	}
-	if (Gun)
-	{
-		for (uint8 i = 0; i <= (uint8)(gunUpgrade); i++)
-		{
-			Gun->Upgrade((GunUpgrades)(i));
-		}
-	}
+	
 }
 
 void AMech::Sprint()
@@ -341,6 +369,7 @@ void AMech::StopSprint()
 
 void AMech::Melee()
 {
+	if (GroundPound()) { return; }
 	if (MeleeAnim)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
@@ -385,7 +414,7 @@ void AMech::Melee()
 				{
 					HitMonsters.Add(HitActor);
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "HitMonster");
-					HitActor->DamageMonster(MeleeDamage, Hit.Location, Hit.BoneName);
+					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
 				}
 			}
 		}
@@ -422,15 +451,20 @@ void AMech::Reload()
 	}
 }
 
-FVector AMech::GetCameraLookLocation(float _Range)
+FVector AMech::GetCameraLookLocation(float _Range, float &_Dist)
 {
 	FHitResult Hit;
 	FVector TraceStart = FollowCamera->GetComponentLocation();
-	FVector TraceEnd = TraceStart + (FollowCamera->GetForwardVector() * (CameraBoom->TargetArmLength + _Range));
-	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, Gun->ignoredActors);
+	FVector VDist = (FollowCamera->GetForwardVector() * (CameraBoom->TargetArmLength + _Range));
+	_Dist = VDist.Size();;
+	FVector TraceEnd = TraceStart + VDist;
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Camera, Gun->ignoredActors);
+
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s, %s"), *(Hit.Actor.Get()->GetName()) ,*(Hit.GetComponent()->GetName())));
 
 	if (Hit.bBlockingHit)
 	{
+		_Dist = Hit.Distance;
 		return Hit.Location;
 	}
 	return Hit.TraceEnd;
@@ -440,20 +474,20 @@ void AMech::Dismount_Implementation()
 {
 	if (PlayerChar && !(GetMovementComponent()->IsFalling()))
 	{
-		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 100;
+		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 500;
 
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
 
 		FHitResult SweepHit;
-		bool bhit = false;
+		bool bhit = true;
 
-		while (!bhit)
+		while (bhit)
 		{
 			GetWorld()->SweepSingleByChannel(SweepHit, spawnLoc, spawnLoc + FVector(0, 0.1, 0), FQuat::Identity, ECollisionChannel::ECC_Pawn, PlayerChar->GetCapsuleComponent()->GetCollisionShape());
 			bhit = SweepHit.bBlockingHit;
-			if (!bhit)
+			if (bhit)
 			{
-				spawnLoc += FVector(0, 1, 0);
+				spawnLoc += GetActorForwardVector();
 			}
 		}
 		PlayerChar->SetActorLocationAndRotation(spawnLoc, GetActorRotation());
@@ -475,56 +509,89 @@ void AMech::Dismount_Implementation()
 
 void AMech::UseAbility()
 {
-	if (ShotgunShoot && canUseAbility && Shotgun)
+	if (CurrentShotgunShots > 0)
 	{
-		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
-		if (!(mechAnim->Montage_IsPlaying(ShotgunShoot)))
-		{
-			Shotgun->ShootRaycasts();
-			canUseAbility = false;
-			GetWorldTimerManager().SetTimer(abilityTimerHandle, this, &AMech::AbilityReset, abilityCooldown);
-		}
+		CurrentShotgunShots--;
+		Shotgun->ShootRaycasts();
+	}
+	if (!GetWorldTimerManager().IsTimerActive(ShotgunTimerHandle))
+	{
+		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
 	}
 }
 
-void AMech::AbilityReset()
+void AMech::StopAbility()
 {
-	canUseAbility = true;
+}
+
+void AMech::AbilityRecharge()
+{
+	CurrentShotgunShots++;
+	if (CurrentShotgunShots < MaxShotgunShots)
+	{
+		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
+	}
 }
 
 void AMech::giveAmmo(bool Max, int amount)
 {
-	if (Max)
+	if (Max || CurrentAmmo + amount >= MaxAmmo)
 	{
 		CurrentAmmo = MaxAmmo;
 	}
+	else if(CurrentAmmo + amount > 0)
+	{
+		CurrentAmmo += amount;
+	}
 	else
 	{
-		CurrentAmmo = (CurrentAmmo + amount < MaxAmmo) ? CurrentAmmo + amount : MaxAmmo;
+		CurrentAmmo = 0;
 	}
 }
 
 void AMech::giveHealth(bool Max, int amount)
 {
-	if (Max)
+	if (Max || CurrentHealth + amount >= MaxHealth)
 	{
 		CurrentHealth = MaxHealth;
 	}
+	else if (CurrentHealth + amount > 0)
+	{
+		CurrentHealth += amount;
+	}
 	else
 	{
-		CurrentHealth = (CurrentHealth + amount < MaxHealth) ? CurrentHealth + amount : MaxHealth;
+		CurrentHealth = 0;
 	}
 }
 
-void AMech::giveStamina(bool Max, int amount)
+void AMech::giveCharge(bool Max, int amount)
 {
-	if (Max)
+
+	if (Max || CurrentCharge + amount >= MaxCharge)
 	{
-		CurrentStamina = MaxStamina;
+		CurrentCharge = MaxCharge;
 	}
 	else
 	{
-		CurrentStamina = (CurrentStamina + amount < MaxStamina) ? CurrentStamina + amount : MaxStamina;
+		if (CurrentCharge + amount > 0)
+		{
+			CurrentCharge += amount;
+		}
+		else
+		{
+			CurrentCharge = 0;
+		}
+		
+		ChargeRechargeAllowed = false;
+
+		FTimerDelegate TimerCallback;
+		TimerCallback.BindLambda([=]
+			{
+				ChargeRechargeAllowed = true;
+			});
+
+		GetWorldTimerManager().SetTimer(ChargeRechargeTimer, TimerCallback, ChargeRechargeDelay, false);
 	}
 }
 
@@ -568,26 +635,26 @@ void AMech::Tick(float DeltaTime)
 		Gun->SetActorRotation(FRotator(0, GunRotation.Yaw, GunRotation.Roll));
 	}
 
-	if (Sprinting)
+	if (Sprinting && !(GetCharacterMovement()->Velocity.IsZero()))
 	{
-		if (CurrentStamina > 0)
+		if (CurrentCharge > 0)
 		{
-			CurrentStamina--;
+			giveCharge(false, -1);
 		}
 		else
 		{
 			StopSprint();
 		}
 	}
-	else if (CurrentStamina < MaxStamina)
+	else if (ChargeRechargeAllowed && CurrentCharge < MaxCharge)
 	{
-		if (CurrentStamina + StaminaRechargeRate < MaxStamina)
+		if (CurrentCharge + ChargeRechargeRate < MaxCharge)
 		{
-			CurrentStamina += StaminaRechargeRate;
+			CurrentCharge += ChargeRechargeRate;
 		}
 		else
 		{
-			CurrentStamina = MaxStamina;
+			CurrentCharge = MaxCharge;
 		}
 	}
 
