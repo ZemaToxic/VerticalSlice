@@ -25,46 +25,21 @@ void AMonsterBase::BeginPlay()
 	
 }
 
-//void AMonsterBase::DropItems_Implementation()
-//{
-//	// make sure the DropTable array is populated
-//	if (DropTable.Num() > 0)
-//	{
-//		// determine how many parts to drop
-//		int32 NumDrops = FMath::RandRange(MinNumOfDrops, MaxNumOfDrops);
-//
-//		for (int i = 0; i < NumDrops; i++)
-//		{
-//			// get the item to drop
-//			int32 DropIndex = FMath::RandRange(0, DropTable.Num() - 1);
-//
-//			ToSpawn = DropTable[DropIndex];
-//
-//			/*SpawnDrop();*/
-//		}
-//	}
-//}
-
 // Called when the monster takes damage
 void AMonsterBase::DamageMonster_Implementation(float _damage, FVector _hitLoc, FName _boneHit)
 {
 	health -= _damage;
-	
-	/*bool isCrit = false;
-
-	for each (FString Weakspot in WeakspotsScript)
-	{
-		if (Weakspot == _boneHit.ToString())
-		{
-			isCrit = true;
-			break;
-		}
-	}*/
 }
 
 // Called when the monster successfully hits the player
 void AMonsterBase::DamagePlayer_Implementation()
 {
+}
+
+// Called when Monster should be stunned, primarily used for the Ground Pound Ability
+void AMonsterBase::StunMonster_Implementation(float _Duration, FVector _LaunchVelocity)
+{
+
 }
 
 // Called every frame
