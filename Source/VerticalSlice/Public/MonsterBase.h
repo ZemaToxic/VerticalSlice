@@ -50,12 +50,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 		MonsterDrops MonsterDrop = MonsterDrops::SHARPFANG;
 
-	//UPROPERTY(EditAnywhere, Category = "Drops")
-	//	TArray <TSubclassOf<ADropsBase>> DropTable;
-
-	//UPROPERTY(EditAnywhere, Category = "Drops")
-	//	TSubclassOf<class ADropsBase> ToSpawn;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
 		TSubclassOf <class ADropsBase> DropActor;
 
@@ -83,6 +77,9 @@ public:
 	// overridden in BP to call the damage popup widget
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
 		void DamageMonster(float _damage, FVector _hitLoc, FName _boneHit);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
+		void StunMonster(float _Duration, FVector _LaunchVelocity);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
