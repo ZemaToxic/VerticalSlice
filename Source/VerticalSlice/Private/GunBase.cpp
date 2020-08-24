@@ -12,6 +12,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/SceneComponent.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine.h"
 
@@ -168,7 +169,8 @@ void AGunBase::ShootRaycasts_Implementation()
 				if (HitPS)
 				{
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
+					//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitPS, hit.Location);
 				}
 			}
 		}
@@ -223,11 +225,18 @@ void AGunBase::BeginPlay()
 
 float AGunBase::CalcDamage(float Dist)
 {
-	float RandDamage = FMath::FRandRange(Damage - DamageRange / 2, Damage + DamageRange / 2);
+	float RandDamage = FMath::FRandRange(Damage - (DamageRange / 2), Damage + (DamageRange / 2));
 
 	float OptimalDist = OptimalRangePercent * MaxRange;
 
-	float Falloff = DamageFalloff * FMath::Sqrt(FMath::Clamp(((Dist - OptimalDist) / (MaxRange - OptimalDist)), 0.0f, 1.0f));
+	float NormalisedDist = FMath::Clamp(((Dist - OptimalDist) / (MaxRange - OptimalDist)), 0.0f, 1.0f);
+	float Falloff = 0;
+	if (FalloffCurve > 0 && FalloffCurve != 1)
+	{
+		Falloff = DamageFalloff * ((powf(FalloffCurve, NormalisedDist) - 1) / (FalloffCurve - 1));
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), DamageFalloff));
 
 	return RandDamage - Falloff;
 }
