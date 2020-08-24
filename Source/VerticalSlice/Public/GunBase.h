@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"
 #include "GunBase.generated.h"
 
 
@@ -63,6 +64,9 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float DamageFalloff = 20;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float FalloffCurve = 0.01;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		class AMech* AttachedMech = 0;
 
@@ -70,7 +74,7 @@ class VERTICALSLICE_API AGunBase : public AActor
 		UAnimMontage* shootingAnimation = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects")
-		UParticleSystem* HitPS = 0;
+		UNiagaraSystem* HitPS = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
 		FVector shotStart;
