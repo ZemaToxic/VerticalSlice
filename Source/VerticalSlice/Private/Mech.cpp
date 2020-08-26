@@ -182,7 +182,7 @@ void AMech::Landed(const FHitResult& Hit)
 
 bool AMech::GroundPound()
 {
-	if (!GetCharacterMovement()->IsFalling()) { return false; }
+	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound]) { return false; }
 	IsGroundPounding = true;
 	GetCharacterMovement()->GravityScale = GroundPoundGravityScale;
 	GetCharacterMovement()->StopMovementImmediately();
@@ -320,14 +320,17 @@ void AMech::Mount_Implementation()
 
 void AMech::Dash()
 {
-	if (CurrentCharge - DashChargeCost > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+	if (FeatureUpgradesMap[FeatureUpgrades::Dash])
 	{
-		//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
-		FVector launchDir = GetCharacterMovement()->Velocity;
-		launchDir.Normalize();
-		CurrentCharge -= DashChargeCost;
-		giveCharge(false, -DashChargeCost);
-		LaunchCharacter(launchDir * DashForce, false, false);
+		if (CurrentCharge - DashChargeCost > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+		{
+			//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
+			FVector launchDir = GetCharacterMovement()->Velocity;
+			launchDir.Normalize();
+			CurrentCharge -= DashChargeCost;
+			giveCharge(false, -DashChargeCost);
+			LaunchCharacter(launchDir * DashForce, false, false);
+		}
 	}
 }
 
@@ -346,14 +349,15 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	case FeatureUpgrades::GroundPound:
 		break;
 	case FeatureUpgrades::NoChargeRegenDelay:
+		ChargeRechargeDelay = 0;
 		break;
 	case FeatureUpgrades::HPRegen:
 		break;
-	case FeatureUpgrades::HPPotion:
+	case FeatureUpgrades::HPPotion://to do
 		break;
-	case FeatureUpgrades::Flamethrower:
+	case FeatureUpgrades::Flamethrower://to do
 		break;
-	case FeatureUpgrades::RocketLauncher:
+	case FeatureUpgrades::RocketLauncher://to do
 		break;
 	default:
 		break;
@@ -459,12 +463,15 @@ void AMech::MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<S
 
 void AMech::Sprint()
 {
-	if (Aiming)
+	if (FeatureUpgradesMap[FeatureUpgrades::Boosters])
 	{
-		StopAim();
+		if (Aiming)
+		{
+			StopAim();
+		}
+		GetCharacterMovement()->MaxWalkSpeed = SprintWalkSpeed;
+		Sprinting = true;
 	}
-	GetCharacterMovement()->MaxWalkSpeed = SprintWalkSpeed;
-	Sprinting = true;
 }
 
 void AMech::StopSprint()
@@ -620,14 +627,17 @@ void AMech::Dismount_Implementation()
 
 void AMech::UseAbility()
 {
-	if (CurrentShotgunShots > 0)
+	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun])
 	{
-		CurrentShotgunShots--;
-		Shotgun->ShootRaycasts();
-	}
-	if (!GetWorldTimerManager().IsTimerActive(ShotgunTimerHandle))
-	{
-		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
+		if (CurrentShotgunShots > 0)
+		{
+			CurrentShotgunShots--;
+			Shotgun->ShootRaycasts();
+		}
+		if (!GetWorldTimerManager().IsTimerActive(ShotgunTimerHandle))
+		{
+			GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
+		}
 	}
 }
 
@@ -784,11 +794,11 @@ void AMech::Tick(float DeltaTime)
 		}
 	}
 
-	if (HealthRechargeAllowed && CurrentHealth < MaxHealth)
+	if (HealthRechargeAllowed && CurrentHealth < MaxHealth && FeatureUpgradesMap[FeatureUpgrades::HPRegen])
 	{
-		if (CurrentHealth + HealthRechargeRate < MaxHealth)
+		if (CurrentHealth + HealthRechargeRatePerSecond < MaxHealth)
 		{
-			CurrentHealth += HealthRechargeRate;
+			CurrentHealth += HealthRechargeRatePerSecond * DeltaTime;
 		}
 		else
 		{

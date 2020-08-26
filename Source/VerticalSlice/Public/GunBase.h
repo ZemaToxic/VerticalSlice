@@ -12,16 +12,15 @@ UCLASS()
 class VERTICALSLICE_API AGunBase : public AActor
 {
 	GENERATED_BODY()
-
+		
+	//components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Mesh", meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* GunMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Muzzle", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* Muzzle;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
-		bool Shooting = false;
-
+	//gun behaviour variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float MaxRange = 100.0f;
 
@@ -43,18 +42,6 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		bool Automatic = false;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
-		float ShootingTimer = 0;
-
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
-		float SecondsBetweenShots = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
-		int CurrentMagsize = 30;
-
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		int MaxMagsize = 30;
-
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float Damage = 30;
 
@@ -67,15 +54,42 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		float FalloffCurve = 0.01;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		bool DestroysArmourPlate = false;
+
+	//gun internal properties
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
+		bool Shooting = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
+		float ShootingTimer = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
+		float SecondsBetweenShots = 0;
+
+
+	//gun ammo
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
+		int CurrentMagsize = 30;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+		int MaxMagsize = 30;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+		bool usesBullets = true;
+
+	//mech
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		class AMech* AttachedMech = 0;
 
+	//effects
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Effects")
 		UAnimMontage* shootingAnimation = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects")
 		UNiagaraSystem* HitPS = 0;
 
+	//variables for particle effects
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
 		FVector shotStart;
 
@@ -84,12 +98,6 @@ class VERTICALSLICE_API AGunBase : public AActor
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
 		TArray<FHitResult> hitResults;
-
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		bool usesBullets = true;
-
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
-		bool DestroysArmourPlate = false;
 public:
 
 	FCollisionQueryParams ignoredActors;

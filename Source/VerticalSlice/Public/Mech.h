@@ -173,9 +173,9 @@ private:
 		float HealthWarningThreshold = 0.33f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
-		float HealthRechargeRate = 0.0f;
+		float HealthRechargeRatePerSecond = 100.0f;
 
-	float DefaultHealthRecharge = 0.0f;
+	float DefaultHealthRecharge = 100.0f;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		bool HealthRechargeAllowed = true;
@@ -295,8 +295,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float AirControlTemp = 0;
-
-
 
 public:
 	//variable/s the player needs to see and change
