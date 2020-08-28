@@ -145,10 +145,10 @@ private:
 		float ShotgunCooldown = 2.0f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
-		int MaxShotgunShots = 2;
+		int MaxShotgunCharges = 1;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
-		int CurrentShotgunShots = 2;
+		int CurrentShotgunCharges = 1;
 
 	///resource variables
 	//ammo
@@ -158,8 +158,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
 		int MaxAmmo = 100;
 
-	int DefaultAmmo = 100;
-
 	//health
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		float CurrentHealth = 300;
@@ -167,15 +165,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		float MaxHealth = 300;
 
-	int DefaultHealth = 300;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		float HealthWarningThreshold = 0.33f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
-		float HealthRechargeRatePerSecond = 100.0f;
-
-	float DefaultHealthRecharge = 100.0f;
+		float HealthRechargeRatePerSecond = 15.0f;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		bool HealthRechargeAllowed = true;
@@ -193,12 +187,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		float MaxCharge = 600;
 
-	int DefaultCharge = 600;
-
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
-		float ChargeRechargeRate = 1.0f;
-
-	float DefaultChargeRecharge = 1.0f;
+		float ChargeRechargeRatePerSecond = 60.0f;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		bool ChargeRechargeAllowed = true;
@@ -257,13 +247,12 @@ private:
 		bool reloading = false;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | Animation")
-		float currentReloadPoint = 4.0f;
+		float ReloadPoint = 4.0f;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Watchables | Animation")
-		float reloadPoint = 4.0f;
+	float DefaultReloadPoint = 4.0f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation")
-		float reloadAnimationRate = 2.0f;
+		float ReloadSpeed = 2.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		bool JumpInput = false;
@@ -296,6 +285,28 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float AirControlTemp = 0;
 
+	//Upgrades
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float ReloadSpeedIncrement = 0.4f;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades", meta = (AllowPrivateAccess = "true"))
+		int AmmoIncrement = 40;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades", meta = (AllowPrivateAccess = "true"))
+		int ShotgunChargesIncrement = 1;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float HealthIncrement = 60;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float ChargeIncrement = 120;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float HealthRegenIncrement = 3;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float ChargeRegenIncrement = 12;
+
 public:
 	//variable/s the player needs to see and change
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Mount")
@@ -308,8 +319,6 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-
-	void SetDefaults();
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Init")
 		void initalise(class AVerticalSliceCharacter* Player);
@@ -377,9 +386,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void UpgradeStats(StatUpgrades _Upgrade, int _Amount);
-
-	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void UpgradeStatsAdd(StatUpgrades _Upgrade, int _Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap);

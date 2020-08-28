@@ -70,10 +70,10 @@ class VERTICALSLICE_API AGunBase : public AActor
 
 	//gun ammo
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
-		int CurrentMagsize = 30;
+		int CurrentClipSize = 30;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		int MaxMagsize = 30;
+		int MaxClipSize = 30;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
 		bool usesBullets = true;
@@ -98,6 +98,20 @@ class VERTICALSLICE_API AGunBase : public AActor
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
 		TArray<FHitResult> hitResults;
+
+	//Upgrade Values
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
+		float DamageUpgradeIncrement = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
+		float ClipSizeUpgradeIncrement = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
+		float BulletsPerShotUpgradeIncrement = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
+		float RangeUpgradeIncrement = 0;
+
 public:
 
 	FCollisionQueryParams ignoredActors;
@@ -117,12 +131,12 @@ public:
 		void ShootRaycasts();
 
 	void Reload(int& ammoPool);
-	bool hasMaxMag() { return CurrentMagsize == MaxMagsize; }
+	bool hasMaxMag() { return CurrentClipSize == MaxClipSize; }
 
-	void UpgradeDamage(float _Multiplier);
-	void UpgradeClipSize(float _Multiplier);
-	void UpgradeBulletsPerShot(float _Multiplier);
-	void UpgradeRange(float _Multiplier);
+	void UpgradeDamage(float _Amount);
+	void UpgradeClipSize(float _Amount);
+	void UpgradeBulletsPerShot(float _Amount);
+	void UpgradeRange(float _Amount);
 
 protected:
 	virtual void BeginPlay() override;

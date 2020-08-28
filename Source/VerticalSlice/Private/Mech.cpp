@@ -77,16 +77,15 @@ void AMech::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	
 	GetCharacterMovement()->GravityScale = BaseGravityScale;
+
+	DefaultReloadPoint = ReloadPoint;
+
+	ReloadPoint = DefaultReloadPoint / ReloadSpeed;
 	/*FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	PlayerChar = GetWorld()->SpawnActor<AVerticalSliceCharacter>(PlayerClass, FVector(0,0,0), GetActorRotation(), spawnParams);
 	PlayerChar->initalise(this);*/
-}
-
-void AMech::SetDefaults()
-{
-
 }
 
 // Called to bind functionality to input
@@ -349,7 +348,6 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	case FeatureUpgrades::GroundPound:
 		break;
 	case FeatureUpgrades::NoChargeRegenDelay:
-		ChargeRechargeDelay = 0;
 		break;
 	case FeatureUpgrades::HPRegen:
 		break;
@@ -370,70 +368,44 @@ void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount = 1)
 	switch (_Upgrade)
 	{
 	case StatUpgrades::RifleDamage:
+		Gun->UpgradeDamage(_Amount);
 		break;
 	case StatUpgrades::RifleReload:
+		ReloadSpeed += ReloadSpeedIncrement * _Amount;
+		ReloadPoint = DefaultReloadPoint / ReloadSpeed;
 		break;
 	case StatUpgrades::RifleClipSize:
+		Gun->UpgradeClipSize(_Amount);
 		break;
 	case StatUpgrades::RifleReserveAmmo:
+		MaxAmmo += AmmoIncrement * _Amount;
+		CurrentAmmo = MaxAmmo;
 		break;
 	case StatUpgrades::ShotgunDamage:
+		Shotgun->UpgradeDamage(_Amount);
 		break;
 	case StatUpgrades::ShotgunCharges:
+		MaxShotgunCharges += ShotgunChargesIncrement * _Amount;
 		break;
 	case StatUpgrades::ShotgunPellets:
+		Shotgun->UpgradeBulletsPerShot(_Amount);
 		break;
 	case StatUpgrades::ShotgunRange:
+		Shotgun->UpgradeRange(_Amount);
 		break;
 	case StatUpgrades::MechMaxHP:
+		MaxHealth += HealthIncrement * _Amount;
+		CurrentHealth = MaxHealth;
 		break;
 	case StatUpgrades::MechMaxCharge:
+		MaxCharge += ChargeIncrement * _Amount;
+		CurrentCharge = MaxCharge;
 		break;
 	case StatUpgrades::MechHPRegen:
+		HealthRechargeRatePerSecond += HealthRegenIncrement * _Amount;
 		break;
 	case StatUpgrades::MechChargeRegen:
-		break;
-	case StatUpgrades::FlamethrowerDamage:
-		break;
-	case StatUpgrades::FlamethrowerFireDamage:
-		break;
-	case StatUpgrades::RocketAmount:
-		break;
-	case StatUpgrades::RocketRadius:
-		break;
-	default:
-		break;
-	}
-}
-
-void AMech::UpgradeStatsAdd(StatUpgrades _Upgrade, int _Amount)
-{
-	StatUpgradesMap[_Upgrade] += _Amount;
-	switch (_Upgrade)
-	{
-	case StatUpgrades::RifleDamage:
-		break;
-	case StatUpgrades::RifleReload:
-		break;
-	case StatUpgrades::RifleClipSize:
-		break;
-	case StatUpgrades::RifleReserveAmmo:
-		break;
-	case StatUpgrades::ShotgunDamage:
-		break;
-	case StatUpgrades::ShotgunCharges:
-		break;
-	case StatUpgrades::ShotgunPellets:
-		break;
-	case StatUpgrades::ShotgunRange:
-		break;
-	case StatUpgrades::MechMaxHP:
-		break;
-	case StatUpgrades::MechMaxCharge:
-		break;
-	case StatUpgrades::MechHPRegen:
-		break;
-	case StatUpgrades::MechChargeRegen:
+		ChargeRechargeRatePerSecond += ChargeRegenIncrement * _Amount;
 		break;
 	case StatUpgrades::FlamethrowerDamage:
 		break;
@@ -562,8 +534,7 @@ void AMech::Reload()
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!(mechAnim->Montage_IsPlaying(ReloadAnim)))
 		{
-			mechAnim->Montage_Play(ReloadAnim, reloadAnimationRate);
-			currentReloadPoint = reloadPoint / reloadAnimationRate;
+			mechAnim->Montage_Play(ReloadAnim, ReloadSpeed);
 			reloading = true;
 		}
 	}
@@ -629,9 +600,9 @@ void AMech::UseAbility()
 {
 	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun])
 	{
-		if (CurrentShotgunShots > 0)
+		if (CurrentShotgunCharges > 0)
 		{
-			CurrentShotgunShots--;
+			CurrentShotgunCharges--;
 			Shotgun->ShootRaycasts();
 		}
 		if (!GetWorldTimerManager().IsTimerActive(ShotgunTimerHandle))
@@ -647,8 +618,8 @@ void AMech::StopAbility()
 
 void AMech::AbilityRecharge()
 {
-	CurrentShotgunShots++;
-	if (CurrentShotgunShots < MaxShotgunShots)
+	CurrentShotgunCharges++;
+	if (CurrentShotgunCharges < MaxShotgunCharges)
 	{
 		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
 	}
@@ -718,16 +689,18 @@ void AMech::giveCharge(bool Max, int amount)
 		{
 			CurrentCharge = 0;
 		}
-		
-		ChargeRechargeAllowed = false;
+		if (!FeatureUpgradesMap[FeatureUpgrades::NoChargeRegenDelay])
+		{
+			ChargeRechargeAllowed = false;
 
-		FTimerDelegate TimerCallback;
-		TimerCallback.BindLambda([=]
-			{
-				ChargeRechargeAllowed = true;
-			});
+			FTimerDelegate TimerCallback;
+			TimerCallback.BindLambda([=]
+				{
+					ChargeRechargeAllowed = true;
+				});
 
-		GetWorldTimerManager().SetTimer(ChargeRechargeTimer, TimerCallback, ChargeRechargeDelay, false);
+			GetWorldTimerManager().SetTimer(ChargeRechargeTimer, TimerCallback, ChargeRechargeDelay, false);
+		}
 	}
 }
 
@@ -784,9 +757,9 @@ void AMech::Tick(float DeltaTime)
 	}
 	else if (ChargeRechargeAllowed && CurrentCharge < MaxCharge)
 	{
-		if (CurrentCharge + ChargeRechargeRate < MaxCharge)
+		if (CurrentCharge + ChargeRechargeRatePerSecond * DeltaTime < MaxCharge)
 		{
-			CurrentCharge += ChargeRechargeRate;
+			CurrentCharge += ChargeRechargeRatePerSecond * DeltaTime;
 		}
 		else
 		{
@@ -796,7 +769,7 @@ void AMech::Tick(float DeltaTime)
 
 	if (HealthRechargeAllowed && CurrentHealth < MaxHealth && FeatureUpgradesMap[FeatureUpgrades::HPRegen])
 	{
-		if (CurrentHealth + HealthRechargeRatePerSecond < MaxHealth)
+		if (CurrentHealth + HealthRechargeRatePerSecond * DeltaTime < MaxHealth)
 		{
 			CurrentHealth += HealthRechargeRatePerSecond * DeltaTime;
 		}
@@ -812,7 +785,7 @@ void AMech::Tick(float DeltaTime)
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (mechAnim->Montage_IsPlaying(ReloadAnim))
 		{
-			if (mechAnim->Montage_GetPosition(ReloadAnim) > currentReloadPoint)
+			if (mechAnim->Montage_GetPosition(ReloadAnim) > ReloadPoint)
 			{
 				if (Gun)
 				{
