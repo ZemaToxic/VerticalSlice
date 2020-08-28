@@ -81,6 +81,7 @@ void AMech::BeginPlay()
 	DefaultReloadPoint = ReloadPoint;
 
 	ReloadPoint = DefaultReloadPoint / ReloadSpeed;
+
 	/*FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -430,6 +431,17 @@ void AMech::MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<S
 	for (auto& Stat : _StatUpgradesMap)
 	{
 		UpgradeStats(Stat.Key, Stat.Value);
+	}
+}
+
+void AMech::UpgradeStatsUsingDefaults()
+{
+	int CurrentValue;
+	for (auto& Stat : StatUpgradesMap)
+	{
+		CurrentValue = Stat.Value;
+		StatUpgradesMap[Stat.Key] = 0;
+		UpgradeStats(Stat.Key, CurrentValue);
 	}
 }
 
