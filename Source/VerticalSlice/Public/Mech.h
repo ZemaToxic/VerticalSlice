@@ -214,11 +214,36 @@ private:
 		class AVerticalSliceCharacter* PlayerChar = 0;
 
 	///Upgrade variables
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		TMap<FeatureUpgrades,bool> FeatureUpgradesMap;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
+		TMap<FeatureUpgrades, bool> FeatureUpgradesMap = {
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::Boosters, false),
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::Shotgun, false),
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::Dash, false), 
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::GroundPound, false), 
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::NoChargeRegenDelay, false),
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::HPRegen, false), 
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::HPPotion, false), 
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::Flamethrower, false),
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::RocketLauncher, false), };
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		TMap<StatUpgrades, int> StatUpgradesMap;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
+		TMap<StatUpgrades, int> StatUpgradesMap = {
+		TPair<StatUpgrades, int>(StatUpgrades::RifleDamage, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RifleClipSize, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RifleReload, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RifleReserveAmmo, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::ShotgunDamage, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::ShotgunCharges, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::ShotgunPellets, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::ShotgunRange, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::MechMaxHP, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::MechMaxCharge, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::MechHPRegen, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::MechChargeRegen , 0),
+		TPair<StatUpgrades, int>(StatUpgrades::FlamethrowerDamage, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::FlamethrowerFireDamage, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RocketAmount, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RocketRadius, 0), };
 
 	///animations
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
@@ -389,6 +414,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void UpgradeStatsUsingDefaults();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Health")
 		void Damage(float dmg, FVector Loc);
