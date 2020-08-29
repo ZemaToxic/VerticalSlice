@@ -47,7 +47,7 @@ void AGunBase::Shoot()
 
 	SecondsBetweenShots = 1 / ShotsPerSecond;
 
-	if (CurrentMagsize <= 0 && usesBullets) {
+	if (CurrentClipSize <= 0 && usesBullets) {
 		if (AttachedMech)
 		{
 			AttachedMech->Reload();
@@ -78,7 +78,7 @@ void AGunBase::setShootAnim(UAnimMontage* newAnim)
 void AGunBase::ShootRaycasts_Implementation()
 {
 	
-	CurrentMagsize--;
+	CurrentClipSize--;
 
 	if (shootingAnimation)
 	{
@@ -179,36 +179,40 @@ void AGunBase::ShootRaycasts_Implementation()
 
 void AGunBase::Reload(int& ammoPool)
 {
-	if (CurrentMagsize <= MaxMagsize && !Shooting)
+	if (CurrentClipSize <= MaxClipSize && !Shooting)
 	{
-		if (ammoPool - (MaxMagsize - CurrentMagsize) >= 0)
+		if (ammoPool - (MaxClipSize - CurrentClipSize) >= 0)
 		{
-			ammoPool -= MaxMagsize - CurrentMagsize;
-			CurrentMagsize = MaxMagsize;
+			ammoPool -= MaxClipSize - CurrentClipSize;
+			CurrentClipSize = MaxClipSize;
 		}
 		else
 		{
-			CurrentMagsize += ammoPool;
+			CurrentClipSize += ammoPool;
 			ammoPool = 0;
 		}
 		SecondsBetweenShots = 0;
 	}
 }
 
-void AGunBase::UpgradeDamage(float _Multiplier)
+void AGunBase::UpgradeDamage(float _Amount = 1)
 {
+	Damage += DamageUpgradeIncrement * _Amount;
 }
 
-void AGunBase::UpgradeClipSize(float _Multiplier)
+void AGunBase::UpgradeClipSize(float _Amount = 1)
 {
+	MaxClipSize += ClipSizeUpgradeIncrement * _Amount;
 }
 
-void AGunBase::UpgradeBulletsPerShot(float _Multiplier)
+void AGunBase::UpgradeBulletsPerShot(float _Amount = 1)
 {
+	BulletsPerShot += BulletsPerShotUpgradeIncrement * _Amount;
 }
 
-void AGunBase::UpgradeRange(float _Multiplier)
+void AGunBase::UpgradeRange(float _Amount = 1)
 {
+	MaxRange += RangeUpgradeIncrement * _Amount;
 }
 
 void AGunBase::BeginPlay()
@@ -251,7 +255,7 @@ void AGunBase::Tick(float DeltaTime)
 	}
 	else if (Shooting)
 	{
-		if (CurrentMagsize <= 0) {
+		if (CurrentClipSize <= 0) {
 			Shooting = false;
 			return;
 		}
