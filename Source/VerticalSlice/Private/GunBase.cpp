@@ -240,7 +240,7 @@ float AGunBase::CalcDamage(float Dist)
 		Falloff = DamageFalloff * ((powf(FalloffCurve, NormalisedDist) - 1) / (FalloffCurve - 1));
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), DamageFalloff));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), DamageFalloff));
 
 	return RandDamage - Falloff;
 }

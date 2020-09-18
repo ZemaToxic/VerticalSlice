@@ -13,6 +13,7 @@ class VERTICALSLICE_API AGunBase : public AActor
 {
 	GENERATED_BODY()
 		
+protected:
 	//components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Mesh", meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* GunMesh;
@@ -122,7 +123,7 @@ public:
 
 	void init(class AMech* mech);
 
-	void Shoot();
+	virtual void Shoot();
 	void StopShoot();
 
 	void setShootAnim(class UAnimMontage* newAnim);
