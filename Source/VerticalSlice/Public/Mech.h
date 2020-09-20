@@ -413,7 +413,7 @@ public:
 		void UpgradeStats(StatUpgrades _Upgrade, int _Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap);
+		void MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap, bool& _Completed);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
 		void UpgradeStatsUsingDefaults();
