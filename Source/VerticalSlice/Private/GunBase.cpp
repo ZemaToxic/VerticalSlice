@@ -33,11 +33,16 @@ AGunBase::AGunBase()
 	Muzzle->SetHiddenInGame(true);
 }
 
-void AGunBase::init(AMech* mech)
+void AGunBase::init(AMech* _Mech, TSubclassOf<AGunBase> _GunClass)
 {
-	if (mech)
+	if (_Mech)
 	{
-		AttachedMech = mech;
+		AttachedMech = _Mech;
+	}
+
+	if (_GunClass)
+	{
+		DefaultGun = _GunClass.GetDefaultObject();
 	}
 }
 
@@ -47,8 +52,8 @@ void AGunBase::Shoot()
 
 	SecondsBetweenShots = 1 / ShotsPerSecond;
 
-	if (CurrentClipSize <= 0 && usesBullets) {
-		if (AttachedMech)
+	if (CurrentClipSize <= 0) {
+		if (IsMainGun && AttachedMech)
 		{
 			AttachedMech->Reload();
 		}
@@ -101,12 +106,12 @@ void AGunBase::ShootRaycasts_Implementation()
 	hitResults.Empty();
 	FHitResult currHit;
 
+	shotStart = Muzzle->GetComponentLocation();
+
 	int j = 0;
 
 	for (int i = 0; i < BulletsPerShot; i++)
 	{
-		shotStart = Muzzle->GetComponentLocation();
-
 		shotEnd.Add((FVector)0);
 
 		float randY = FMath::FRandRange(LowerSpread.Y, UpperSpread.Y);
@@ -177,42 +182,62 @@ void AGunBase::ShootRaycasts_Implementation()
 	}
 }
 
-void AGunBase::Reload(int& ammoPool)
+void AGunBase::ReloadUsingAmmoPool(int& _AmmoPool)
 {
 	if (CurrentClipSize <= MaxClipSize && !Shooting)
 	{
-		if (ammoPool - (MaxClipSize - CurrentClipSize) >= 0)
+		if (_AmmoPool - (MaxClipSize - CurrentClipSize) >= 0)
 		{
-			ammoPool -= MaxClipSize - CurrentClipSize;
+			_AmmoPool -= MaxClipSize - CurrentClipSize;
 			CurrentClipSize = MaxClipSize;
 		}
 		else
 		{
-			CurrentClipSize += ammoPool;
-			ammoPool = 0;
+			CurrentClipSize += _AmmoPool;
+			_AmmoPool = 0;
 		}
 		SecondsBetweenShots = 0;
 	}
 }
 
-void AGunBase::UpgradeDamage(float _Amount = 1)
+bool AGunBase::Reload(int _Amount)
 {
-	Damage += DamageUpgradeIncrement * _Amount;
+	if (CurrentClipSize <= MaxClipSize && !Shooting)
+	{
+		bool isClipFull = (_Amount + CurrentClipSize >= MaxClipSize);
+		if (isClipFull)
+		{
+			CurrentClipSize = MaxClipSize;
+		}
+		else
+		{
+			CurrentClipSize += _Amount;
+		}
+		SecondsBetweenShots = 0;
+		return isClipFull;
+	}
+	return true;
 }
 
-void AGunBase::UpgradeClipSize(float _Amount = 1)
+void AGunBase::UpgradeDamage(float _Amount)
 {
-	MaxClipSize += ClipSizeUpgradeIncrement * _Amount;
+	Damage = DefaultGun->Damage + DamageUpgradeIncrement * _Amount;
 }
 
-void AGunBase::UpgradeBulletsPerShot(float _Amount = 1)
+void AGunBase::UpgradeClipSize(float _Amount)
 {
-	BulletsPerShot += BulletsPerShotUpgradeIncrement * _Amount;
+	MaxClipSize = DefaultGun->MaxClipSize + ClipSizeUpgradeIncrement * _Amount;
+	CurrentClipSize = MaxClipSize;
 }
 
-void AGunBase::UpgradeRange(float _Amount = 1)
+void AGunBase::UpgradeBulletsPerShot(float _Amount)
 {
-	MaxRange += RangeUpgradeIncrement * _Amount;
+	BulletsPerShot = DefaultGun->BulletsPerShot + BulletsPerShotUpgradeIncrement * _Amount;
+}
+
+void AGunBase::UpgradeRange(float _Amount)
+{
+	MaxRange = DefaultGun->MaxRange + RangeUpgradeIncrement * _Amount;
 }
 
 void AGunBase::BeginPlay()
@@ -262,6 +287,6 @@ void AGunBase::Tick(float DeltaTime)
 		ShootRaycasts();
 		ShootingTimer = 0.0f;
 	}
-	
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), DefaultGun->MaxRange));
 }
 

@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/Actor.h"
 #include "NiagaraSystem.h"
+
 #include "GunBase.generated.h"
 
 
@@ -20,6 +22,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Muzzle", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* Muzzle;
+
+	//defaults
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Default")
+		AGunBase* DefaultGun = 0;
 
 	//gun behaviour variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
@@ -77,7 +83,7 @@ protected:
 		int MaxClipSize = 30;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		bool usesBullets = true;
+		bool IsMainGun = true;
 
 	//mech
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
@@ -121,7 +127,7 @@ public:
 	// Sets default values for this actor's properties
 	AGunBase();
 
-	void init(class AMech* mech);
+	void init(class AMech* _Mech, TSubclassOf<AGunBase> GunClass);
 
 	virtual void Shoot();
 	void StopShoot();
@@ -131,7 +137,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Shoot")
 		void ShootRaycasts();
 
-	void Reload(int& ammoPool);
+	void ReloadUsingAmmoPool(int& _AmmoPool);
+	bool Reload(int _Amount);
 	bool hasMaxMag() { return CurrentClipSize == MaxClipSize; }
 
 	void UpgradeDamage(float _Amount);
