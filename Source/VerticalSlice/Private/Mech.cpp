@@ -449,8 +449,11 @@ void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount, bool _Add)
 	}
 }
 
-void AMech::MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap)
+void AMech::MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap, bool &_Completed)
 {
+	_Completed = (Gun && Shotgun);
+	if (!_Completed) { return; }
+
 	for (auto& Feature : _FeatureUpgradesMap)
 	{
 		UpgradeFeatures(Feature.Key, Feature.Value);
