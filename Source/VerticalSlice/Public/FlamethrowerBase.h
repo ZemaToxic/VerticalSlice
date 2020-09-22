@@ -9,6 +9,22 @@
 
 #include "FlamethrowerBase.generated.h"
 
+USTRUCT()
+struct FOnFire {
+
+	GENERATED_USTRUCT_BODY()
+
+		FOnFire() :MaxTicks(0), CurrentTicks(0), Fire(0) {}
+		FOnFire(int _MaxTicks, int _CurrentTicks, UNiagaraComponent* _Fire) :MaxTicks(_MaxTicks), CurrentTicks(_CurrentTicks), Fire(_Fire) {}
+
+	UPROPERTY(VisibleAnywhere, Category = "OnFire")
+		int MaxTicks = 0;
+	UPROPERTY(VisibleAnywhere, Category = "OnFire")
+		int CurrentTicks = 0;
+	UPROPERTY(VisibleAnywhere, Category = "OnFire")
+		UNiagaraComponent* Fire = 0;
+};
+
 /**
  * 
  */
@@ -20,9 +36,9 @@ class VERTICALSLICE_API AFlamethrowerBase : public AGunBase
 private:
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Monster Lists", meta = (AllowPrivateAccess = "true"))
 		TMap<AMonsterBase*, int> HitMonsters;
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables |	Monster Lists", meta = (AllowPrivateAccess = "true"))
-		TMap<AMonsterBase*, TPair<int,int>> IgnitedMonsters;
 
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Monster Lists", meta = (AllowPrivateAccess = "true"))
+		TMap<AMonsterBase*, FOnFire> IgnitedMonsters;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Fire Damage", meta = (AllowPrivateAccess = "true"))
 		float FlameTickRate = 0.2f;
@@ -56,6 +72,16 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Range", meta = (AllowPrivateAccess = "true"))
 		float FlameRadius = 50;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* ShootingEffect = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Effects", meta = (AllowPrivateAccess = "true"))
+		UNiagaraComponent* CurrentShootingEffect = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* OnFireEffect = 0;
+
 
 public:
 
