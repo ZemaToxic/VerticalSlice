@@ -31,31 +31,63 @@ void ABaseEnemySpawner::SpawnEnemies(int _enemyCount)
 
 	for (int i = 0; i < _enemyCount; i++)
 	{
+		// Give a random location per Enemy.
 		FVector CurrentLocation = GetActorLocation();
 		CurrentLocation.X = CurrentLocation.X + FMath::FRandRange(-500.0f, 500.0f);
 		CurrentLocation.Y = CurrentLocation.Y + FMath::FRandRange(-1000.0f, 1000.0f);
 		CurrentLocation.Z = CurrentLocation.Z + 250.0f;
-
+		// Make sure all enemies start facing the same direction as the spawner.
 		FRotator CurrentRotation = GetActorRotation();
-
+		// Conglomerate those two ^ into a FTransform.
 		FTransform SpawnLocation;
 		SpawnLocation.SetLocation(CurrentLocation);
 		SpawnLocation.SetRotation(CurrentRotation.Quaternion());
-
+		// Set Spawn parameters, (Adjust spawn location if colliding with another Actor)
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-		//UClass* enemyToSpawn = LoadObject<UClass>(this, *FString("Blueprint'/Game/Blueprints/Monsters/BP_MonsterA.BP_MonsterA'"));
-
+		// Get the AI Actor to spawn from its Blueprint
 		UObject* SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Monsters/BP_MonsterA.BP_MonsterA")));
 		UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
-
+		// Double Check the world exists to prevent NULL access errors.
 		if (GetWorld())
 		{
-			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("World Exists")); }
+			// Spawn an enemy with provided information above, and make sure its AIController is enabled.
+			AMonsterBase* spawnedEnemy = GetWorld()->SpawnActor<AMonsterBase>(GeneratedBP->GeneratedClass, SpawnLocation, SpawnInfo);
+			spawnedEnemy->SpawnDefaultController();
+			spawnedEnemy->health = 15;
+		}
+	}
+}
+
+void ABaseEnemySpawner::SpawnSpecial(int _enemyCount)
+{
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("BaseSpawner Spawning Special")); }
+
+	for (int i = 0; i < _enemyCount; i++)
+	{
+		// Give a random location per Enemy.
+		FVector CurrentLocation = GetActorLocation();
+		CurrentLocation.X = CurrentLocation.X + FMath::FRandRange(-250.0f, 250.0f);
+		CurrentLocation.Y = CurrentLocation.Y + FMath::FRandRange(-250.0f, 250.0f);
+		CurrentLocation.Z = CurrentLocation.Z + 250.0f;
+		// Make sure all enemies start facing the same direction as the spawner.
+		FRotator CurrentRotation = GetActorRotation();
+		// Conglomerate those two ^ into a FTransform.
+		FTransform SpawnLocation;
+		SpawnLocation.SetLocation(CurrentLocation);
+		SpawnLocation.SetRotation(CurrentRotation.Quaternion());
+		// Set Spawn parameters, (Adjust spawn location if colliding with another Actor)
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		// Get the AI Actor to spawn from its Blueprint
+		UObject* SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Monsters/BP_MonsterA.BP_MonsterB")));
+		UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
+		// Double Check the world exists to prevent NULL access errors.
+		if (GetWorld())
+		{
+			// Spawn an enemy with provided information above, and make sure its AIController is enabled.
 			AMonsterBase* spawnedEnemy = GetWorld()->SpawnActor<AMonsterBase>(GeneratedBP->GeneratedClass, SpawnLocation, SpawnInfo);
 			spawnedEnemy->SpawnDefaultController();
 		}
 	}
 }
-

@@ -6,6 +6,9 @@
 #include "GameFramework/GameModeBase.h"
 #include "GM_HordeMode.generated.h"
 
+class ABaseEnemySpawner;
+class AMonsterBase;
+
 /**
  * 
  */
@@ -16,6 +19,10 @@ class VERTICALSLICE_API AGM_HordeMode : public AGameModeBase
 
 protected:
 	AGM_HordeMode();
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ABaseEnemySpawner> ClassToFind;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AMonsterBase> EnemyToFind;
 
 public:
 	// Round Data
@@ -27,6 +34,10 @@ public:
 		int iRoundCountdown;
 	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
 		int iShopCountdown;
+	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
+		int iCurrentEnemies;
+	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
+		int iInitialEnemies;
 
 	// Game Data
 	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
@@ -38,10 +49,21 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
 		float fEnemyDamageOverride;
 
+	// Timer Data
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		FTimerHandle GameStart;
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		FTimerHandle RoundCooldown;
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		FTimerHandle ShopTimer;
+
+	FTimerHandle tempCooldown;
 private:
 	
 	void BeginPlay() override;
-	void NextRound(int _roundCount);
+	//virtual void Tick(float DeltaTime) override;
+	void StartGame();
+	void NextRound(int _roundCount);;
 
 	void SpawnEnemies(int _enemyCount);
 	void SpawnSpecial(int _specialCount);

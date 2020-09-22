@@ -28,6 +28,7 @@ public:
 		TSubclassOf<ACharacter> EnemyActor;
 
 	void SpawnEnemies(int _enemyCount);
+	void SpawnSpecial(int _enemyCount);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
