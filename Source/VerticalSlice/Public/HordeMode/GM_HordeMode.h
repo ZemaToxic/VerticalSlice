@@ -61,12 +61,13 @@ public:
 private:
 	
 	void BeginPlay() override;
-	//virtual void Tick(float DeltaTime) override;
 	void StartGame();
 	void NextRound(int _roundCount);;
 
 	void SpawnEnemies(int _enemyCount);
 	void SpawnSpecial(int _specialCount);
 
+	UFUNCTION(BlueprintCallable)
+		void RemoveEnemy();
 };
 

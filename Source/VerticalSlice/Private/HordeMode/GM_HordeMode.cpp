@@ -17,15 +17,6 @@ AGM_HordeMode::AGM_HordeMode()
 	}
 }
 
-//void AGM_HordeMode::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//	if (iCurrentEnemies == 0)
-//	{
-//		NextRound(iCurrentRound);
-//	}
-//}
-
 void AGM_HordeMode::BeginPlay()
 {
 	// Set Defaults.
@@ -41,7 +32,7 @@ void AGM_HordeMode::BeginPlay()
 	fEnemyDamageOverride = 10.0f;
 	// Set Starting Enemy count.
 	iCurrentEnemies = 1;
-	iInitialEnemies = 15;
+	iInitialEnemies = 8;
 	// Start a time to countdown for 30s then Start the game.
 	GetWorld()->GetTimerManager().SetTimer(GameStart, this, &AGM_HordeMode::StartGame, 10.0f, true);
 }
@@ -56,7 +47,7 @@ void AGM_HordeMode::StartGame()
 
 void AGM_HordeMode::NextRound(int _roundCount)
 {
-	int enemyCount = _roundCount * iInitialEnemies;
+	int enemyCount = (_roundCount * 4) + iInitialEnemies;
 	iCurrentEnemies = enemyCount;
 	// Spawn the First wave.
 	SpawnEnemies(enemyCount);
@@ -93,4 +84,17 @@ void AGM_HordeMode::SpawnSpecial(int _specialCount)
 		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
 		tempSpawner->SpawnSpecial(iCurrentRound / FoundActors.Num());
 	}
+}
+
+void AGM_HordeMode::RemoveEnemy()
+{
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("GM Removing Enemy")); }
+
+	iCurrentEnemies--;
+
+	if (iCurrentEnemies <= 0)
+	{
+		NextRound(iCurrentRound);
+	}
+
 }
