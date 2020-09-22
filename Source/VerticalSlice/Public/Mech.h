@@ -165,14 +165,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
 		AFlamethrowerBase* Flamethrower = 0;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ability", meta = (AllowPrivateAccess = "true"))
 		bool UseFlamethrower = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
 		FTimerHandle FlamethrowerTimerHandle;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
-		float FlamethrowerRechargeDelay = 2.0f;
+		float FlamethrowerRechargeDelay = 1.0f;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
 		bool FlamethrowerCanRecharge = false;
@@ -181,7 +181,7 @@ private:
 		int FlamethrowerAmmoPerSecond = 5;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
-		float SecondTimer = 0.0f;
+		float FlamethrowerRechargeTimer = 0.0f;
 
 	///resource variables
 	//ammo

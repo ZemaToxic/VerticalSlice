@@ -18,30 +18,55 @@ class VERTICALSLICE_API AFlamethrowerBase : public AGunBase
 	GENERATED_BODY()
 
 private:
-	TMap<AMonsterBase*, int> HitMonsters;
-	TMap<AMonsterBase*, TPair<int,int>> IgnitedMonsters;
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Monster Lists", meta = (AllowPrivateAccess = "true"))
+		TMap<AMonsterBase*, int> HitMonsters;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables |	Monster Lists", meta = (AllowPrivateAccess = "true"))
+		TMap<AMonsterBase*, TPair<int,int>> IgnitedMonsters;
 
-	float FlameTickRate = 0.5f;
 
-	float FlameTickDamage = 5;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Fire Damage", meta = (AllowPrivateAccess = "true"))
+		float FlameTickRate = 0.2f;
 
-	int MaxFlameTicks = 30;
-	int MinFlameTicks = 10;
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Fire Damage", meta = (AllowPrivateAccess = "true"))
+		float FlameTickDamage = 1;
 
-	FTimerHandle FlameTickHandle;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float FlameTickDamageIncrement = 1;
 
-	int HitsToIgnite = 5;
-	int MaxHitsToIgnite = 10;
-	float ChanceToIgnite = 0.8;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Fire Damage", meta = (AllowPrivateAccess = "true"))
+		float DefaultFlameTickDamage = 1;
 
-	float FlameRadius = 50;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Fire Damage", meta = (AllowPrivateAccess = "true"))
+		int MaxFlameTicks = 30;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Fire Damage", meta = (AllowPrivateAccess = "true"))
+		int MinFlameTicks = 10;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Fire Damage", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle FlameTickHandle;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ignition", meta = (AllowPrivateAccess = "true"))
+		int MinHitsToIgnite = 5;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ignition", meta = (AllowPrivateAccess = "true"))
+		int MaxHitsToIgnite = 10;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ignition", meta = (AllowPrivateAccess = "true"))
+		float ChanceToIgnite = 0.8;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Range", meta = (AllowPrivateAccess = "true"))
+		float FlameRadius = 50;
 
 public:
 
 	virtual void Shoot() override;
 
+	virtual void StopShoot() override;
+
 	void FlameTick();
 	void FlameShoot();
+
+	void UpgradeFireDamage(int _Amount);
 
 	void IgniteMonster(AMonsterBase* Monster);
 
