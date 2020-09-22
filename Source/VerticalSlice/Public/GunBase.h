@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/Actor.h"
 #include "NiagaraSystem.h"
+
 #include "GunBase.generated.h"
 
 
@@ -13,12 +15,17 @@ class VERTICALSLICE_API AGunBase : public AActor
 {
 	GENERATED_BODY()
 		
+protected:
 	//components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Mesh", meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* GunMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Muzzle", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* Muzzle;
+
+	//defaults
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Default")
+		AGunBase* DefaultGun = 0;
 
 	//gun behaviour variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
@@ -72,11 +79,11 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
 		int CurrentClipSize = 30;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
 		int MaxClipSize = 30;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		bool usesBullets = true;
+		bool IsMainGun = true;
 
 	//mech
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
@@ -120,17 +127,18 @@ public:
 	// Sets default values for this actor's properties
 	AGunBase();
 
-	void init(class AMech* mech);
+	void init(class AMech* _Mech, TSubclassOf<AGunBase> GunClass);
 
-	void Shoot();
-	void StopShoot();
+	virtual void Shoot();
+	virtual void StopShoot();
 
 	void setShootAnim(class UAnimMontage* newAnim);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Shoot")
 		void ShootRaycasts();
 
-	void Reload(int& ammoPool);
+	void ReloadUsingAmmoPool(int& _AmmoPool);
+	bool Reload(int _Amount);
 	bool hasMaxMag() { return CurrentClipSize == MaxClipSize; }
 
 	void UpgradeDamage(float _Amount);
