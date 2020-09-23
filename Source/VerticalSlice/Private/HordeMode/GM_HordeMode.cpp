@@ -5,6 +5,7 @@
 #include "HordeMode/BaseEnemySpawner.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 AGM_HordeMode::AGM_HordeMode()
 {
@@ -22,19 +23,17 @@ void AGM_HordeMode::BeginPlay()
 	// Set Defaults.
 	iCurrentRound = 1;
 	iCurrentScore = 0;
-	iRoundCountdown = 45;
-	iShopCountdown = 30;
 	// Override player Health & Damage.
 	fPlayerHealthOverride = 100.0f;
 	fPlayerDamageOverride = 15.0f;
 	// Override base enemy Health & Damage.
-	fEnemyHealthOverride = 50.0f;
+	fEnemyHealthOverride = 10.0f;// 50.0f;
 	fEnemyDamageOverride = 10.0f;
 	// Set Starting Enemy count.
 	iCurrentEnemies = 1;
 	iInitialEnemies = 8;
 	// Start a time to countdown for 30s then Start the game.
-	GetWorld()->GetTimerManager().SetTimer(GameStart, this, &AGM_HordeMode::StartGame, 10.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::StartGame, fStartTime, true);
 }
 
 void AGM_HordeMode::StartGame()
@@ -42,18 +41,28 @@ void AGM_HordeMode::StartGame()
 	// Start the first round
 	NextRound(iCurrentRound);
 	// Clear the GameStart timer for memory reasons.
-	GetWorld()->GetTimerManager().ClearTimer(GameStart);
+	GetWorld()->GetTimerManager().ClearTimer(StartTimer);
 }
 
 void AGM_HordeMode::NextRound(int _roundCount)
 {
 	int enemyCount = (_roundCount * 4) + iInitialEnemies;
 	iCurrentEnemies = enemyCount;
-	// Spawn the First wave.
-	SpawnEnemies(enemyCount);
+	
+	if (iCurrentRound/5)
+	{
+		iCurrentEnemies = 4;	
+		// Spawn the special wave.
+		SpawnSpecial(iCurrentEnemies);
+	}
+	else
+	{
+		// Spawn the First wave.
+		SpawnEnemies(enemyCount);
+	}
 	iCurrentRound ++;
+	GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
 }
-
 
 void AGM_HordeMode::SpawnEnemies(int _enemyCount)
 {
@@ -66,7 +75,7 @@ void AGM_HordeMode::SpawnEnemies(int _enemyCount)
 	for (int i = 0; i < FoundActors.Num(); i++)
 	{
 		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]); 
-		tempSpawner->SpawnEnemies(_enemyCount/FoundActors.Num());
+		tempSpawner->SpawnEnemies(_enemyCount/FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride);
 	}
 }
 
@@ -82,7 +91,7 @@ void AGM_HordeMode::SpawnSpecial(int _specialCount)
 	for (int i = 0; i < FoundActors.Num(); i++)
 	{
 		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
-		tempSpawner->SpawnSpecial(iCurrentRound / FoundActors.Num());
+		tempSpawner->SpawnSpecial(iCurrentRound / FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride);
 	}
 }
 
@@ -94,7 +103,9 @@ void AGM_HordeMode::RemoveEnemy()
 
 	if (iCurrentEnemies <= 0)
 	{
-		NextRound(iCurrentRound);
+		// Delay the next round to allow shopping 
+		FTimerDelegate waveTimer =  FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextRound, iCurrentRound);
+		GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
 	}
 
 }

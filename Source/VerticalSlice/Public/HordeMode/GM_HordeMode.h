@@ -31,10 +31,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
 		int iCurrentScore;
 	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
-		int iRoundCountdown;
-	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
-		int iShopCountdown;
-	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
 		int iCurrentEnemies;
 	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
 		int iInitialEnemies;
@@ -51,11 +47,18 @@ public:
 
 	// Timer Data
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
-		FTimerHandle GameStart;
+		FTimerHandle StartTimer;
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
-		FTimerHandle RoundCooldown;
+		FTimerHandle RoundTimer;
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
 		FTimerHandle ShopTimer;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		float fStartTime = 10.0f;
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		float fRoundCooldown = 15.0f;
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		float fShopCooldown = 45.0f;
 
 	FTimerHandle tempCooldown;
 private:

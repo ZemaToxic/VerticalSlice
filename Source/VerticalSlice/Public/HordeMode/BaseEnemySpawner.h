@@ -27,8 +27,8 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ACharacter> EnemyActor;
 
-	void SpawnEnemies(int _enemyCount);
-	void SpawnSpecial(int _enemyCount);
+	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride);
+	void SpawnSpecial(int _enemyCount, float _HealthOverride, float _DamageOverride);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

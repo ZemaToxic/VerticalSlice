@@ -25,7 +25,7 @@ void ABaseEnemySpawner::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ABaseEnemySpawner::SpawnEnemies(int _enemyCount)
+void ABaseEnemySpawner::SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride)
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("BaseSpawner Spawning Enemies")); }
 
@@ -54,12 +54,12 @@ void ABaseEnemySpawner::SpawnEnemies(int _enemyCount)
 			// Spawn an enemy with provided information above, and make sure its AIController is enabled.
 			AMonsterBase* spawnedEnemy = GetWorld()->SpawnActor<AMonsterBase>(GeneratedBP->GeneratedClass, SpawnLocation, SpawnInfo);
 			spawnedEnemy->SpawnDefaultController();
-			spawnedEnemy->health = 15;
+			spawnedEnemy->health = _HealthOverride;
 		}
 	}
 }
 
-void ABaseEnemySpawner::SpawnSpecial(int _enemyCount)
+void ABaseEnemySpawner::SpawnSpecial(int _enemyCount, float _HealthOverride, float _DamageOverride)
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("BaseSpawner Spawning Special")); }
 
@@ -80,7 +80,7 @@ void ABaseEnemySpawner::SpawnSpecial(int _enemyCount)
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		// Get the AI Actor to spawn from its Blueprint
-		UObject* SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Monsters/BP_MonsterA.BP_MonsterB")));
+		UObject* SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Monsters/BP_MonsterB.BP_MonsterB")));
 		UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
 		// Double Check the world exists to prevent NULL access errors.
 		if (GetWorld())
