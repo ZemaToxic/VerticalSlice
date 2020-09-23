@@ -79,7 +79,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
 		int CurrentClipSize = 30;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
 		int MaxClipSize = 30;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
@@ -130,7 +130,7 @@ public:
 	void init(class AMech* _Mech, TSubclassOf<AGunBase> GunClass);
 
 	virtual void Shoot();
-	void StopShoot();
+	virtual void StopShoot();
 
 	void setShootAnim(class UAnimMontage* newAnim);
 	

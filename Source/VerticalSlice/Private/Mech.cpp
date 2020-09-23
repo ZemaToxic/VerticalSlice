@@ -126,6 +126,8 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMech::Dismount);
 
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
+	PlayerInputComponent->BindAction("Shotgun", IE_Released, this, &AMech::StopAbility);
+
 	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbility);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
@@ -365,7 +367,7 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 		break;
 	case FeatureUpgrades::HPPotion://to do
 		break;
-	case FeatureUpgrades::Flamethrower://to do
+	case FeatureUpgrades::Flamethrower:
 		break;
 	case FeatureUpgrades::RocketLauncher://to do
 		break;
@@ -432,9 +434,11 @@ void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount, bool _Add)
 		break;
 
 	case StatUpgrades::FlamethrowerDamage:
+		Flamethrower->UpgradeDamage(StatUpgradesMap[_Upgrade]);
 		break;
 
 	case StatUpgrades::FlamethrowerFireDamage:
+		Flamethrower->UpgradeFireDamage(StatUpgradesMap[_Upgrade]);
 		break;
 
 	case StatUpgrades::RocketAmount:
@@ -648,15 +652,17 @@ void AMech::UseAbility()
 	}
 	else if (FeatureUpgradesMap[FeatureUpgrades::Flamethrower])
 	{
+		GetWorldTimerManager().ClearTimer(FlamethrowerTimerHandle);
 		Flamethrower->Shoot();
 		FlamethrowerCanRecharge = false;
-		GetWorldTimerManager().SetTimer(FlamethrowerTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
 	}
 }
 
 void AMech::StopAbility()
 {
 	Flamethrower->StopShoot();
+	GetWorldTimerManager().SetTimer(FlamethrowerTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
+
 	Shotgun->StopShoot();
 }
 
@@ -764,7 +770,7 @@ void AMech::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	SecondTimer += DeltaTime;
+	FlamethrowerRechargeTimer += DeltaTime;
 
 	if (BoomCurrentTargetChange)
 	{
@@ -844,13 +850,13 @@ void AMech::Tick(float DeltaTime)
 		}
 	}
 
-	if (SecondTimer > 1.0f / FlamethrowerAmmoPerSecond)
+	if (FlamethrowerRechargeTimer > 1.0f / FlamethrowerAmmoPerSecond)
 	{
 		if (FlamethrowerCanRecharge)
 		{
 			Flamethrower->Reload(1);
 		}
-		SecondTimer = 0.0f;
+		FlamethrowerRechargeTimer = 0.0f;
 	}
 }
 
