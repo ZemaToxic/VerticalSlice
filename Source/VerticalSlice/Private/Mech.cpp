@@ -57,7 +57,7 @@ void AMech::BeginPlay()
 	{
 		Gun = GetWorld()->SpawnActor<AGunBase>(GunClass);
 		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("GunSocket"));
-		Gun->init(this);
+		Gun->init(this, GunClass);
 		Gun->setShootAnim(HipShoot);
 	}
 
@@ -65,8 +65,18 @@ void AMech::BeginPlay()
 	{
 		Shotgun = GetWorld()->SpawnActor<AGunBase>(ShotgunClass);
 		Shotgun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("ShotgunSocket"));
-		Shotgun->init(this);
+		Shotgun->init(this, ShotgunClass);
 		Shotgun->setShootAnim(ShotgunShoot);
+	}
+
+	if (FlamethrowerClass)
+	{
+		Flamethrower = GetWorld()->SpawnActor<AFlamethrowerBase>(FlamethrowerClass);
+		Flamethrower->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("ShotgunSocket"));
+		Flamethrower->init(this, FlamethrowerClass);
+		Flamethrower->setShootAnim(FlamethrowerShoot);
+		Shotgun->ignoredActors.AddIgnoredActor(Flamethrower);
+		Flamethrower->ignoredActors.AddIgnoredActor(Shotgun);
 	}
 
 	BoomCurrentTarget = BoomBaseTarget;
@@ -78,9 +88,9 @@ void AMech::BeginPlay()
 	
 	GetCharacterMovement()->GravityScale = BaseGravityScale;
 
-	DefaultReloadPoint = ReloadPoint;
+	ReloadPoint = ReloadPoint / ReloadSpeed;
 
-	ReloadPoint = DefaultReloadPoint / ReloadSpeed;
+	DefaultMech = MechBPClass.GetDefaultObject();
 
 	/*FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -116,6 +126,9 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMech::Dismount);
 
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
+	PlayerInputComponent->BindAction("Shotgun", IE_Released, this, &AMech::StopAbility);
+
+	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbility);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
@@ -354,7 +367,7 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 		break;
 	case FeatureUpgrades::HPPotion://to do
 		break;
-	case FeatureUpgrades::Flamethrower://to do
+	case FeatureUpgrades::Flamethrower:
 		break;
 	case FeatureUpgrades::RocketLauncher://to do
 		break;
@@ -363,61 +376,80 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	}
 }
 
-void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount = 1)
+void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount, bool _Add)
 {
-	StatUpgradesMap[_Upgrade] = _Amount;
+	StatUpgradesMap[_Upgrade] = (_Add)? StatUpgradesMap[_Upgrade] + _Amount :_Amount;
 	switch (_Upgrade)
 	{
 	case StatUpgrades::RifleDamage:
-		Gun->UpgradeDamage(_Amount);
+		Gun->UpgradeDamage(StatUpgradesMap[_Upgrade]);
 		break;
+
 	case StatUpgrades::RifleReload:
-		ReloadSpeed += ReloadSpeedIncrement * _Amount;
-		ReloadPoint = DefaultReloadPoint / ReloadSpeed;
+		ReloadSpeed = DefaultMech->ReloadSpeed + ReloadSpeedIncrement * StatUpgradesMap[_Upgrade];
+		ReloadPoint = DefaultMech->ReloadPoint / ReloadSpeed;
 		break;
+
 	case StatUpgrades::RifleClipSize:
-		Gun->UpgradeClipSize(_Amount);
+		Gun->UpgradeClipSize(StatUpgradesMap[_Upgrade]);
 		break;
+
 	case StatUpgrades::RifleReserveAmmo:
-		MaxAmmo += AmmoIncrement * _Amount;
+		MaxAmmo =  DefaultMech->MaxAmmo + AmmoIncrement * StatUpgradesMap[_Upgrade];
 		CurrentAmmo = MaxAmmo;
 		break;
+
 	case StatUpgrades::ShotgunDamage:
-		Shotgun->UpgradeDamage(_Amount);
+		Shotgun->UpgradeDamage(StatUpgradesMap[_Upgrade]);
 		break;
+
 	case StatUpgrades::ShotgunCharges:
-		MaxShotgunCharges += ShotgunChargesIncrement * _Amount;
+		Shotgun->UpgradeClipSize(StatUpgradesMap[_Upgrade]);
 		break;
+
 	case StatUpgrades::ShotgunPellets:
-		Shotgun->UpgradeBulletsPerShot(_Amount);
+		Shotgun->UpgradeBulletsPerShot(StatUpgradesMap[_Upgrade]);
 		break;
+
 	case StatUpgrades::ShotgunRange:
-		Shotgun->UpgradeRange(_Amount);
+		Shotgun->UpgradeRange(StatUpgradesMap[_Upgrade]);
 		break;
+
 	case StatUpgrades::MechMaxHP:
-		MaxHealth += HealthIncrement * _Amount;
+		MaxHealth =  DefaultMech->MaxHealth + HealthIncrement * StatUpgradesMap[_Upgrade];
 		CurrentHealth = MaxHealth;
 		break;
+
 	case StatUpgrades::MechMaxCharge:
-		MaxCharge += ChargeIncrement * _Amount;
+		MaxCharge = DefaultMech->MaxCharge + ChargeIncrement * StatUpgradesMap[_Upgrade];
 		CurrentCharge = MaxCharge;
 		break;
+
 	case StatUpgrades::MechHPRegen:
-		HealthRechargeRatePerSecond += HealthRegenIncrement * _Amount;
+		HealthRechargeRatePerSecond = DefaultMech->HealthRechargeRatePerSecond + HealthRegenIncrement * StatUpgradesMap[_Upgrade];
 		break;
+
 	case StatUpgrades::MechChargeRegen:
-		ChargeRechargeRatePerSecond += ChargeRegenIncrement * _Amount;
+		ChargeRechargeRatePerSecond = DefaultMech->ChargeRechargeRatePerSecond + ChargeRegenIncrement * StatUpgradesMap[_Upgrade];
 		break;
+
 	case StatUpgrades::FlamethrowerDamage:
+		Flamethrower->UpgradeDamage(StatUpgradesMap[_Upgrade]);
 		break;
+
 	case StatUpgrades::FlamethrowerFireDamage:
+		Flamethrower->UpgradeFireDamage(StatUpgradesMap[_Upgrade]);
 		break;
+
 	case StatUpgrades::RocketAmount:
 		break;
+
 	case StatUpgrades::RocketRadius:
 		break;
+
 	default:
 		break;
+
 	}
 }
 
@@ -433,18 +465,15 @@ void AMech::MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<S
 
 	for (auto& Stat : _StatUpgradesMap)
 	{
-		UpgradeStats(Stat.Key, Stat.Value);
+		UpgradeStats(Stat.Key, Stat.Value, false);
 	}
 }
 
-void AMech::UpgradeStatsUsingDefaults()
+void AMech::UpgradeStatsUsingCurrent()
 {
-	int CurrentValue;
 	for (auto& Stat : StatUpgradesMap)
 	{
-		CurrentValue = Stat.Value;
-		StatUpgradesMap[Stat.Key] = 0;
-		UpgradeStats(Stat.Key, CurrentValue);
+		UpgradeStats(Stat.Key, Stat.Value, false);
 	}
 }
 
@@ -613,30 +642,48 @@ void AMech::Dismount_Implementation()
 
 void AMech::UseAbility()
 {
-	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun])
+	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !UseFlamethrower)
 	{
-		if (CurrentShotgunCharges > 0)
-		{
-			CurrentShotgunCharges--;
-			Shotgun->ShootRaycasts();
-		}
+		Shotgun->Shoot();
 		if (!GetWorldTimerManager().IsTimerActive(ShotgunTimerHandle))
 		{
-			GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
+			GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::ShotgunRecharge, ShotgunCooldown);
 		}
+	}
+	else if (FeatureUpgradesMap[FeatureUpgrades::Flamethrower])
+	{
+		GetWorldTimerManager().ClearTimer(FlamethrowerTimerHandle);
+		Flamethrower->Shoot();
+		FlamethrowerCanRecharge = false;
 	}
 }
 
 void AMech::StopAbility()
 {
+	Flamethrower->StopShoot();
+	GetWorldTimerManager().SetTimer(FlamethrowerTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
+
+	Shotgun->StopShoot();
 }
 
-void AMech::AbilityRecharge()
+void AMech::ShotgunRecharge()
 {
-	CurrentShotgunCharges++;
-	if (CurrentShotgunCharges < MaxShotgunCharges)
+	if (!Shotgun->Reload(1))
 	{
-		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::AbilityRecharge, ShotgunCooldown);
+		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::ShotgunRecharge, ShotgunCooldown);
+	}
+}
+
+void AMech::FlamethrowerRecharge()
+{
+	FlamethrowerCanRecharge = true;
+}
+
+void AMech::SwitchAbility()
+{
+	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun] && FeatureUpgradesMap[FeatureUpgrades::Flamethrower])
+	{
+		UseFlamethrower = !UseFlamethrower;
 	}
 }
 
@@ -689,7 +736,6 @@ void AMech::giveHealth(bool Max, int amount)
 
 void AMech::giveCharge(bool Max, int amount)
 {
-
 	if (Max || CurrentCharge + amount >= MaxCharge)
 	{
 		CurrentCharge = MaxCharge;
@@ -724,6 +770,8 @@ void AMech::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	FlamethrowerRechargeTimer += DeltaTime;
+
 	if (BoomCurrentTargetChange)
 	{
 		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, BoomCurrentTarget, DeltaTime, BoomTargetInterpRate);
@@ -747,17 +795,25 @@ void AMech::Tick(float DeltaTime)
 		CameraCurrentFOVChange = true;
 	}
 
-	/*FRotator GunRotation = GetMesh()->GetSocketRotation("GunSocket");
-
-	if (GunSnapping)
+	if (ReloadAnim && reloading)
 	{
-		FRotator CameraRotation = FollowCamera->GetComponentRotation();
-		Gun->SetActorRotation(FRotator(CameraRotation.Pitch, CameraRotation.Yaw, GunRotation.Roll));
+		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
+		if (mechAnim->Montage_IsPlaying(ReloadAnim))
+		{
+			if (mechAnim->Montage_GetPosition(ReloadAnim) > ReloadPoint)
+			{
+				if (Gun)
+				{
+					Gun->ReloadUsingAmmoPool(CurrentAmmo);
+				}
+				reloading = false;
+			}
+		}
+		else
+		{
+			reloading = false;
+		}
 	}
-	else if (Gun->GetActorRotation() != FRotator(0, GunRotation.Yaw, GunRotation.Roll))
-	{
-		Gun->SetActorRotation(FRotator(0, GunRotation.Yaw, GunRotation.Roll));
-	}*/
 
 	if (Sprinting && !(GetCharacterMovement()->Velocity.IsZero()))
 	{
@@ -794,25 +850,13 @@ void AMech::Tick(float DeltaTime)
 		}
 	}
 
-
-	if (ReloadAnim && reloading)
+	if (FlamethrowerRechargeTimer > 1.0f / FlamethrowerAmmoPerSecond)
 	{
-		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
-		if (mechAnim->Montage_IsPlaying(ReloadAnim))
+		if (FlamethrowerCanRecharge)
 		{
-			if (mechAnim->Montage_GetPosition(ReloadAnim) > ReloadPoint)
-			{
-				if (Gun)
-				{
-					Gun->Reload(CurrentAmmo);
-				}
-				reloading = false;
-			}
+			Flamethrower->Reload(1);
 		}
-		else
-		{
-			reloading = false;
-		}
+		FlamethrowerRechargeTimer = 0.0f;
 	}
 }
 
