@@ -21,7 +21,7 @@ AGM_HordeMode::AGM_HordeMode()
 void AGM_HordeMode::BeginPlay()
 {
 	// Set Defaults.
-	iCurrentRound = 1;
+	iCurrentRound = 0;
 	iCurrentScore = 0;
 	// Override player Health & Damage.
 	fPlayerHealthOverride = 100.0f;
@@ -46,10 +46,11 @@ void AGM_HordeMode::StartGame()
 
 void AGM_HordeMode::NextRound(int _roundCount)
 {
+	iCurrentRound ++;
 	int enemyCount = (_roundCount * 4) + iInitialEnemies;
 	iCurrentEnemies = enemyCount;
-	
-	if (iCurrentRound/5)
+
+	if (iCurrentRound % 5 == 0)
 	{
 		iCurrentEnemies = 4;	
 		// Spawn the special wave.
@@ -60,7 +61,6 @@ void AGM_HordeMode::NextRound(int _roundCount)
 		// Spawn the First wave.
 		SpawnEnemies(enemyCount);
 	}
-	iCurrentRound ++;
 	GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
 }
 
