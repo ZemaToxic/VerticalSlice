@@ -75,6 +75,8 @@ protected:
 	void Sprint();
 	void StopSprint();
 
+	void Jump() override;
+
 	UFUNCTION(BlueprintNativeEvent, category = "Custom | End")
 		bool Mount();
 
