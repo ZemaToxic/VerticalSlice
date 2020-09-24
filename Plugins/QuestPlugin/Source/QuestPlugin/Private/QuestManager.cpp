@@ -48,16 +48,24 @@ void AQuestManager::UnloadQuest(int Id)
 {
 	if (Id < ActiveQuests.Num() && Id >= 0)
 	{
+		int lastId = ActiveQuests.Num() - 1;
 		FName currentName = *(NameToId.FindKey(Id));
 		NameToId.Remove(currentName);
 		bool ActiveQuestBeingDeleted = (ActiveQuests[Id] == ActiveQuest);
 		ActiveQuests[Id]->Destroy();
 		ActiveQuests.RemoveAt(Id);
 
-		for (int i = Id + 1; i < ActiveQuests.Num(); i++)
+		if (Id != lastId)
 		{
-			currentName = *(NameToId.FindKey(i));
-			NameToId[currentName]--;
+			for (int i = lastId; i >= 0; i--)
+			{
+				if (i != Id)
+				{
+					currentName = *(NameToId.FindKey(i));
+					NameToId[currentName] = Id;
+					break;
+				}
+			}
 		}
 
 		if (ActiveQuestBeingDeleted)

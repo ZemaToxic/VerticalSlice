@@ -54,7 +54,7 @@ void AVerticalSliceCharacter::SetupPlayerInputComponent(class UInputComponent* P
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AVerticalSliceCharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AVerticalSliceCharacter::MoveForward);
@@ -149,33 +149,53 @@ void AVerticalSliceCharacter::Interact()
 
 void AVerticalSliceCharacter::CheckInteract()
 {
-	TArray<FHitResult> hits;
-	FVector start = GetActorLocation() + FVector(0, 0, 50);
-	FVector end = start + (GetActorForwardVector());
-
-	FCollisionShape CollShape = FCollisionShape::MakeSphere(InteractRange);
-
-	bool isHit = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape, collParams);
-	//GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
-	//DrawDebugLine(GetWorld(), start, end, FColor::Emerald, false, 10.0f);
-	if (isHit)
+	if (PlayerMech)
 	{
-		for (auto& hit : hits)
+		if (PlayerMech->canMount) 
+		{ 
+			nearMech = GetActorLocation().Equals(PlayerMech->GetActorLocation(), MountRange);
+		}
+		else
 		{
-			if (hit.bBlockingHit)
+			nearMech = false;
+		}
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Woo");
+	}
+
+	if (!nearMech)
+	{
+		TArray<FHitResult> hits;
+		FVector start = GetActorLocation() + FVector(0, 0, 50);
+		FVector end = start + (GetActorForwardVector());
+
+		FCollisionShape CollShape = FCollisionShape::MakeSphere(InteractRange);
+
+		bool isHit = GetWorld()->SweepMultiByChannel(hits, start, end, FQuat(), ECollisionChannel::ECC_Visibility, CollShape, collParams);
+		//GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_Visibility);
+		//DrawDebugLine(GetWorld(), start, end, FColor::Emerald, false, 10.0f);
+		if (isHit)
+		{
+			for (auto& hit : hits)
 			{
-				AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
-				if (intVol)
+				if (hit.bBlockingHit)
 				{
-					nearInteractableObject = true;
-					InteractObjectLocation = intVol->GetActorLocation();
-					return;
+					AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
+					if (intVol)
+					{
+						nearInteractableObject = true;
+						InteractObjectLocation = intVol->GetActorLocation();
+						return;
+					}
 				}
 			}
 		}
+		InteractObjectLocation = FVector();
+		nearInteractableObject = false;
 	}
-	InteractObjectLocation = FVector();
-	nearInteractableObject = false;
+	else
+	{
+		nearInteractableObject = false;
+	}
 }
 
 void AVerticalSliceCharacter::Crouch()
@@ -196,6 +216,19 @@ void AVerticalSliceCharacter::Sprint()
 void AVerticalSliceCharacter::StopSprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = PlayerWalkSpeed;
+}
+
+void AVerticalSliceCharacter::Jump()
+{
+	if (climbing)
+	{
+		SetClimbing(false, FVector(), FVector());
+	}
+	else
+	{
+		Super::Jump();
+	}
+
 }
 
 bool AVerticalSliceCharacter::Mount_Implementation()

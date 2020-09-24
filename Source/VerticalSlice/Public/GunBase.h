@@ -3,35 +3,36 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "GunBase.generated.h"
 
-UENUM()
-enum class GunUpgrades : uint8
-{
-	None,
-	BetterFireRate,
-	FasterReload,
-	BetterDamage,
-};
+#include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"
+
+#include "GunBase.generated.h"
 
 
 UCLASS()
 class VERTICALSLICE_API AGunBase : public AActor
 {
 	GENERATED_BODY()
-
+		
+protected:
+	//components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Mesh", meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* GunMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CustomVariables | Muzzle", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* Muzzle;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
-		bool Shooting = false;
+	//defaults
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Default")
+		AGunBase* DefaultGun = 0;
+
+	//gun behaviour variables
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float MaxRange = 100.0f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
-		float Range = 100.0f;
+		float OptimalRangePercent = 0.5f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		FVector2D UpperSpread = FVector2D(0,0);
@@ -48,33 +49,54 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		bool Automatic = false;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float Damage = 30;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float DamageRange = 10;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float DamageFalloff = 20;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float FalloffCurve = 0.01;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		bool DestroysArmourPlate = false;
+
+	//gun internal properties
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
+		bool Shooting = false;
+
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
 		float ShootingTimer = 0;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables")
 		float SecondsBetweenShots = 0;
 
+
+	//gun ammo
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
-		int CurrentMagsize = 30;
+		int CurrentClipSize = 30;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ammo", meta = (AllowPrivateAccess = "true"))
+		int MaxClipSize = 30;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		int MaxMagsize = 30;
+		bool IsMainGun = true;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
-		float Damage = 30;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
-		GunUpgrades LastGunUpgrade = GunUpgrades::None;
-
+	//mech
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		class AMech* AttachedMech = 0;
 
+	//effects
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Effects")
 		UAnimMontage* shootingAnimation = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Effects")
-		UParticleSystem* HitPS = 0;
+		UNiagaraSystem* HitPS = 0;
 
+	//variables for particle effects
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
 		FVector shotStart;
 
@@ -84,8 +106,19 @@ class VERTICALSLICE_API AGunBase : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | PE Variables", meta = (AllowPrivateAccess = "true"))
 		TArray<FHitResult> hitResults;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ammo")
-		bool usesBullets = true;
+	//Upgrade Values
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
+		float DamageUpgradeIncrement = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
+		float ClipSizeUpgradeIncrement = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
+		float BulletsPerShotUpgradeIncrement = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
+		float RangeUpgradeIncrement = 0;
+
 public:
 
 	FCollisionQueryParams ignoredActors;
@@ -94,33 +127,29 @@ public:
 	// Sets default values for this actor's properties
 	AGunBase();
 
-	void init(class AMech* mech);
+	void init(class AMech* _Mech, TSubclassOf<AGunBase> GunClass);
 
-	void Shoot();
-	void StopShoot();
+	virtual void Shoot();
+	virtual void StopShoot();
 
 	void setShootAnim(class UAnimMontage* newAnim);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Shoot")
 		void ShootRaycasts();
 
-	void Reload(int& ammoPool);
-	bool hasMaxMag() { return CurrentMagsize == MaxMagsize; }
+	void ReloadUsingAmmoPool(int& _AmmoPool);
+	bool Reload(int _Amount);
+	bool hasMaxMag() { return CurrentClipSize == MaxClipSize; }
 
-	void setDamage(float newDamage) { Damage = newDamage; }
-	float getDamage() { return Damage; }
-
-	void setBulletsPerShot(float newBPS) { BulletsPerShot = newBPS; }
-	float getBulletsPerShot() { return BulletsPerShot; }
-
-	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void Upgrade(GunUpgrades upgrade);
-
-	UFUNCTION(BlueprintCallable, Category = "Custom | Aim")
-		void getAimLoc(FVector& AimLoc);
+	void UpgradeDamage(float _Amount);
+	void UpgradeClipSize(float _Amount);
+	void UpgradeBulletsPerShot(float _Amount);
+	void UpgradeRange(float _Amount);
 
 protected:
 	virtual void BeginPlay() override;
+
+	float CalcDamage(float Dist);
 
 public:
 	virtual void Tick(float DeltaTime) override;

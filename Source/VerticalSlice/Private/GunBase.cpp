@@ -4,6 +4,7 @@
 
 #include "Mech.h"
 #include "MonsterBase.h"
+#include "ArmorBase.h"
 
 #include <vector>
 
@@ -11,6 +12,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/SceneComponent.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine.h"
 
@@ -31,20 +33,28 @@ AGunBase::AGunBase()
 	Muzzle->SetHiddenInGame(true);
 }
 
-void AGunBase::init(AMech* mech)
+void AGunBase::init(AMech* _Mech, TSubclassOf<AGunBase> _GunClass)
 {
-	if (mech)
+	if (_Mech)
 	{
-		AttachedMech = mech;
+		AttachedMech = _Mech;
+		ignoredActors.AddIgnoredActor(_Mech);
+	}
+
+	if (_GunClass)
+	{
+		DefaultGun = _GunClass.GetDefaultObject();
 	}
 }
 
 void AGunBase::Shoot()
 {
+	if (ShootingTimer < SecondsBetweenShots) { return; }
+
 	SecondsBetweenShots = 1 / ShotsPerSecond;
 
-	if (CurrentMagsize <= 0 && usesBullets) {
-		if (AttachedMech)
+	if (CurrentClipSize <= 0) {
+		if (IsMainGun && AttachedMech)
 		{
 			AttachedMech->Reload();
 		}
@@ -60,8 +70,6 @@ void AGunBase::Shoot()
 
 void AGunBase::StopShoot()
 {
-	ShootingTimer = 0.0f;
-
 	Shooting = false;
 }
 
@@ -76,7 +84,7 @@ void AGunBase::setShootAnim(UAnimMontage* newAnim)
 void AGunBase::ShootRaycasts_Implementation()
 {
 	
-	CurrentMagsize--;
+	CurrentClipSize--;
 
 	if (shootingAnimation)
 	{
@@ -99,26 +107,30 @@ void AGunBase::ShootRaycasts_Implementation()
 	hitResults.Empty();
 	FHitResult currHit;
 
+	shotStart = Muzzle->GetComponentLocation();
+
 	int j = 0;
 
 	for (int i = 0; i < BulletsPerShot; i++)
 	{
-		FVector randomSpreadVec = FVector(0, FMath::FRandRange(LowerSpread.X, UpperSpread.X), FMath::FRandRange(LowerSpread.Y, UpperSpread.Y));
-
-		shotStart = Muzzle->GetComponentLocation();
-
 		shotEnd.Add((FVector)0);
 
 		float randY = FMath::FRandRange(LowerSpread.Y, UpperSpread.Y);
 		float randX = FMath::FRandRange(LowerSpread.X, UpperSpread.X);
+		FVector RandomSpreadDirection = (AttachedMech->GetFollowCamera()->GetUpVector() * randY) + (AttachedMech->GetFollowCamera()->GetRightVector() * randX);
 		
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("PEW")));
+		
+		float Dist = 0;
 
-		shotEnd[j] = shotStart + (gunDir * Range) + (Muzzle->GetUpVector() * randY) + (Muzzle->GetRightVector() * randX);
+		FVector CamLookLoc = AttachedMech->GetCameraLookLocation(MaxRange, Dist);
 
-		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECollisionChannel::ECC_Visibility, ignoredActors);
+		shotEnd[j] = CamLookLoc + (RandomSpreadDirection * (Dist/1000));
 
-		DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%f, %f, %f"), randY, randX, Dist));
+
+		GetWorld()->LineTraceSingleByChannel(currHit, shotStart, shotEnd[j], ECC_Visibility, ignoredActors);
+
+		//DrawDebugLine(GetWorld(), shotStart, shotEnd[j], FColor::Emerald, false, 0.5f);
 
 		if (currHit.bBlockingHit)
 		{
@@ -138,76 +150,95 @@ void AGunBase::ShootRaycasts_Implementation()
 
 	for (auto& hit : hitResults)
 	{
-		AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
-		if (HitActor)
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(hit.Actor.Get()->GetName())));
+
+		UArmorBase* ArmorPlate = Cast<UArmorBase>(hit.GetComponent());
+
+		if (ArmorPlate)
 		{
-			HitActor->DamageMonster(Damage, hit.Location, hit.BoneName);
-			if (HitPS && Cast<USceneComponent>(hit.GetComponent()))
+			if (DestroysArmourPlate)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
+				ArmorPlate->DestroyPlate();
+			}
+			else
+			{
+				ArmorPlate->DamagePlate(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size())/10, hit.Location);
+			}
+			
+		}
+		else
+		{
+			AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
+			if (HitActor)
+			{
+				HitActor->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size()), hit.Location, hit.BoneName);
+				if (HitPS)
+				{
+					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
+					//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitPS, hit.Location);
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitPS, hit.Location);
+				}
 			}
 		}
 	}
 }
 
-void AGunBase::Reload(int& ammoPool)
+void AGunBase::ReloadUsingAmmoPool(int& _AmmoPool)
 {
-	if (CurrentMagsize <= MaxMagsize && !Shooting)
+	if (CurrentClipSize <= MaxClipSize && !Shooting)
 	{
-		if (ammoPool - (MaxMagsize - CurrentMagsize) >= 0)
+		if (_AmmoPool - (MaxClipSize - CurrentClipSize) >= 0)
 		{
-			ammoPool -= MaxMagsize - CurrentMagsize;
-			CurrentMagsize = MaxMagsize;
+			_AmmoPool -= MaxClipSize - CurrentClipSize;
+			CurrentClipSize = MaxClipSize;
 		}
 		else
 		{
-			CurrentMagsize += ammoPool;
-			ammoPool = 0;
+			CurrentClipSize += _AmmoPool;
+			_AmmoPool = 0;
 		}
+		SecondsBetweenShots = 0;
 	}
 }
 
-void AGunBase::Upgrade(GunUpgrades upgrade)
+bool AGunBase::Reload(int _Amount)
 {
-	switch (upgrade)
+	if (CurrentClipSize <= MaxClipSize && !Shooting)
 	{
-	case GunUpgrades::BetterFireRate:
-		ShotsPerSecond *= 1.2;
-		break;
-	case GunUpgrades::FasterReload:
-		if (AttachedMech)
+		bool isClipFull = (_Amount + CurrentClipSize >= MaxClipSize);
+		if (isClipFull)
 		{
-			AttachedMech->Upgrade(MechUpgrades::FasterReload);
+			CurrentClipSize = MaxClipSize;
 		}
-		break;
-	case GunUpgrades::BetterDamage:
-		Damage *= 1.5;
-		break;
-	default:
-		break;
+		else
+		{
+			CurrentClipSize += _Amount;
+		}
+		SecondsBetweenShots = 0;
+		return isClipFull;
 	}
-	LastGunUpgrade = upgrade;
+	return true;
 }
 
-void AGunBase::getAimLoc(FVector& AimLoc)
+void AGunBase::UpgradeDamage(float _Amount)
 {
-	FHitResult currHit;
-	FVector startAim = Muzzle->GetComponentLocation();
-	FVector endAim = startAim + (Muzzle->GetForwardVector() * Range);
+	Damage = DefaultGun->Damage + DamageUpgradeIncrement * _Amount;
+}
 
-	GetWorld()->LineTraceSingleByChannel(currHit, startAim, endAim, ECollisionChannel::ECC_Visibility, ignoredActors);
+void AGunBase::UpgradeClipSize(float _Amount)
+{
+	MaxClipSize = DefaultGun->MaxClipSize + ClipSizeUpgradeIncrement * _Amount;
+	CurrentClipSize = MaxClipSize;
+}
 
-	if (currHit.bBlockingHit)
-	{
-		AimLoc = currHit.Location;
-	}
-	else
-	{
-		AimLoc = endAim;
-	}
+void AGunBase::UpgradeBulletsPerShot(float _Amount)
+{
+	BulletsPerShot = DefaultGun->BulletsPerShot + BulletsPerShotUpgradeIncrement * _Amount;
+}
 
-	//DrawDebugLine(GetWorld(), startAim, AimLoc, FColor::Emerald, false, 0.5f);
+void AGunBase::UpgradeRange(float _Amount)
+{
+	MaxRange = DefaultGun->MaxRange + RangeUpgradeIncrement * _Amount;
 }
 
 void AGunBase::BeginPlay()
@@ -222,22 +253,41 @@ void AGunBase::BeginPlay()
 	}
 }
 
+float AGunBase::CalcDamage(float Dist)
+{
+	float RandDamage = FMath::FRandRange(Damage - (DamageRange / 2), Damage + (DamageRange / 2));
+
+	float OptimalDist = OptimalRangePercent * MaxRange;
+
+	float NormalisedDist = FMath::Clamp(((Dist - OptimalDist) / (MaxRange - OptimalDist)), 0.0f, 1.0f);
+	float Falloff = 0;
+	if (FalloffCurve > 0 && FalloffCurve != 1)
+	{
+		Falloff = DamageFalloff * ((powf(FalloffCurve, NormalisedDist) - 1) / (FalloffCurve - 1));
+	}
+
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), DamageFalloff));
+
+	return RandDamage - Falloff;
+}
+
 void AGunBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (Shooting)
+	if (ShootingTimer < SecondsBetweenShots)
 	{
-		if (ShootingTimer >= SecondsBetweenShots)
-		{
-			if (CurrentMagsize <= 0) {
-				Shooting = false;
-				return;
-			}
-			ShootRaycasts();
-			ShootingTimer = 0.0f;
-		}
 		ShootingTimer += DeltaTime;
 	}
+	else if (Shooting)
+	{
+		if (CurrentClipSize <= 0) {
+			Shooting = false;
+			return;
+		}
+		ShootRaycasts();
+		ShootingTimer = 0.0f;
+	}
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), DefaultGun->MaxRange));
 }
 

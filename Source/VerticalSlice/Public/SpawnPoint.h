@@ -20,9 +20,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 		class USceneComponent* SceneComp;
 
-	UPROPERTY(EditAnywhere, Category = "Spawning")
-		AActor* ActorToSpawn;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
 		MonsterSpawnLocations SpawnPointLocation = MonsterSpawnLocations::TEST;
 

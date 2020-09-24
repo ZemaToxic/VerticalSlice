@@ -2,7 +2,6 @@
 
 
 #include "Mech.h"
-#include "GunBase.h"
 #include "MonsterBase.h"
 #include "VerticalSliceCharacter.h"
 
@@ -58,7 +57,7 @@ void AMech::BeginPlay()
 	{
 		Gun = GetWorld()->SpawnActor<AGunBase>(GunClass);
 		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("GunSocket"));
-		Gun->init(this);
+		Gun->init(this, GunClass);
 		Gun->setShootAnim(HipShoot);
 	}
 
@@ -66,8 +65,26 @@ void AMech::BeginPlay()
 	{
 		Shotgun = GetWorld()->SpawnActor<AGunBase>(ShotgunClass);
 		Shotgun->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("ShotgunSocket"));
-		Shotgun->init(this);
+		Shotgun->init(this, ShotgunClass);
 		Shotgun->setShootAnim(ShotgunShoot);
+	}
+
+	if (FlamethrowerClass)
+	{
+		Flamethrower = GetWorld()->SpawnActor<AFlamethrowerBase>(FlamethrowerClass);
+		Flamethrower->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("ShotgunSocket"));
+		Flamethrower->init(this, FlamethrowerClass);
+		Flamethrower->setShootAnim(FlamethrowerShoot);
+		Shotgun->ignoredActors.AddIgnoredActor(Flamethrower);
+		Flamethrower->ignoredActors.AddIgnoredActor(Shotgun);
+	}
+
+	if (RocketLauncherClass)
+	{
+		RocketLauncher = GetWorld()->SpawnActor<ARocketLauncher>(RocketLauncherClass);
+		RocketLauncher->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RocketSocket"));
+		RocketLauncher->init(this, RocketLauncherClass);
+		RocketLauncher->setShootAnim(RocketLauncherShoot);
 	}
 
 	BoomCurrentTarget = BoomBaseTarget;
@@ -76,6 +93,12 @@ void AMech::BeginPlay()
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GunSnapping = true;
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	
+	GetCharacterMovement()->GravityScale = BaseGravityScale;
+
+	ReloadPoint = ReloadPoint / ReloadSpeed;
+
+	DefaultMech = MechBPClass.GetDefaultObject();
 
 	/*FActorSpawnParameters spawnParams;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -111,12 +134,83 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMech::Dismount);
 
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
+	PlayerInputComponent->BindAction("Shotgun", IE_Released, this, &AMech::StopAbility);
+
+	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbility);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+}
+
+void AMech::Landed(const FHitResult& Hit)
+{
+	if (IsGroundPounding)
+	{
+		// create tarray for hit results
+		TArray<FHitResult> OutHits;
+
+		// start and end locations
+		FVector SweepStart = GetActorLocation();
+		FVector SweepEnd = SweepStart + FVector(0.1,0,0);
+
+		// create a collision sphere
+		FCollisionShape MyGroundPoundColl = FCollisionShape::MakeSphere(GroundPoundBaseRange + (GetCharacterMovement()->Velocity.Size() * GroundPoundRangeScale));
+
+		// draw collision box
+		//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
+
+		// check if something got hit in the sweep
+		bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, MyGroundPoundColl);
+
+		if (isHit)
+		{
+			TArray<AMonsterBase*> HitMonsters;
+			// loop through TArray
+			for (auto& Hit : OutHits)
+			{
+				AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
+				if (HitActor)
+				{
+					if (!(HitMonsters.Contains(HitActor)))
+					{
+						HitMonsters.Add(HitActor);
+
+						//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
+
+						FVector launchDirection = this->GetActorLocation() - HitActor->GetActorLocation();
+						launchDirection.Z = GroundPoundLaunchZ;
+
+						float dist = launchDirection.Size();
+						launchDirection.Normalize();
+
+						HitActor->GetMovementComponent()->StopMovementImmediately();
+						HitActor->LaunchCharacter(launchDirection * (GroundPoundLaunchPower / sqrt(dist)), false, false);
+						HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
+					}
+				}
+			}
+		}
+
+		IsGroundPounding = false;
+		GetCharacterMovement()->GravityScale = BaseGravityScale;
+		GetCharacterMovement()->AirControl = AirControlTemp;
+		//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	}
+}
+
+bool AMech::GroundPound()
+{
+	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound]) { return false; }
+	IsGroundPounding = true;
+	GetCharacterMovement()->GravityScale = GroundPoundGravityScale;
+	GetCharacterMovement()->StopMovementImmediately();
+	AirControlTemp = GetCharacterMovement()->AirControl;
+	GetCharacterMovement()->AirControl = 0;
+	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	return true;
 }
 
 void AMech::initalise(AVerticalSliceCharacter* Player)
@@ -193,14 +287,7 @@ void AMech::StopAim_Implementation()
 
 void AMech::Damage_Implementation(float dmg, FVector Loc)
 {
-	if (CurrentHealth - dmg >= 0)
-	{
-		CurrentHealth -= dmg;
-	}
-	else
-	{
-		CurrentHealth = 0;
-	}
+	giveHealth(false, -dmg);
 }
 
 void AMech::ChangeInput(bool Enable)
@@ -237,6 +324,7 @@ void AMech::JumpEnd()
 void AMech::JumpTakeOff()
 {
 	Jump();
+	giveCharge(false, -JumpChargeCost);
 }
 
 void AMech::JumpLand()
@@ -253,61 +341,163 @@ void AMech::Mount_Implementation()
 
 void AMech::Dash()
 {
-	if (CurrentStamina - DashStamina > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+	if (FeatureUpgradesMap[FeatureUpgrades::Dash])
 	{
-		//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
-		FVector launchDir = this->GetActorRightVector() * MoveRightAxis;
-		CurrentStamina -= DashStamina;
-		LaunchCharacter(launchDir * DashForce, false, false);
+		if (CurrentCharge - DashChargeCost > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+		{
+			//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
+			FVector launchDir = GetCharacterMovement()->Velocity;
+			launchDir.Normalize();
+			CurrentCharge -= DashChargeCost;
+			giveCharge(false, -DashChargeCost);
+			LaunchCharacter(launchDir * DashForce, false, false);
+		}
 	}
 }
 
-void AMech::Upgrade(MechUpgrades upgrade)
+void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 {
-	switch (upgrade)
+	FeatureUpgradesMap[_Upgrade] = _Enable;
+
+	switch (_Upgrade)
 	{
-	case MechUpgrades::StaminaRegen:
-		StaminaRechargeRate *= 1.2;
+	case FeatureUpgrades::Boosters:
 		break;
-	case MechUpgrades::MoreAmmo:
-		MaxAmmo *= 2;
+	case FeatureUpgrades::Shotgun:
 		break;
-	case MechUpgrades::FasterReload:
-		reloadAnimationRate *= 1.5;
+	case FeatureUpgrades::Dash:
+		break;
+	case FeatureUpgrades::GroundPound:
+		break;
+	case FeatureUpgrades::NoChargeRegenDelay:
+		break;
+	case FeatureUpgrades::HPRegen:
+		break;
+	case FeatureUpgrades::HPPotion://to do
+		break;
+	case FeatureUpgrades::Flamethrower:
+		break;
+	case FeatureUpgrades::RocketLauncher:
 		break;
 	default:
 		break;
 	}
-	LastMechUpgrade = upgrade;
 }
 
-void AMech::UpgradeAbilities(AbilityUpgrades upgrade)
+void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount, bool _Add)
 {
-	switch (upgrade)
+	StatUpgradesMap[_Upgrade] = (_Add)? StatUpgradesMap[_Upgrade] + _Amount :_Amount;
+	switch (_Upgrade)
 	{
-	case AbilityUpgrades::ShorterCooldown:
-		abilityCooldown /= 0.8;
+	case StatUpgrades::RifleDamage:
+		Gun->UpgradeDamage(StatUpgradesMap[_Upgrade]);
 		break;
-	case AbilityUpgrades::ExtraCharge:
-		Shotgun->setBulletsPerShot(Shotgun->getBulletsPerShot() * 2);
+
+	case StatUpgrades::RifleReload:
+		ReloadSpeed = DefaultMech->ReloadSpeed + ReloadSpeedIncrement * StatUpgradesMap[_Upgrade];
+		ReloadPoint = DefaultMech->ReloadPoint / ReloadSpeed;
 		break;
-	case AbilityUpgrades::Dragonbreath:
-		Shotgun->Upgrade(GunUpgrades::BetterDamage);
+
+	case StatUpgrades::RifleClipSize:
+		Gun->UpgradeClipSize(StatUpgradesMap[_Upgrade]);
 		break;
+
+	case StatUpgrades::RifleReserveAmmo:
+		MaxAmmo =  DefaultMech->MaxAmmo + AmmoIncrement * StatUpgradesMap[_Upgrade];
+		CurrentAmmo = MaxAmmo;
+		break;
+
+	case StatUpgrades::ShotgunDamage:
+		Shotgun->UpgradeDamage(StatUpgradesMap[_Upgrade]);
+		break;
+
+	case StatUpgrades::ShotgunCharges:
+		Shotgun->UpgradeClipSize(StatUpgradesMap[_Upgrade]);
+		break;
+
+	case StatUpgrades::ShotgunPellets:
+		Shotgun->UpgradeBulletsPerShot(StatUpgradesMap[_Upgrade]);
+		break;
+
+	case StatUpgrades::ShotgunRange:
+		Shotgun->UpgradeRange(StatUpgradesMap[_Upgrade]);
+		break;
+
+	case StatUpgrades::MechMaxHP:
+		MaxHealth =  DefaultMech->MaxHealth + HealthIncrement * StatUpgradesMap[_Upgrade];
+		CurrentHealth = MaxHealth;
+		break;
+
+	case StatUpgrades::MechMaxCharge:
+		MaxCharge = DefaultMech->MaxCharge + ChargeIncrement * StatUpgradesMap[_Upgrade];
+		CurrentCharge = MaxCharge;
+		break;
+
+	case StatUpgrades::MechHPRegen:
+		HealthRechargeRatePerSecond = DefaultMech->HealthRechargeRatePerSecond + HealthRegenIncrement * StatUpgradesMap[_Upgrade];
+		break;
+
+	case StatUpgrades::MechChargeRegen:
+		ChargeRechargeRatePerSecond = DefaultMech->ChargeRechargeRatePerSecond + ChargeRegenIncrement * StatUpgradesMap[_Upgrade];
+		break;
+
+	case StatUpgrades::FlamethrowerDamage:
+		Flamethrower->UpgradeDamage(StatUpgradesMap[_Upgrade]);
+		break;
+
+	case StatUpgrades::FlamethrowerFireDamage:
+		Flamethrower->UpgradeFireDamage(StatUpgradesMap[_Upgrade]);
+		break;
+
+	case StatUpgrades::RocketAmount:
+		RocketLauncher->UpgradeClipSize(StatUpgradesMap[_Upgrade]);
+		break;
+
+	case StatUpgrades::RocketRadius:
+		RocketLauncher->UpgradeExplosionRadius(StatUpgradesMap[_Upgrade]);
+		break;
+
 	default:
 		break;
+
 	}
-	LastAbilityUpgrade = upgrade;
+}
+
+void AMech::MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap, bool &_Completed)
+{
+	_Completed = (Gun && Shotgun);
+	if (!_Completed) { return; }
+
+	for (auto& Feature : _FeatureUpgradesMap)
+	{
+		UpgradeFeatures(Feature.Key, Feature.Value);
+	}
+
+	for (auto& Stat : _StatUpgradesMap)
+	{
+		UpgradeStats(Stat.Key, Stat.Value, false);
+	}
+}
+
+void AMech::UpgradeStatsUsingCurrent()
+{
+	for (auto& Stat : StatUpgradesMap)
+	{
+		UpgradeStats(Stat.Key, Stat.Value, false);
+	}
 }
 
 void AMech::Sprint()
 {
-	if (Aiming)
+	if (FeatureUpgradesMap[FeatureUpgrades::Boosters])
 	{
-		StopAim();
+		if (Aiming)
+		{
+			StopAim();
+		}
+		GetCharacterMovement()->MaxWalkSpeed = SprintWalkSpeed;
+		Sprinting = true;
 	}
-	GetCharacterMovement()->MaxWalkSpeed = SprintWalkSpeed;
-	Sprinting = true;
 }
 
 void AMech::StopSprint()
@@ -323,6 +513,7 @@ void AMech::StopSprint()
 
 void AMech::Melee()
 {
+	if (GroundPound()) { return; }
 	if (MeleeAnim)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
@@ -367,7 +558,7 @@ void AMech::Melee()
 				{
 					HitMonsters.Add(HitActor);
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "HitMonster");
-					HitActor->DamageMonster(MeleeDamage, Hit.Location, Hit.BoneName);
+					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
 				}
 			}
 		}
@@ -397,31 +588,49 @@ void AMech::Reload()
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (!(mechAnim->Montage_IsPlaying(ReloadAnim)))
 		{
-			mechAnim->Montage_Play(ReloadAnim, reloadAnimationRate);
-			currentReloadPoint = reloadPoint / reloadAnimationRate;
+			mechAnim->Montage_Play(ReloadAnim, ReloadSpeed);
 			reloading = true;
 		}
 	}
+}
+
+FVector AMech::GetCameraLookLocation(float _Range, float &_Dist)
+{
+	FHitResult Hit;
+	FVector TraceStart = FollowCamera->GetComponentLocation();
+	FVector VDist = (FollowCamera->GetForwardVector() * (CameraBoom->TargetArmLength + _Range));
+	_Dist = VDist.Size();;
+	FVector TraceEnd = TraceStart + VDist;
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Camera, Gun->ignoredActors);
+
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s, %s"), *(Hit.Actor.Get()->GetName()) ,*(Hit.GetComponent()->GetName())));
+
+	if (Hit.bBlockingHit)
+	{
+		_Dist = Hit.Distance;
+		return Hit.Location;
+	}
+	return Hit.TraceEnd;
 }
 
 void AMech::Dismount_Implementation()
 {
 	if (PlayerChar && !(GetMovementComponent()->IsFalling()))
 	{
-		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 100;
+		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 500;
 
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
 
 		FHitResult SweepHit;
-		bool bhit = false;
+		bool bhit = true;
 
-		while (!bhit)
+		while (bhit)
 		{
 			GetWorld()->SweepSingleByChannel(SweepHit, spawnLoc, spawnLoc + FVector(0, 0.1, 0), FQuat::Identity, ECollisionChannel::ECC_Pawn, PlayerChar->GetCapsuleComponent()->GetCollisionShape());
 			bhit = SweepHit.bBlockingHit;
-			if (!bhit)
+			if (bhit)
 			{
-				spawnLoc += FVector(0, 1, 0);
+				spawnLoc += GetActorForwardVector();
 			}
 		}
 		PlayerChar->SetActorLocationAndRotation(spawnLoc, GetActorRotation());
@@ -443,56 +652,169 @@ void AMech::Dismount_Implementation()
 
 void AMech::UseAbility()
 {
-	if (ShotgunShoot && canUseAbility && Shotgun)
+	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun] && ActiveAbility == 0)
 	{
-		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
-		if (!(mechAnim->Montage_IsPlaying(ShotgunShoot)))
+		Shotgun->Shoot();
+		if (!GetWorldTimerManager().IsTimerActive(ShotgunTimerHandle))
 		{
-			Shotgun->ShootRaycasts();
-			canUseAbility = false;
-			GetWorldTimerManager().SetTimer(abilityTimerHandle, this, &AMech::AbilityReset, abilityCooldown);
+			GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::ShotgunRecharge, ShotgunCooldown);
+		}
+	}
+	else if (FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && ActiveAbility == 1)
+	{
+		GetWorldTimerManager().ClearTimer(FlamethrowerTimerHandle);
+		Flamethrower->Shoot();
+		FlamethrowerCanRecharge = false;
+	}
+	else if (FeatureUpgradesMap[FeatureUpgrades::RocketLauncher] && ActiveAbility == 2)
+	{
+		RocketLauncher->Shoot();
+		if (!GetWorldTimerManager().IsTimerActive(RocketLauncherTimerHandle))
+		{
+			GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
 		}
 	}
 }
 
-void AMech::AbilityReset()
+void AMech::StopAbility()
 {
-	canUseAbility = true;
+	Flamethrower->StopShoot();
+	GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
+
+	Shotgun->StopShoot();
+
+	RocketLauncher->StopShoot();
+}
+
+void AMech::ShotgunRecharge()
+{
+	if (!Shotgun->Reload(1))
+	{
+		GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::ShotgunRecharge, ShotgunCooldown);
+	}
+}
+
+void AMech::FlamethrowerRecharge()
+{
+	FlamethrowerCanRecharge = true;
+}
+
+void AMech::RocketLauncherRecharge()
+{
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Recharged Rocket")));
+	if (!RocketLauncher->Reload(1))
+	{
+		GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
+	}
+}
+
+void AMech::SwitchAbility()
+{
+	bool Available = false;
+	while (!Available)
+	{
+		ActiveAbility++;
+		ActiveAbility %= 3;
+		if (ActiveAbility == 0 && FeatureUpgradesMap[FeatureUpgrades::Shotgun])
+		{
+			Available = true;
+		}
+		else if (ActiveAbility == 1 && FeatureUpgradesMap[FeatureUpgrades::Flamethrower])
+		{
+			Available = true;
+		}
+		else if (ActiveAbility == 2 && FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
+		{
+			Available = true;
+		}
+		else if (!FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && !FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
+		{
+			ActiveAbility = 0;
+			Available = true;
+		}
+	}
+	
+	
 }
 
 void AMech::giveAmmo(bool Max, int amount)
 {
-	if (Max)
+	if (Max || CurrentAmmo + amount >= MaxAmmo)
 	{
 		CurrentAmmo = MaxAmmo;
+		int TempAmmo = 10000;
+		Gun->Reload(TempAmmo);
+		Shotgun->Reload(TempAmmo);
+		Flamethrower->Reload(TempAmmo);
+		RocketLauncher->Reload(TempAmmo);
+	}
+	else if(CurrentAmmo + amount > 0)
+	{
+		CurrentAmmo += amount;
 	}
 	else
 	{
-		CurrentAmmo = (CurrentAmmo + amount < MaxAmmo) ? CurrentAmmo + amount : MaxAmmo;
+		CurrentAmmo = 0;
 	}
 }
 
 void AMech::giveHealth(bool Max, int amount)
 {
-	if (Max)
+	if (Max || CurrentHealth + amount >= MaxHealth)
 	{
 		CurrentHealth = MaxHealth;
 	}
 	else
 	{
-		CurrentHealth = (CurrentHealth + amount < MaxHealth) ? CurrentHealth + amount : MaxHealth;
+		if (CurrentHealth + amount > 0)
+		{
+			CurrentHealth += amount;
+		}
+		else
+		{
+			CurrentHealth = 0;
+		}
+
+		HealthRechargeAllowed = false;
+
+		FTimerDelegate TimerCallback;
+		TimerCallback.BindLambda([=]
+			{
+				HealthRechargeAllowed = true;
+			});
+
+		GetWorldTimerManager().SetTimer(HealthRechargeTimer, TimerCallback, HealthRechargeDelay, false);
 	}
 }
 
-void AMech::giveStamina(bool Max, int amount)
+void AMech::giveCharge(bool Max, int amount)
 {
-	if (Max)
+	if (Max || CurrentCharge + amount >= MaxCharge)
 	{
-		CurrentStamina = MaxStamina;
+		CurrentCharge = MaxCharge;
 	}
 	else
 	{
-		CurrentStamina = (CurrentStamina + amount < MaxStamina) ? CurrentStamina + amount : MaxStamina;
+		if (CurrentCharge + amount > 0)
+		{
+			CurrentCharge += amount;
+		}
+		else
+		{
+			CurrentCharge = 0;
+		}
+		if (!FeatureUpgradesMap[FeatureUpgrades::NoChargeRegenDelay])
+		{
+			ChargeRechargeAllowed = false;
+
+			FTimerDelegate TimerCallback;
+			TimerCallback.BindLambda([=]
+				{
+					ChargeRechargeAllowed = true;
+				});
+
+			GetWorldTimerManager().SetTimer(ChargeRechargeTimer, TimerCallback, ChargeRechargeDelay, false);
+		}
 	}
 }
 
@@ -500,6 +822,8 @@ void AMech::giveStamina(bool Max, int amount)
 void AMech::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FlamethrowerRechargeTimer += DeltaTime;
 
 	if (BoomCurrentTargetChange)
 	{
@@ -524,52 +848,16 @@ void AMech::Tick(float DeltaTime)
 		CameraCurrentFOVChange = true;
 	}
 
-	FRotator GunRotation = GetMesh()->GetSocketRotation("GunSocket");
-
-	if (GunSnapping)
-	{
-		FRotator CameraRotation = FollowCamera->GetComponentRotation();
-		Gun->SetActorRotation(FRotator(CameraRotation.Pitch, CameraRotation.Yaw, GunRotation.Roll));
-	}
-	else if (Gun->GetActorRotation() != FRotator(0, GunRotation.Yaw, GunRotation.Roll))
-	{
-		Gun->SetActorRotation(FRotator(0, GunRotation.Yaw, GunRotation.Roll));
-	}
-
-	if (Sprinting)
-	{
-		if (CurrentStamina > 0)
-		{
-			CurrentStamina--;
-		}
-		else
-		{
-			StopSprint();
-		}
-	}
-	else if (CurrentStamina < MaxStamina)
-	{
-		if (CurrentStamina + StaminaRechargeRate < MaxStamina)
-		{
-			CurrentStamina += StaminaRechargeRate;
-		}
-		else
-		{
-			CurrentStamina = MaxStamina;
-		}
-	}
-
-
 	if (ReloadAnim && reloading)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
 		if (mechAnim->Montage_IsPlaying(ReloadAnim))
 		{
-			if (mechAnim->Montage_GetPosition(ReloadAnim) > currentReloadPoint)
+			if (mechAnim->Montage_GetPosition(ReloadAnim) > ReloadPoint)
 			{
 				if (Gun)
 				{
-					Gun->Reload(CurrentAmmo);
+					Gun->ReloadUsingAmmoPool(CurrentAmmo);
 				}
 				reloading = false;
 			}
@@ -578,6 +866,50 @@ void AMech::Tick(float DeltaTime)
 		{
 			reloading = false;
 		}
+	}
+
+	if (Sprinting && !(GetCharacterMovement()->Velocity.IsZero()))
+	{
+		if (CurrentCharge > 0)
+		{
+			giveCharge(false, -SprintingChargeCostPerSecond * DeltaTime);
+		}
+		else
+		{
+			StopSprint();
+		}
+	}
+	else if (ChargeRechargeAllowed && CurrentCharge < MaxCharge)
+	{
+		if (CurrentCharge + ChargeRechargeRatePerSecond * DeltaTime < MaxCharge)
+		{
+			CurrentCharge += ChargeRechargeRatePerSecond * DeltaTime;
+		}
+		else
+		{
+			CurrentCharge = MaxCharge;
+		}
+	}
+
+	if (HealthRechargeAllowed && CurrentHealth < MaxHealth && FeatureUpgradesMap[FeatureUpgrades::HPRegen])
+	{
+		if (CurrentHealth + HealthRechargeRatePerSecond * DeltaTime < MaxHealth)
+		{
+			CurrentHealth += HealthRechargeRatePerSecond * DeltaTime;
+		}
+		else
+		{
+			CurrentHealth = MaxHealth;
+		}
+	}
+
+	if (FlamethrowerRechargeTimer > 1.0f / FlamethrowerAmmoPerSecond)
+	{
+		if (FlamethrowerCanRecharge)
+		{
+			Flamethrower->Reload(1);
+		}
+		FlamethrowerRechargeTimer = 0.0f;
 	}
 }
 

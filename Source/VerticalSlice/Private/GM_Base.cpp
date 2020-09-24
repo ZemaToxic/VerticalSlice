@@ -4,13 +4,19 @@
 #include "GM_Base.h"
 
 #pragma region PART VALUES
-#define VALUE_SHARPFANG 100
-#define VALUE_HARDSPIKE 200
-#define VALUE_ROUGHHIDE 300
+#define VALUE_SHARPFANG 10
+#define VALUE_HARDSPIKE 20
+#define VALUE_ROUGHHIDE 30
 #pragma endregion
 
 
+/*
+	Sells all the parts the player has collected and converts it to money
 
+	@params void
+	@return void
+	@author Jason Lu
+*/
 void AGM_Base::SellAllParts()
 {
 	for (auto& Part : partsCollected)
@@ -33,17 +39,32 @@ void AGM_Base::SellAllParts()
 	}
 }
 
+/*
+	Returns true if the player has currently collected no parts
+
+	@params void
+	@return bool
+	@author Jason Lu
+*/
+bool AGM_Base::CheckIfPartsEmpty()
+{
+	for (auto& Part : partsCollected)
+	{
+		if (Part.Value == 0) break;
+		else return false;
+	}
+	return true;
+}
+
+/*
+	This function creates a new FSpawnInfo object and adds it to the SpawnQueue to be spawned by the SpawnMonsters() function
+
+	@params MonsterSpawnLocations _loc, int _numbersToSpawn, TSubclassOf<APawn> _monster, UBehaviorTree* _BT
+	@return void
+	@author Jason Lu
+*/
 void AGM_Base::SpawnMonstersAtLocation_Implementation(MonsterSpawnLocations _loc, int _numbersToSpawn, TSubclassOf<APawn> _monster, UBehaviorTree* _BT)
 {
-	//CurrentSpawnLocation = _loc;
-	//MonsterToSpawn = _monster;
-	//BT = _BT;
-
-	//for (int i = 0; i < _numbersToSpawn; i++)
-	//{
-	//	SpawnMonsters();
-	//}
-
 	if (_numbersToSpawn <= 0) return;
 
 	FSpawnInfo NewSpawnInfo = FSpawnInfo();
@@ -59,6 +80,13 @@ void AGM_Base::SpawnMonstersAtLocation_Implementation(MonsterSpawnLocations _loc
 	SpawnMonsters();
 }
 
+/*
+	Adds Monster Parts to the PartsCollected map
+
+	@params MonsterDrops _dropType, int _amount
+	@return void
+	@author Jason Lu
+*/
 void AGM_Base::AddParts_Implementation(MonsterDrops _dropType, int _amount)
 {
 	for (auto& Part : partsCollected)

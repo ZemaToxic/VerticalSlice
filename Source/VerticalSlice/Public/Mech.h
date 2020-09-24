@@ -4,24 +4,44 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GunBase.h"
+#include "FlamethrowerBase.h"
+#include "RocketLauncher.h"
 #include "Mech.generated.h"
 
 UENUM()
-enum class MechUpgrades : uint8
+enum class FeatureUpgrades : uint8
 {
-	None,
-	StaminaRegen,
-	MoreAmmo,
-	FasterReload,
+	Boosters,
+	Shotgun,
+	Dash,
+	GroundPound,
+	NoChargeRegenDelay,
+	HPRegen,
+	HPPotion,
+	Flamethrower,
+	RocketLauncher,
 };
 
 UENUM()
-enum class AbilityUpgrades : uint8
+enum class StatUpgrades : uint8
 {
-	None,
-	ShorterCooldown,
-	ExtraCharge,
-	Dragonbreath,
+	RifleDamage,
+	RifleReload,
+	RifleClipSize,
+	RifleReserveAmmo,
+	ShotgunDamage,
+	ShotgunCharges,
+	ShotgunPellets,
+	ShotgunRange,
+	MechMaxHP,
+	MechMaxCharge,
+	MechHPRegen,
+	MechChargeRegen,
+	FlamethrowerDamage,
+	FlamethrowerFireDamage,
+	RocketAmount,
+	RocketRadius,
 };
 
 
@@ -41,8 +61,15 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* FollowCamera;
 
-private:
+	//default
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Default")
+		TSubclassOf<AMech> MechBPClass;
 
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Default")
+		AMech* DefaultMech = 0;
+
+private:
+	///Camera variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Camera")
 		float BoomBaseTarget = 300;
 
@@ -79,6 +106,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
 		bool Aiming = false;
 
+
+	///Movement variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
 		float BaseWalkSpeed = 600;
 
@@ -91,72 +120,174 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
 		bool Sprinting = false;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
+		float SprintingChargeCostPerSecond = 100;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
+		float JumpChargeCost = 100;
+
+	///Melee variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
 		float MeleeDamage = 10;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
 		 FVector MeleeRange = FVector(150,150,450);
 
+	///Gun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
-		TSubclassOf<class AGunBase> GunClass;
+		TSubclassOf<AGunBase> GunClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
-		class AGunBase* Gun = 0;
+		AGunBase* Gun = 0;
 
+	///Ability variables
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ability", meta = (AllowPrivateAccess = "true"))
+		int ActiveAbility = 0;
+
+	//Shotgun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
-		TSubclassOf<class AGunBase> ShotgunClass;
+		TSubclassOf<AGunBase> ShotgunClass;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
-		class AGunBase* Shotgun = 0;
+		AGunBase* Shotgun = 0;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
-		bool GunSnapping = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle ShotgunTimerHandle;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		float ShotgunCooldown = 2.0f;
+
+	//Flamethrower variables
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
+		TSubclassOf<AFlamethrowerBase> FlamethrowerClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
+		AFlamethrowerBase* Flamethrower = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle FlamethrowerTimerHandle;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		float FlamethrowerRechargeDelay = 1.0f;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
+		bool FlamethrowerCanRecharge = false;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		int FlamethrowerAmmoPerSecond = 5;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
+		float FlamethrowerRechargeTimer = 0.0f;
+
+	//rocket variables
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
+		TSubclassOf<ARocketLauncher> RocketLauncherClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
+		ARocketLauncher* RocketLauncher = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle RocketLauncherTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
+		float RocketLauncherCooldown = 1.0f;
+
+	///resource variables
+	//ammo
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
 		int CurrentAmmo = 100;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
 		int MaxAmmo = 100;
 
+	//health
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
-		float CurrentHealth = 100;
+		float CurrentHealth = 300;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
-		float MaxHealth = 100;
+		float MaxHealth = 300;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
-		float CurrentStamina = 100;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
-		float MaxStamina = 100;
+		float HealthWarningThreshold = 0.33f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
-		float StaminaRechargeRate = 1;
+		float HealthRechargeRatePerSecond = 15.0f;
 
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		bool HealthRechargeAllowed = true;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle HealthRechargeTimer;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float HealthRechargeDelay = 1.0;
+
+	//charge(stamina)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float CurrentCharge = 600;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float MaxCharge = 600;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources")
+		float ChargeRechargeRatePerSecond = 60.0f;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		bool ChargeRechargeAllowed = true;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle ChargeRechargeTimer;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Resources", meta = (AllowPrivateAccess = "true"))
+		float ChargeRechargeDelay = 1.0;
+
+	///Dash Variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
-		float DashStamina = 20;
+		float DashChargeCost = 300;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
 		float DashForce = 10000;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
-		float MoveRightAxis = 0;
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
-		float MoveForwardAxis = 0;
-
+	///player character
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Player")
 		TSubclassOf<class AVerticalSliceCharacter> PlayerClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Player", meta = (AllowPrivateAccess = "true"))
 		class AVerticalSliceCharacter* PlayerChar = 0;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		MechUpgrades LastMechUpgrade = MechUpgrades::None;
+	///Upgrade variables
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
+		TMap<FeatureUpgrades, bool> FeatureUpgradesMap = {
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::Boosters, false),
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::Shotgun, false),
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::Dash, false), 
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::GroundPound, false), 
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::NoChargeRegenDelay, false),
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::HPRegen, false), 
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::HPPotion, false), 
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::Flamethrower, false),
+		TPair<FeatureUpgrades, bool>(FeatureUpgrades::RocketLauncher, false), };
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Upgrade", meta = (AllowPrivateAccess = "true"))
-		AbilityUpgrades LastAbilityUpgrade = AbilityUpgrades::None;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
+		TMap<StatUpgrades, int> StatUpgradesMap = {
+		TPair<StatUpgrades, int>(StatUpgrades::RifleDamage, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RifleClipSize, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RifleReload, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RifleReserveAmmo, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::ShotgunDamage, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::ShotgunCharges, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::ShotgunPellets, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::ShotgunRange, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::MechMaxHP, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::MechMaxCharge, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::MechHPRegen, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::MechChargeRegen , 0),
+		TPair<StatUpgrades, int>(StatUpgrades::FlamethrowerDamage, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::FlamethrowerFireDamage, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RocketAmount, 0),
+		TPair<StatUpgrades, int>(StatUpgrades::RocketRadius, 0), };
 
+	///animations
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		UAnimMontage* AimShoot = 0;
 
@@ -167,36 +298,85 @@ private:
 		UAnimMontage* ShotgunShoot = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* FlamethrowerShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* RocketLauncherShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		UAnimMontage* MeleeAnim = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		UAnimMontage* ReloadAnim = 0;
 
+	///Animation variables
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
+		float MoveRightAxis = 0;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
+		float MoveForwardAxis = 0;
+
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | Bools")
 		bool reloading = false;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | Animation")
-		float currentReloadPoint = 4.0f;
-
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Watchables | Animation")
-		float reloadPoint = 4.0f;
+		float ReloadPoint = 4.0f;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation")
-		float reloadAnimationRate = 2.0f;
+		float ReloadSpeed = 2.0f;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Watchables | AbilityCooldown")
-		bool canUseAbility = true;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | AbilityCooldown", meta = (AllowPrivateAccess = "true"))
-		FTimerHandle abilityTimerHandle;
-
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | AbilityCooldown")
-		float abilityCooldown = 2.0f;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation | Jump", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		bool JumpInput = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		bool IsGroundPounding = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		bool GunSnapping = true;
+
+	///Ground pound Variables
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float BaseGravityScale = 10;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundGravityScale = 100;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundLaunchZ = 1000;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundRangeScale = 1;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundBaseRange = 1000;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundLaunchPower = 10000;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float AirControlTemp = 0;
+
+	//Upgrades
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float ReloadSpeedIncrement = 0.4f;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
+		int AmmoIncrement = 40;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float HealthIncrement = 60;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float ChargeIncrement = 120;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float HealthRegenIncrement = 3;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
+		float ChargeRegenIncrement = 12;
+
 public:
+	//variable/s the player needs to see and change
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Mount")
 			bool canMount = true;
 
@@ -234,9 +414,13 @@ protected:
 	void StopShoot();
 
 	void UseAbility();
+	void StopAbility();
 
-	UFUNCTION()
-		void AbilityReset();
+	void ShotgunRecharge();
+	void FlamethrowerRecharge();
+	void RocketLauncherRecharge();
+
+	void SwitchAbility();
 
 	void JumpStart();
 	void JumpEnd();
@@ -253,8 +437,13 @@ protected:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void Landed(const FHitResult& Hit) override;
+	bool GroundPound();
+
 public:
 	void Reload();
+
+	FVector GetCameraLookLocation(float _Range, float& _Dist);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveAmmo(bool Max, int amount = 0);
@@ -263,13 +452,19 @@ public:
 		void giveHealth(bool Max, int amount = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
-		void giveStamina(bool Max, int amount = 0);
+		void giveCharge(bool Max, int amount = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void Upgrade(MechUpgrades upgrade);
+		void UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
-		void UpgradeAbilities(AbilityUpgrades upgrade);
+		void UpgradeStats(StatUpgrades _Upgrade, int _Amount, bool _Add);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
+		void MasterUpgrade(TMap<FeatureUpgrades,bool> _FeatureUpgradesMap, TMap<StatUpgrades,int> _StatUpgradesMap, bool& _Completed);
+
+	UFUNCTION(CallInEditor, Category = "Custom | Gameplay | Upgrade")
+		void UpgradeStatsUsingCurrent();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Health")
 		void Damage(float dmg, FVector Loc);
