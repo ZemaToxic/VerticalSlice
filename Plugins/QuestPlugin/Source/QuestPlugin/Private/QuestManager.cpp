@@ -62,8 +62,7 @@ void AQuestManager::UnloadQuest(int Id)
 				if (i != Id)
 				{
 					currentName = *(NameToId.FindKey(i));
-					NameToId.Remove(currentName);
-					NameToId.AddByHash(Id, currentName);
+					NameToId[currentName] = Id;
 					break;
 				}
 			}
