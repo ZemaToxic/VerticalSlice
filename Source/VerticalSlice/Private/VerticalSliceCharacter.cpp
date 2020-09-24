@@ -54,7 +54,7 @@ void AVerticalSliceCharacter::SetupPlayerInputComponent(class UInputComponent* P
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AVerticalSliceCharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AVerticalSliceCharacter::MoveForward);
@@ -216,6 +216,19 @@ void AVerticalSliceCharacter::Sprint()
 void AVerticalSliceCharacter::StopSprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = PlayerWalkSpeed;
+}
+
+void AVerticalSliceCharacter::Jump()
+{
+	if (climbing)
+	{
+		SetClimbing(false, FVector(), FVector());
+	}
+	else
+	{
+		Super::Jump();
+	}
+
 }
 
 bool AVerticalSliceCharacter::Mount_Implementation()
