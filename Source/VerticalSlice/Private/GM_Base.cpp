@@ -4,9 +4,9 @@
 #include "GM_Base.h"
 
 #pragma region PART VALUES
-#define VALUE_SHARPFANG 100
-#define VALUE_HARDSPIKE 200
-#define VALUE_ROUGHHIDE 300
+#define VALUE_SHARPFANG 10
+#define VALUE_HARDSPIKE 20
+#define VALUE_ROUGHHIDE 30
 #pragma endregion
 
 

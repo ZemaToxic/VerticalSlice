@@ -38,6 +38,7 @@ void AGunBase::init(AMech* _Mech, TSubclassOf<AGunBase> _GunClass)
 	if (_Mech)
 	{
 		AttachedMech = _Mech;
+		ignoredActors.AddIgnoredActor(_Mech);
 	}
 
 	if (_GunClass)
