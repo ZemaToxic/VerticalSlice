@@ -8,6 +8,7 @@
 #include "MonsterBase.h" 
 #include "BaseEnemySpawner.generated.h"
 
+class AMonsterBase;
 
 UCLASS()
 class VERTICALSLICE_API ABaseEnemySpawner : public AActor
@@ -25,7 +26,9 @@ protected:
 public:	
 
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<ACharacter> EnemyActor;
+		TSubclassOf<ACharacter> EnemyActor;	
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ACharacter> secondEnemyActor;
 
 	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride);
 	void SpawnSpecial(int _enemyCount, float _HealthOverride, float _DamageOverride);

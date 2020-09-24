@@ -45,14 +45,11 @@ void ABaseEnemySpawner::SpawnEnemies(int _enemyCount, float _HealthOverride, flo
 		// Set Spawn parameters, (Adjust spawn location if colliding with another Actor)
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		// Get the AI Actor to spawn from its Blueprint
-		UObject* SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Monsters/BP_MonsterA.BP_MonsterA")));
-		UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
 		// Double Check the world exists to prevent NULL access errors.
 		if (GetWorld())
 		{
 			// Spawn an enemy with provided information above, and make sure its AIController is enabled.
-			AMonsterBase* spawnedEnemy = GetWorld()->SpawnActor<AMonsterBase>(GeneratedBP->GeneratedClass, SpawnLocation, SpawnInfo);
+			AMonsterBase* spawnedEnemy = GetWorld()->SpawnActor<AMonsterBase>(EnemyActor, SpawnLocation, SpawnInfo);
 			spawnedEnemy->SpawnDefaultController();
 			spawnedEnemy->health = _HealthOverride;
 		}
@@ -79,14 +76,11 @@ void ABaseEnemySpawner::SpawnSpecial(int _enemyCount, float _HealthOverride, flo
 		// Set Spawn parameters, (Adjust spawn location if colliding with another Actor)
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		// Get the AI Actor to spawn from its Blueprint
-		UObject* SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Monsters/BP_MonsterB.BP_MonsterB")));
-		UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
 		// Double Check the world exists to prevent NULL access errors.
 		if (GetWorld())
 		{
 			// Spawn an enemy with provided information above, and make sure its AIController is enabled.
-			AMonsterBase* spawnedEnemy = GetWorld()->SpawnActor<AMonsterBase>(GeneratedBP->GeneratedClass, SpawnLocation, SpawnInfo);
+			AMonsterBase* spawnedEnemy = GetWorld()->SpawnActor<AMonsterBase>(secondEnemyActor, SpawnLocation, SpawnInfo);
 			spawnedEnemy->SpawnDefaultController();
 		}
 	}

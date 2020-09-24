@@ -52,6 +52,11 @@ void AGM_HordeMode::NextRound(int _roundCount)
 
 	if (iCurrentRound % 5 == 0)
 	{
+		//if (iCurrentRound % 50 == 0)
+		//{
+		//	iCurrentEnemies = 1;
+		//	SpawnBoss(iCurrentEnemies);
+		//}
 		iCurrentEnemies = 4;	
 		// Spawn the special wave.
 		SpawnSpecial(iCurrentEnemies);
