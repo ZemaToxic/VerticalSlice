@@ -11,6 +11,7 @@ enum class MonsterSpawnLocations : uint8
 {
 	TEST,
 	WATERPIPE1,
+	WATERPIPE2,
 	LEVEL2_1,
 	LEVEL2_2,
 	LEVEL2_3,
