@@ -57,8 +57,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
 		FTimerHandle FlyTime;
 
-	FQuat RotGoal = FQuat();
-	FVector UpVect = FVector();
+	bool PastLaunchLocation = false;
 
 public:	
 	// Sets default values for this actor's properties

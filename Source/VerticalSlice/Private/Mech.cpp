@@ -136,7 +136,7 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
 	PlayerInputComponent->BindAction("Shotgun", IE_Released, this, &AMech::StopAbility);
 
-	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbility);
+	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbilityInput);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
@@ -674,12 +674,16 @@ void AMech::UseAbility()
 			GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
 		}
 	}
+	else if (SwitchAbility())
+	{
+		UseAbility();
+	}
 }
 
 void AMech::StopAbility()
 {
 	Flamethrower->StopShoot();
-	GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
+	GetWorldTimerManager().SetTimer(FlamethrowerTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
 
 	Shotgun->StopShoot();
 
@@ -701,14 +705,13 @@ void AMech::FlamethrowerRecharge()
 
 void AMech::RocketLauncherRecharge()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Recharged Rocket")));
 	if (!RocketLauncher->Reload(1))
 	{
 		GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
 	}
 }
 
-void AMech::SwitchAbility()
+bool AMech::SwitchAbility()
 {
 	bool Available = false;
 	while (!Available)
@@ -733,8 +736,7 @@ void AMech::SwitchAbility()
 			Available = true;
 		}
 	}
-	
-	
+	return Available;
 }
 
 void AMech::giveAmmo(bool Max, int amount)
@@ -912,4 +914,3 @@ void AMech::Tick(float DeltaTime)
 		FlamethrowerRechargeTimer = 0.0f;
 	}
 }
-
