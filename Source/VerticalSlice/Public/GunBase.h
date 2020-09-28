@@ -111,10 +111,10 @@ protected:
 		float DamageUpgradeIncrement = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
-		float ClipSizeUpgradeIncrement = 0;
+		int ClipSizeUpgradeIncrement = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
-		float BulletsPerShotUpgradeIncrement = 0;
+		int BulletsPerShotUpgradeIncrement = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
 		float RangeUpgradeIncrement = 0;
@@ -141,10 +141,10 @@ public:
 	bool Reload(int _Amount);
 	bool hasMaxMag() { return CurrentClipSize == MaxClipSize; }
 
-	void UpgradeDamage(float _Amount);
-	void UpgradeClipSize(float _Amount);
-	void UpgradeBulletsPerShot(float _Amount);
-	void UpgradeRange(float _Amount);
+	void UpgradeDamage(int _Amount);
+	void UpgradeClipSize(int _Amount);
+	void UpgradeBulletsPerShot(int _Amount);
+	void UpgradeRange(int _Amount);
 
 protected:
 	virtual void BeginPlay() override;

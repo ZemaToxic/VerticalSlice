@@ -416,11 +416,15 @@ protected:
 	void UseAbility();
 	void StopAbility();
 
+	UFUNCTION()
 	void ShotgunRecharge();
+	UFUNCTION()
 	void FlamethrowerRecharge();
+	UFUNCTION()
 	void RocketLauncherRecharge();
 
-	void SwitchAbility();
+	bool SwitchAbility();
+	void SwitchAbilityInput() { SwitchAbility(); }
 
 	void JumpStart();
 	void JumpEnd();
