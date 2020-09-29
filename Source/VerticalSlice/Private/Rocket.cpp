@@ -116,7 +116,7 @@ void ARocket::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetActorLocation().Equals(LaunchLoc, 100))
+	if (PastLaunchLocation)
 	{
 		float speed = RocketMove->Velocity.Size();
 		RocketMove->Velocity.Normalize();
@@ -126,12 +126,16 @@ void ARocket::Tick(float DeltaTime)
 			AtLaunch = true;
 		}
 	}
+	else
+	{
+		PastLaunchLocation = GetActorLocation().Equals(LaunchLoc, 100);
+	}
 
 	if (AtLaunch)
 	{
 		FVector NormalAimDir = AimLoc - GetActorLocation();
 		NormalAimDir.Normalize();
-		RotGoal = FQuat::FindBetweenNormals(FVector::UpVector, NormalAimDir);
+		FQuat RotGoal = FQuat::FindBetweenNormals(FVector::UpVector, NormalAimDir);
 
 		if (GetActorQuat().Equals(RotGoal, RotationTolerance))
 		{
