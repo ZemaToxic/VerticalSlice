@@ -56,7 +56,10 @@ void AFlamethrowerBase::FlameTick()
 			auto DestroyedIt = IgnitedIterator;
 			++IgnitedIterator;
 
-			IgnitedMonsters[DestroyedIt.Key()].Fire->DestroyInstance();
+			if (IsValid(IgnitedMonsters[DestroyedIt.Key()].Fire))
+			{
+				IgnitedMonsters[DestroyedIt.Key()].Fire->DestroyInstance();
+			}
 			IgnitedMonsters.Remove(DestroyedIt.Key());
 		}
 		else
