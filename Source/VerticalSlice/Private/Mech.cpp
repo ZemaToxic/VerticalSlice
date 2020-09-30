@@ -733,7 +733,7 @@ bool AMech::SwitchAbility()
 		else if (!FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && !FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
 		{
 			ActiveAbility = 0;
-			Available = true;
+			break;
 		}
 	}
 	return Available;
