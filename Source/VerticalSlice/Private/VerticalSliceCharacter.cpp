@@ -103,7 +103,7 @@ void AVerticalSliceCharacter::MoveForward(float Value)
 
 void AVerticalSliceCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
+	if ( (Controller != NULL) && (Value != 0.0f) && !climbing )
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -222,7 +222,7 @@ void AVerticalSliceCharacter::Jump()
 {
 	if (climbing)
 	{
-		SetClimbing(false, FVector(), FVector());
+		SetClimbing(false, FVector(), FVector(), FVector());
 	}
 	else
 	{
@@ -256,16 +256,22 @@ bool AVerticalSliceCharacter::Mount_Implementation()
 	return false;
 }
 
-void AVerticalSliceCharacter::SetClimbing(bool newClimb, FVector Forward, FVector Up)
+void AVerticalSliceCharacter::SetClimbing(bool _Climbing, FVector _Forward, FVector _Up, FVector _Location)
 {
-	climbing = newClimb;
+	climbing = _Climbing;
 
 	UCharacterMovementComponent* charMovement = GetCharacterMovement();
 
 	charMovement->SetMovementMode((climbing) ? EMovementMode::MOVE_Flying : EMovementMode::MOVE_Walking);
 	charMovement->bConstrainToPlane = climbing;
-	charMovement->SetPlaneConstraintFromVectors(Forward, Up);
+	charMovement->SetPlaneConstraintFromVectors(_Forward, _Up);
 	charMovement->bOrientRotationToMovement = !climbing;
+	if (climbing)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *_Location.ToString()));
+		FVector NewLocation = FVector(_Location.X, _Location.Y, GetActorLocation().Z);
+		SetActorLocation(NewLocation);
+	}
 }
 
 void AVerticalSliceCharacter::SetVisible(bool visibility, bool collision, bool movement)

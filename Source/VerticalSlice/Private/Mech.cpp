@@ -12,6 +12,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
@@ -287,6 +288,10 @@ void AMech::StopAim_Implementation()
 
 void AMech::Damage_Implementation(float dmg, FVector Loc)
 {
+	if (DamageFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DamageFX, Loc);
+	}
 	giveHealth(false, -dmg);
 }
 
