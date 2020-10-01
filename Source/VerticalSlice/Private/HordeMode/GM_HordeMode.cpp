@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "HordeMode/GM_HordeMode.h"
 #include "HordeMode/BaseEnemySpawner.h"
 #include "UObject/ConstructorHelpers.h"
@@ -47,32 +46,31 @@ void AGM_HordeMode::StartGame()
 void AGM_HordeMode::NextWave(int _roundCount)
 {
 	iCurrentRound ++;
-	int enemyCount = (_roundCount * 4) + iInitialEnemies;
-	iCurrentEnemies = enemyCount;
-
 	// Spawn the boss enemy wave
 	if (iCurrentRound % 50 == 0)
 	{
 		iCurrentEnemies = 1;
 		SpawnBoss(iCurrentEnemies);
-		return;
 	}
 	// Spawn the special enemy wave
 	else if (iCurrentRound % 25 == 0)
 	{
 		iCurrentEnemies = 4;
 		SpawnSpecial(iCurrentEnemies);
-		return;
 	}	
 	// Spawn the secondary enemy wave.
 	else if (iCurrentRound % 5 == 0)
 	{
 		iCurrentEnemies = 4;	
 		SpawnSecondary(iCurrentEnemies);
-		return;
 	}
 	// Spawn the First enemy wave.
-	else { SpawnEnemies(enemyCount); }
+	else
+	{ 
+		int enemyCount = (_roundCount * 4) + iInitialEnemies;
+		iCurrentEnemies = enemyCount; 
+		SpawnEnemies(enemyCount);
+	}
 	GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
 }
 
@@ -131,7 +129,7 @@ void AGM_HordeMode::SpawnBoss(int _bossCount)
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ClassToFind, FoundActors);
 
-	int i = FMath::RandRange(0, FoundActors.Num());
+	int i = FMath::RandRange(1, FoundActors.Num());
 
 	ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
 	tempSpawner->SpawnBoss(_bossCount, fEnemyHealthOverride, fEnemyDamageOverride);
