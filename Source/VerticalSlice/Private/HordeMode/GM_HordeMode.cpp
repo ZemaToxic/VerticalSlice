@@ -21,7 +21,7 @@ AGM_HordeMode::AGM_HordeMode()
 void AGM_HordeMode::BeginPlay()
 {
 	// Set Defaults.
-	iCurrentRound = 0;
+	iCurrentRound = 48;
 	iCurrentScore = 0;
 	// Override player Health & Damage.
 	fPlayerHealthOverride = 100.0f;
@@ -39,33 +39,40 @@ void AGM_HordeMode::BeginPlay()
 void AGM_HordeMode::StartGame()
 {
 	// Start the first round
-	NextRound(iCurrentRound);
+	NextWave(iCurrentRound);
 	// Clear the GameStart timer for memory reasons.
 	GetWorld()->GetTimerManager().ClearTimer(StartTimer);
 }
 
-void AGM_HordeMode::NextRound(int _roundCount)
+void AGM_HordeMode::NextWave(int _roundCount)
 {
 	iCurrentRound ++;
 	int enemyCount = (_roundCount * 4) + iInitialEnemies;
 	iCurrentEnemies = enemyCount;
 
-	if (iCurrentRound % 5 == 0)
+	// Spawn the boss enemy wave
+	if (iCurrentRound % 50 == 0)
 	{
-		//if (iCurrentRound % 50 == 0)
-		//{
-		//	iCurrentEnemies = 1;
-		//	SpawnBoss(iCurrentEnemies);
-		//}
-		iCurrentEnemies = 4;	
-		// Spawn the special wave.
+		iCurrentEnemies = 1;
+		SpawnBoss(iCurrentEnemies);
+		return;
+	}
+	// Spawn the special enemy wave
+	else if (iCurrentRound % 25 == 0)
+	{
+		iCurrentEnemies = 4;
 		SpawnSpecial(iCurrentEnemies);
-	}
-	else
+		return;
+	}	
+	// Spawn the secondary enemy wave.
+	else if (iCurrentRound % 5 == 0)
 	{
-		// Spawn the First wave.
-		SpawnEnemies(enemyCount);
+		iCurrentEnemies = 4;	
+		SpawnSecondary(iCurrentEnemies);
+		return;
 	}
+	// Spawn the First enemy wave.
+	else { SpawnEnemies(enemyCount); }
 	GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
 }
 
@@ -84,9 +91,9 @@ void AGM_HordeMode::SpawnEnemies(int _enemyCount)
 	}
 }
 
-void AGM_HordeMode::SpawnSpecial(int _specialCount)
+void AGM_HordeMode::SpawnSecondary(int _specialCount)
 {
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Special")); }
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Secondary")); }
 
 	// Find all Monster Spawn locations and Put them in an Array.
 	TArray<AActor*> FoundActors;
@@ -96,8 +103,39 @@ void AGM_HordeMode::SpawnSpecial(int _specialCount)
 	for (int i = 0; i < FoundActors.Num(); i++)
 	{
 		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
-		tempSpawner->SpawnSpecial(iCurrentRound / FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride);
+		tempSpawner->SpawnSecondary(_specialCount / FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride);
 	}
+}
+
+void AGM_HordeMode::SpawnSpecial(int _specialCount)
+{
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Special")); }
+
+	// Find all Monster Spawn locations and Put them in an Array.
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ClassToFind, FoundActors);
+
+	// Iterate over the FoundActors array.
+	for (int i = 0; i < FoundActors.Num(); i++)
+	{
+		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
+		tempSpawner->SpawnSpecial(_specialCount / FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride);
+	}
+}
+
+void AGM_HordeMode::SpawnBoss(int _bossCount)
+{
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Boss")); }
+
+	// Find all Monster Spawn locations and Put them in an Array.
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ClassToFind, FoundActors);
+
+	int i = FMath::RandRange(0, FoundActors.Num());
+
+	ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
+	tempSpawner->SpawnBoss(_bossCount, fEnemyHealthOverride, fEnemyDamageOverride);
+
 }
 
 void AGM_HordeMode::RemoveEnemy()
@@ -109,7 +147,7 @@ void AGM_HordeMode::RemoveEnemy()
 	if (iCurrentEnemies <= 0)
 	{
 		// Delay the next round to allow shopping 
-		FTimerDelegate waveTimer =  FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextRound, iCurrentRound);
+		FTimerDelegate waveTimer =  FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
 		GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
 	}
 

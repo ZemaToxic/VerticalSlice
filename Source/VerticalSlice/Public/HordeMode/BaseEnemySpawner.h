@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/Actor.h"
 #include "MonsterBase.h" 
 #include "BaseEnemySpawner.generated.h"
 
@@ -26,12 +25,25 @@ protected:
 public:	
 
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<ACharacter> EnemyActor;	
+		TSubclassOf<ACharacter> mainEnemy;	
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<ACharacter> secondEnemyActor;
+		TSubclassOf<ACharacter> secondEnemy;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ACharacter> specialEnemy;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ACharacter> bossEnemy;
+
+	UPROPERTY(EditAnywhere)
+		bool bEnabled;
 
 	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride);
+	void SpawnSecondary(int _enemyCount, float _HealthOverride, float _DamageOverride);
 	void SpawnSpecial(int _enemyCount, float _HealthOverride, float _DamageOverride);
+	void SpawnBoss(int _enemyCount, float _HealthOverride, float _DamageOverride);
+
+	FTransform SpawnLocation;
+	FRotator CurrentRotation;
+	FActorSpawnParameters SpawnInfo;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

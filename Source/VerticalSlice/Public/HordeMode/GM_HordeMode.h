@@ -7,7 +7,6 @@
 #include "GM_HordeMode.generated.h"
 
 class ABaseEnemySpawner;
-class AMonsterBase;
 
 /**
  * 
@@ -21,12 +20,10 @@ protected:
 	AGM_HordeMode();
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ABaseEnemySpawner> ClassToFind;
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<AMonsterBase> EnemyToFind;
 
 public:
 	// Round Data
-	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Round Data")
 		int iCurrentRound;
 	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
 		int iCurrentScore;
@@ -60,15 +57,16 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
 		float fShopCooldown = 45.0f;
 
-	FTimerHandle tempCooldown;
 private:
 	
 	void BeginPlay() override;
 	void StartGame();
-	void NextRound(int _roundCount);;
+	void NextWave(int _roundCount);;
 
 	void SpawnEnemies(int _enemyCount);
+	void SpawnSecondary(int _secondaryCount);
 	void SpawnSpecial(int _specialCount);
+	void SpawnBoss(int _bossCount);
 
 	UFUNCTION(BlueprintCallable)
 		void RemoveEnemy();
