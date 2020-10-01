@@ -16,7 +16,7 @@ void AFlamethrowerBase::Shoot()
 
 	SecondsBetweenShots = 1 / ShotsPerSecond;
 
-	if (CurrentClipSize <= 0 && IsMainGun) { return; }
+	if (CurrentClipSize <= 0) { return; }
 
 	FlameShoot();
 
@@ -51,12 +51,15 @@ void AFlamethrowerBase::FlameTick()
 	auto IgnitedIterator = IgnitedMonsters.CreateConstIterator();
 	while (IgnitedIterator)
 	{
-		if (IgnitedMonsters[IgnitedIterator.Key()].CurrentTicks > IgnitedMonsters[IgnitedIterator.Key()].MaxTicks || IgnitedIterator.Key()->isDead)
+		if (!IsValid(IgnitedIterator.Key())||IgnitedMonsters[IgnitedIterator.Key()].CurrentTicks > IgnitedMonsters[IgnitedIterator.Key()].MaxTicks || IgnitedIterator.Key()->isDead)
 		{
 			auto DestroyedIt = IgnitedIterator;
 			++IgnitedIterator;
 
-			IgnitedMonsters[IgnitedIterator.Key()].Fire->DestroyInstance();
+			if (IsValid(IgnitedMonsters[DestroyedIt.Key()].Fire))
+			{
+				IgnitedMonsters[DestroyedIt.Key()].Fire->DestroyInstance();
+			}
 			IgnitedMonsters.Remove(DestroyedIt.Key());
 		}
 		else
@@ -189,7 +192,7 @@ void AFlamethrowerBase::FlameShoot()
 	auto MonsterIterator = HitMonsters.CreateConstIterator();
 	while (MonsterIterator)
 	{
-		if (!UniqueHitMonsters.Contains(MonsterIterator.Key()) || MonsterIterator.Key()->isDead)
+		if (!IsValid(MonsterIterator.Key())||!UniqueHitMonsters.Contains(MonsterIterator.Key()) || MonsterIterator.Key()->isDead)
 		{
 			auto DestroyedIt = MonsterIterator;
 			++MonsterIterator;

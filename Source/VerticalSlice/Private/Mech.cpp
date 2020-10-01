@@ -79,6 +79,14 @@ void AMech::BeginPlay()
 		Flamethrower->ignoredActors.AddIgnoredActor(Shotgun);
 	}
 
+	if (RocketLauncherClass)
+	{
+		RocketLauncher = GetWorld()->SpawnActor<ARocketLauncher>(RocketLauncherClass);
+		RocketLauncher->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RocketSocket"));
+		RocketLauncher->init(this, RocketLauncherClass);
+		RocketLauncher->setShootAnim(RocketLauncherShoot);
+	}
+
 	BoomCurrentTarget = BoomBaseTarget;
 
 	bUseControllerRotationYaw = true;
@@ -128,7 +136,7 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
 	PlayerInputComponent->BindAction("Shotgun", IE_Released, this, &AMech::StopAbility);
 
-	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbility);
+	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbilityInput);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
@@ -369,7 +377,7 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 		break;
 	case FeatureUpgrades::Flamethrower:
 		break;
-	case FeatureUpgrades::RocketLauncher://to do
+	case FeatureUpgrades::RocketLauncher:
 		break;
 	default:
 		break;
@@ -442,9 +450,11 @@ void AMech::UpgradeStats(StatUpgrades _Upgrade, int _Amount, bool _Add)
 		break;
 
 	case StatUpgrades::RocketAmount:
+		RocketLauncher->UpgradeClipSize(StatUpgradesMap[_Upgrade]);
 		break;
 
 	case StatUpgrades::RocketRadius:
+		RocketLauncher->UpgradeExplosionRadius(StatUpgradesMap[_Upgrade]);
 		break;
 
 	default:
@@ -642,7 +652,7 @@ void AMech::Dismount_Implementation()
 
 void AMech::UseAbility()
 {
-	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !UseFlamethrower)
+	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun] && ActiveAbility == 0)
 	{
 		Shotgun->Shoot();
 		if (!GetWorldTimerManager().IsTimerActive(ShotgunTimerHandle))
@@ -650,11 +660,23 @@ void AMech::UseAbility()
 			GetWorldTimerManager().SetTimer(ShotgunTimerHandle, this, &AMech::ShotgunRecharge, ShotgunCooldown);
 		}
 	}
-	else if (FeatureUpgradesMap[FeatureUpgrades::Flamethrower])
+	else if (FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && ActiveAbility == 1)
 	{
 		GetWorldTimerManager().ClearTimer(FlamethrowerTimerHandle);
 		Flamethrower->Shoot();
 		FlamethrowerCanRecharge = false;
+	}
+	else if (FeatureUpgradesMap[FeatureUpgrades::RocketLauncher] && ActiveAbility == 2)
+	{
+		RocketLauncher->Shoot();
+		if (!GetWorldTimerManager().IsTimerActive(RocketLauncherTimerHandle))
+		{
+			GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
+		}
+	}
+	else if (SwitchAbility())
+	{
+		UseAbility();
 	}
 }
 
@@ -664,6 +686,8 @@ void AMech::StopAbility()
 	GetWorldTimerManager().SetTimer(FlamethrowerTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
 
 	Shotgun->StopShoot();
+
+	RocketLauncher->StopShoot();
 }
 
 void AMech::ShotgunRecharge()
@@ -679,12 +703,40 @@ void AMech::FlamethrowerRecharge()
 	FlamethrowerCanRecharge = true;
 }
 
-void AMech::SwitchAbility()
+void AMech::RocketLauncherRecharge()
 {
-	if (FeatureUpgradesMap[FeatureUpgrades::Shotgun] && FeatureUpgradesMap[FeatureUpgrades::Flamethrower])
+	if (!RocketLauncher->Reload(1))
 	{
-		UseFlamethrower = !UseFlamethrower;
+		GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
 	}
+}
+
+bool AMech::SwitchAbility()
+{
+	bool Available = false;
+	while (!Available)
+	{
+		ActiveAbility++;
+		ActiveAbility %= 3;
+		if (ActiveAbility == 0 && FeatureUpgradesMap[FeatureUpgrades::Shotgun])
+		{
+			Available = true;
+		}
+		else if (ActiveAbility == 1 && FeatureUpgradesMap[FeatureUpgrades::Flamethrower])
+		{
+			Available = true;
+		}
+		else if (ActiveAbility == 2 && FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
+		{
+			Available = true;
+		}
+		else if (!FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && !FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
+		{
+			ActiveAbility = 0;
+			break;
+		}
+	}
+	return Available;
 }
 
 void AMech::giveAmmo(bool Max, int amount)
@@ -692,8 +744,11 @@ void AMech::giveAmmo(bool Max, int amount)
 	if (Max || CurrentAmmo + amount >= MaxAmmo)
 	{
 		CurrentAmmo = MaxAmmo;
-		int TempAmmo = 1000;
+		int TempAmmo = 10000;
 		Gun->Reload(TempAmmo);
+		Shotgun->Reload(TempAmmo);
+		Flamethrower->Reload(TempAmmo);
+		RocketLauncher->Reload(TempAmmo);
 	}
 	else if(CurrentAmmo + amount > 0)
 	{
@@ -859,4 +914,3 @@ void AMech::Tick(float DeltaTime)
 		FlamethrowerRechargeTimer = 0.0f;
 	}
 }
-

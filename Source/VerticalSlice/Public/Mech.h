@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "GunBase.h"
 #include "FlamethrowerBase.h"
+#include "RocketLauncher.h"
 #include "Mech.generated.h"
 
 UENUM()
@@ -139,7 +140,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
 		AGunBase* Gun = 0;
 
-	///Shotgun variables
+	///Ability variables
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ability", meta = (AllowPrivateAccess = "true"))
+		int ActiveAbility = 0;
+
+	//Shotgun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<AGunBase> ShotgunClass;
 	
@@ -152,21 +157,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
 		float ShotgunCooldown = 2.0f;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
-		int MaxShotgunCharges = 1;
-
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
-		int CurrentShotgunCharges = 1;
-
 	//Flamethrower variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
-		TSubclassOf<AGunBase> FlamethrowerClass;
+		TSubclassOf<AFlamethrowerBase> FlamethrowerClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
 		AFlamethrowerBase* Flamethrower = 0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ability", meta = (AllowPrivateAccess = "true"))
-		bool UseFlamethrower = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
 		FTimerHandle FlamethrowerTimerHandle;
@@ -182,6 +178,19 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
 		float FlamethrowerRechargeTimer = 0.0f;
+
+	//rocket variables
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
+		TSubclassOf<ARocketLauncher> RocketLauncherClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Gun", meta = (AllowPrivateAccess = "true"))
+		ARocketLauncher* RocketLauncher = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
+		FTimerHandle RocketLauncherTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
+		float RocketLauncherCooldown = 1.0f;
 
 	///resource variables
 	//ammo
@@ -290,6 +299,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		UAnimMontage* FlamethrowerShoot = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* RocketLauncherShoot = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Animation", meta = (AllowPrivateAccess = "true"))
 		UAnimMontage* MeleeAnim = 0;
@@ -403,9 +415,16 @@ protected:
 
 	void UseAbility();
 	void StopAbility();
+
+	UFUNCTION()
 	void ShotgunRecharge();
+	UFUNCTION()
 	void FlamethrowerRecharge();
-	void SwitchAbility();
+	UFUNCTION()
+	void RocketLauncherRecharge();
+
+	bool SwitchAbility();
+	void SwitchAbilityInput() { SwitchAbility(); }
 
 	void JumpStart();
 	void JumpEnd();
