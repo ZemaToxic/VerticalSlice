@@ -10,6 +10,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
 
@@ -76,6 +77,11 @@ void ARocket::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 
 void ARocket::Explode()
 {
+	if (ExplosionFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionFX, GetActorLocation());
+	}
+
 	// create tarray for hit results
 	TArray<FHitResult> OutHits;
 
