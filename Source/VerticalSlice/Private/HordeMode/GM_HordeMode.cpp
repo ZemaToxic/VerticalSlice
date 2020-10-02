@@ -129,7 +129,7 @@ void AGM_HordeMode::SpawnBoss(int _bossCount)
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ClassToFind, FoundActors);
 
-	int i = FMath::RandRange(1, FoundActors.Num());
+	int i = FMath::FRandRange(1, FoundActors.Num());
 
 	ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
 	tempSpawner->SpawnBoss(_bossCount, fEnemyHealthOverride, fEnemyDamageOverride);
