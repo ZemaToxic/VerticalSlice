@@ -42,6 +42,11 @@ void AMonsterBase::StunMonster_Implementation(float _Duration, FVector _LaunchVe
 
 }
 
+// Called when the Monster should be knocked back, ActorRef is the actor the monster will be knocked away from
+void AMonsterBase::Knockback_Implementation(AActor* _ActorRef)
+{
+}
+
 // Called every frame
 void AMonsterBase::Tick(float DeltaTime)
 {
