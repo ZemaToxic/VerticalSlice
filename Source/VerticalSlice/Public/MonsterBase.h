@@ -50,6 +50,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 		MonsterDrops MonsterDrop = MonsterDrops::SHARPFANG;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
+		float KnockbackForce = 100.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
 		TSubclassOf <class ADropsBase> DropActor;
 
@@ -80,6 +83,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
 		void StunMonster(float _Duration, FVector _LaunchVelocity);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
+		void Knockback(AActor* _ActorRef);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
