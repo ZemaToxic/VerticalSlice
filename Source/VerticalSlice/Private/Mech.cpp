@@ -12,6 +12,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
@@ -136,7 +137,7 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
 	PlayerInputComponent->BindAction("Shotgun", IE_Released, this, &AMech::StopAbility);
 
-	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbility);
+	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbilityInput);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
@@ -287,6 +288,10 @@ void AMech::StopAim_Implementation()
 
 void AMech::Damage_Implementation(float dmg, FVector Loc)
 {
+	if (DamageFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DamageFX, Loc);
+	}
 	giveHealth(false, -dmg);
 }
 
@@ -674,12 +679,16 @@ void AMech::UseAbility()
 			GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
 		}
 	}
+	else if (SwitchAbility())
+	{
+		UseAbility();
+	}
 }
 
 void AMech::StopAbility()
 {
 	Flamethrower->StopShoot();
-	GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
+	GetWorldTimerManager().SetTimer(FlamethrowerTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
 
 	Shotgun->StopShoot();
 
@@ -701,14 +710,13 @@ void AMech::FlamethrowerRecharge()
 
 void AMech::RocketLauncherRecharge()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Recharged Rocket")));
 	if (!RocketLauncher->Reload(1))
 	{
 		GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
 	}
 }
 
-void AMech::SwitchAbility()
+bool AMech::SwitchAbility()
 {
 	bool Available = false;
 	while (!Available)
@@ -730,11 +738,10 @@ void AMech::SwitchAbility()
 		else if (!FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && !FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
 		{
 			ActiveAbility = 0;
-			Available = true;
+			break;
 		}
 	}
-	
-	
+	return Available;
 }
 
 void AMech::giveAmmo(bool Max, int amount)
@@ -912,4 +919,3 @@ void AMech::Tick(float DeltaTime)
 		FlamethrowerRechargeTimer = 0.0f;
 	}
 }
-

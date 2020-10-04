@@ -375,6 +375,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
 		float ChargeRegenIncrement = 12;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* DamageFX;
+
 public:
 	//variable/s the player needs to see and change
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Mount")
@@ -416,11 +419,15 @@ protected:
 	void UseAbility();
 	void StopAbility();
 
+	UFUNCTION()
 	void ShotgunRecharge();
+	UFUNCTION()
 	void FlamethrowerRecharge();
+	UFUNCTION()
 	void RocketLauncherRecharge();
 
-	void SwitchAbility();
+	bool SwitchAbility();
+	void SwitchAbilityInput() { SwitchAbility(); }
 
 	void JumpStart();
 	void JumpEnd();

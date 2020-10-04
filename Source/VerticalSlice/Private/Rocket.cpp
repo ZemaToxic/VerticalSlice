@@ -10,6 +10,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
 
@@ -76,6 +77,11 @@ void ARocket::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 
 void ARocket::Explode()
 {
+	if (ExplosionFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionFX, GetActorLocation());
+	}
+
 	// create tarray for hit results
 	TArray<FHitResult> OutHits;
 
@@ -116,7 +122,7 @@ void ARocket::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetActorLocation().Equals(LaunchLoc, 100))
+	if (PastLaunchLocation)
 	{
 		float speed = RocketMove->Velocity.Size();
 		RocketMove->Velocity.Normalize();
@@ -126,12 +132,16 @@ void ARocket::Tick(float DeltaTime)
 			AtLaunch = true;
 		}
 	}
+	else
+	{
+		PastLaunchLocation = GetActorLocation().Equals(LaunchLoc, 100);
+	}
 
 	if (AtLaunch)
 	{
 		FVector NormalAimDir = AimLoc - GetActorLocation();
 		NormalAimDir.Normalize();
-		RotGoal = FQuat::FindBetweenNormals(FVector::UpVector, NormalAimDir);
+		FQuat RotGoal = FQuat::FindBetweenNormals(FVector::UpVector, NormalAimDir);
 
 		if (GetActorQuat().Equals(RotGoal, RotationTolerance))
 		{
