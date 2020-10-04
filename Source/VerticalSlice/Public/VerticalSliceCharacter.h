@@ -81,7 +81,7 @@ protected:
 		bool Mount();
 
 	UFUNCTION(BlueprintCallable, category = "Custom | Climbing")
-		void SetClimbing(bool newClimb, FVector Forward, FVector Up);
+		void SetClimbing(bool _Climbing, FVector _Forward, FVector _Up, FVector _Location);
 
 protected:
 	// APawn interface
