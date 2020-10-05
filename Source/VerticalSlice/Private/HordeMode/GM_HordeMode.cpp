@@ -141,7 +141,7 @@ void AGM_HordeMode::RemoveEnemy()
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("GM Removing Enemy")); }
 
 	iCurrentEnemies--;
-
+	fCurrentMoney += 100.0f;
 	if (iCurrentEnemies <= 0)
 	{
 		// Delay the next round to allow shopping 

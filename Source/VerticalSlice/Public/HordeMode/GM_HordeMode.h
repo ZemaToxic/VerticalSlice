@@ -41,6 +41,8 @@ public:
 		float fEnemyHealthOverride;
 	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
 		float fEnemyDamageOverride;
+	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
+		float fCurrentMoney;
 
 	// Timer Data
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
