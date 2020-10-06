@@ -42,8 +42,8 @@ void ABaseEnemySpawner::SpawnEnemies(int _enemyCount, float _HealthOverride, flo
 		{
 			// Give a random location per Enemy.
 			FVector CurrentLocation = GetActorLocation();
-			CurrentLocation.X = CurrentLocation.X + FMath::FRandRange(-500.0f, 500.0f);
-			CurrentLocation.Y = CurrentLocation.Y + FMath::FRandRange(-1000.0f, 1000.0f);
+			CurrentLocation.X = CurrentLocation.X + FMath::FRandRange(-2000.0f, 2000.0f);
+			CurrentLocation.Y = CurrentLocation.Y + FMath::FRandRange(-2000.0f, 2000.0f);
 			CurrentLocation.Z = CurrentLocation.Z + 250.0f;
 			// Add the CurrentLocation to the SpawnLocation FTransform.
 			SpawnLocation.SetLocation(CurrentLocation);
@@ -69,8 +69,8 @@ void ABaseEnemySpawner::SpawnSecondary(int _enemyCount, float _HealthOverride, f
 		{
 			// Give a random location per Enemy.
 			FVector CurrentLocation = GetActorLocation();
-			CurrentLocation.X = CurrentLocation.X + FMath::FRandRange(-250.0f, 250.0f);
-			CurrentLocation.Y = CurrentLocation.Y + FMath::FRandRange(-250.0f, 250.0f);
+			CurrentLocation.X = CurrentLocation.X + FMath::FRandRange(-500.0f, 500.0f);
+			CurrentLocation.Y = CurrentLocation.Y + FMath::FRandRange(-500.0f, 500.0f);
 			CurrentLocation.Z = CurrentLocation.Z + 250.0f;
 			// Add the CurrentLocation to the SpawnLocation FTransform.
 			SpawnLocation.SetLocation(CurrentLocation);
@@ -95,8 +95,8 @@ void ABaseEnemySpawner::SpawnSpecial(int _enemyCount, float _HealthOverride, flo
 		{
 			// Give a random location per Enemy.
 			FVector CurrentLocation = GetActorLocation();
-			CurrentLocation.X = CurrentLocation.X + FMath::FRandRange(-250.0f, 250.0f);
-			CurrentLocation.Y = CurrentLocation.Y + FMath::FRandRange(-250.0f, 250.0f);
+			CurrentLocation.X = CurrentLocation.X + FMath::FRandRange(-500.0f, 500.0f);
+			CurrentLocation.Y = CurrentLocation.Y + FMath::FRandRange(-500.0f, 500.0f);
 			CurrentLocation.Z = CurrentLocation.Z + 250.0f;
 			// Add the CurrentLocation to the SpawnLocation FTransform.
 			SpawnLocation.SetLocation(CurrentLocation);
