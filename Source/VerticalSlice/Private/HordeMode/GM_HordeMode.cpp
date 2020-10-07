@@ -135,6 +135,11 @@ void AGM_HordeMode::SpawnBoss(int _bossCount)
 	tempSpawner->SpawnBoss(_bossCount, fEnemyHealthOverride, fEnemyDamageOverride);
 }
 
+float AGM_HordeMode::GetCurrency()
+{
+	return fCurrentMoney;
+}
+
 void AGM_HordeMode::RemoveEnemy()
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("GM Removing Enemy")); }

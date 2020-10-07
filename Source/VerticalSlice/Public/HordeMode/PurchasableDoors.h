@@ -8,7 +8,7 @@
 #include "../interactableVolume.h"
 #include "PurchasableDoors.generated.h"
 
-class UBoxComponent;
+class UTextRenderComponent;
 
 UCLASS()
 class VERTICALSLICE_API APurchasableDoors : public AActor
@@ -24,9 +24,14 @@ public:
 		UBoxComponent* BoxComponent;
 	UPROPERTY(EditAnywhere)
 		AInteractableVolume* Interactable;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTextRenderComponent* Text;
 
 	UFUNCTION()
 		void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
