@@ -34,7 +34,7 @@ void ABaseEnemySpawner::Tick(float DeltaTime)
 
 void ABaseEnemySpawner::SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride)
 {
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("BaseSpawner Spawning Enemies")); }
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("BaseSpawner Spawning Enemies")); }
 
 	if (bEnabled) 
 	{
@@ -61,7 +61,7 @@ void ABaseEnemySpawner::SpawnEnemies(int _enemyCount, float _HealthOverride, flo
 
 void ABaseEnemySpawner::SpawnSecondary(int _enemyCount, float _HealthOverride, float _DamageOverride)
 {
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("BaseSpawner Spawning Secondary")); }
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("BaseSpawner Spawning Secondary")); }
 
 	if (bEnabled)
 	{
@@ -87,7 +87,7 @@ void ABaseEnemySpawner::SpawnSecondary(int _enemyCount, float _HealthOverride, f
 
 void ABaseEnemySpawner::SpawnSpecial(int _enemyCount, float _HealthOverride, float _DamageOverride)
 {
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("BaseSpawner Spawning Special")); }
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("BaseSpawner Spawning Special")); }
 
 	if (bEnabled)
 	{
@@ -113,7 +113,7 @@ void ABaseEnemySpawner::SpawnSpecial(int _enemyCount, float _HealthOverride, flo
 
 void ABaseEnemySpawner::SpawnBoss(int _enemyCount, float _HealthOverride, float _DamageOverride)
 {
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("BaseSpawner Spawning Boss")); }
+	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("BaseSpawner Spawning Boss")); }
 
 	if (bEnabled)
 	{

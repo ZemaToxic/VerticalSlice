@@ -59,6 +59,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
 		float fShopCooldown = 45.0f;
 
+	float GetCurrency();
 private:
 	
 	void BeginPlay() override;
@@ -69,6 +70,7 @@ private:
 	void SpawnSecondary(int _secondaryCount);
 	void SpawnSpecial(int _specialCount);
 	void SpawnBoss(int _bossCount);
+
 
 	UFUNCTION(BlueprintCallable)
 		void RemoveEnemy();
