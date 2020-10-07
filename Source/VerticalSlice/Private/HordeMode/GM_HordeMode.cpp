@@ -20,7 +20,7 @@ AGM_HordeMode::AGM_HordeMode()
 void AGM_HordeMode::BeginPlay()
 {
 	// Set Defaults.
-	iCurrentRound = 48;
+	iCurrentRound = 0;
 	iCurrentScore = 0;
 	// Override player Health & Damage.
 	fPlayerHealthOverride = 100.0f;
@@ -133,7 +133,11 @@ void AGM_HordeMode::SpawnBoss(int _bossCount)
 
 	ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
 	tempSpawner->SpawnBoss(_bossCount, fEnemyHealthOverride, fEnemyDamageOverride);
+}
 
+float AGM_HordeMode::GetCurrency()
+{
+	return fCurrentMoney;
 }
 
 void AGM_HordeMode::RemoveEnemy()
@@ -141,12 +145,12 @@ void AGM_HordeMode::RemoveEnemy()
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("GM Removing Enemy")); }
 
 	iCurrentEnemies--;
-	fCurrentMoney += 100.0f;
+	float rewardCurrency = FMath::FRandRange(50.0f, 150.0f);
+	fCurrentMoney += rewardCurrency;
 	if (iCurrentEnemies <= 0)
 	{
 		// Delay the next round to allow shopping 
 		FTimerDelegate waveTimer =  FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
 		GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
 	}
-
 }
