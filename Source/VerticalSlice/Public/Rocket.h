@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"
+
 #include "Rocket.generated.h"
 
 UCLASS()
@@ -22,40 +24,43 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
 		class UCapsuleComponent* RocketCollision;
 
-	UPROPERTY(EditAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		FVector LaunchLoc = FVector();
 
-	UPROPERTY(EditAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		FVector AimLoc = FVector();
 
 	bool AtLaunch = false;
 
-	UPROPERTY(EditAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		float SpeedForTurning = 100;
 
-	UPROPERTY(EditAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		float SpeedForLaunch = 600;
 
-	UPROPERTY(EditAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		float AccelerationAmount = 10;
 
-	UPROPERTY(EditAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		float RotationInterp = 0.05;
 
-	UPROPERTY(EditAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		float RotationTolerance = 0.01;
 
-	UPROPERTY(EditAnywhere, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Damage", meta = (AllowPrivateAccess = "true"))
 		float ExplosionRadius = 500;
 
-	UPROPERTY(EditAnywhere, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Damage", meta = (AllowPrivateAccess = "true"))
 		float Damage = 0;
 
-	UPROPERTY(EditAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		float MaxFlyTime = 10;
 
-	UPROPERTY(VisibleAnywhere, Category = "Launch Variables", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))
 		FTimerHandle FlyTime;
+
+	UPROPERTY(EditAnywhere, Category = "Custom | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* ExplosionFX;
 
 	bool PastLaunchLocation = false;
 
