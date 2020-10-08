@@ -375,6 +375,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
 		float ChargeRegenIncrement = 12;
 
+	//VFX
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
 		UNiagaraSystem* DamageFX;
 
