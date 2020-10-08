@@ -100,6 +100,11 @@ void AGunBase::ShootRaycasts_Implementation()
 		}
 	}
 
+	if (ShootCS)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(ShootCS, 1.0f);
+	}
+
 	FVector gunDir = Muzzle->GetForwardVector();
 
 	shotEnd.Empty();
