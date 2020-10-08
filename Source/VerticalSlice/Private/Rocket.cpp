@@ -93,7 +93,7 @@ void ARocket::Explode()
 	FCollisionShape ExplosionColl = FCollisionShape::MakeSphere(ExplosionRadius);
 
 	// draw collision box
-	DrawDebugSphere(GetWorld(), SweepStart, ExplosionRadius, 30, FColor::Purple, false, 1.0f);
+	//DrawDebugSphere(GetWorld(), SweepStart, ExplosionRadius, 30, FColor::Purple, false, 1.0f);
 
 	// check if something got hit in the sweep
 	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, ExplosionColl);
