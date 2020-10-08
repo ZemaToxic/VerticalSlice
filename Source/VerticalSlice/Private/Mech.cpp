@@ -148,8 +148,14 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMech::Landed(const FHitResult& Hit)
 {
+
 	if (IsGroundPounding)
 	{
+		if (GroundPoundCS)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(GroundPoundCS);
+		}
+
 		// create tarray for hit results
 		TArray<FHitResult> OutHits;
 
@@ -200,11 +206,17 @@ void AMech::Landed(const FHitResult& Hit)
 		GetCharacterMovement()->AirControl = AirControlTemp;
 		//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
+	else if(LandingCS)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(LandingCS);
+	}
+
 }
 
 bool AMech::GroundPound()
 {
 	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound]) { return false; }
+
 	IsGroundPounding = true;
 	GetCharacterMovement()->GravityScale = GroundPoundGravityScale;
 	GetCharacterMovement()->StopMovementImmediately();

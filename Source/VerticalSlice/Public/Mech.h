@@ -379,6 +379,17 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
 		UNiagaraSystem* DamageFX;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* GroundPoundFX;
+
+	//Camera Effects
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<UCameraShake> GroundPoundCS;
+
+	//Camera Effects
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<UCameraShake> LandingCS;
+
 public:
 	//variable/s the player needs to see and change
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Mount")
