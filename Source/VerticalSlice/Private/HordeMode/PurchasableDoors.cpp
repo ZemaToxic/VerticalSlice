@@ -14,11 +14,10 @@ APurchasableDoors::APurchasableDoors()
 	DoorMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
-	BoxComponent->AttachToComponent(DoorMesh, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	BoxComponent->AttachToComponent(DoorMesh, FAttachmentTransformRules::KeepRelativeTransform);
 	BoxComponent->SetBoxExtent(FVector(75.0f, 75.0f, 75.0f));
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &APurchasableDoors::OnBoxBeginOverlap);
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &APurchasableDoors::OnBoxEndOverlap);
-	
 
 	Text = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Text Comp"));
 	Text->SetTextRenderColor(FColor::Red);
@@ -30,6 +29,8 @@ APurchasableDoors::APurchasableDoors()
 	Text->SetRelativeLocation(FVector(55.0, 0.0f, 0.0f));
 	Text->SetVisibility(false);
 	Text->bHiddenInGame = false;
+
+	fDoorCost = 500.0f;
 }
 
 // Called when the game starts or when spawned
@@ -48,17 +49,26 @@ void APurchasableDoors::Tick(float DeltaTime)
 		// Remove Door Mesh and allow play to walk through.
 		DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		DoorMesh->SetVisibility(false);
+		Text->bHiddenInGame = true;
 	}
+}
+
+void APurchasableDoors::SetDoorCost(float _newCost)
+{
+	fDoorCost = _newCost;
 }
 
 void APurchasableDoors::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 	{
-		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("PLAYER OVERLAP REGISTERED")); }
-		Text->SetText(TEXT("PLAYER OVERLAP"));
-		Text->SetVisibility(true);
 
+		//AVerticalSliceCharacter* character = Cast<AVerticalSliceCharacter>(OtherActor);
+		//AMech* mechChar = Cast<AMech>(character->PlayerMech);
+
+		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("PLAYER OVERLAP REGISTERED")); }
+		Text->SetText(TEXT("$" + FString::FromInt(fDoorCost) + " to unlock."));
+		Text->SetVisibility(true);
 	}
 }
 
@@ -71,7 +81,6 @@ void APurchasableDoors::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		// Reset the Interactable object
 		Interactable->Reset();
 		Text->SetVisibility(false);
-
 	}
 }
   

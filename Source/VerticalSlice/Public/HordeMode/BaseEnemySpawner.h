@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "MonsterBase.h" 
+#include "GM_HordeMode.h"
 #include "BaseEnemySpawner.generated.h"
 
 class AMonsterBase;
+class AGM_HordeMode;
 
 UCLASS()
 class VERTICALSLICE_API ABaseEnemySpawner : public AActor
@@ -33,20 +35,29 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ACharacter> bossEnemy;
 
-	UPROPERTY(EditAnywhere)
-		bool bEnabled;
+	AGM_HordeMode* CurrentGameMode;
 
-	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride);
-	void SpawnSecondary(int _enemyCount, float _HealthOverride, float _DamageOverride);
-	void SpawnSpecial(int _enemyCount, float _HealthOverride, float _DamageOverride);
-	void SpawnBoss(int _enemyCount, float _HealthOverride, float _DamageOverride);
+	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride, int _enemyType);
+
+	void SpawnDefault();
+	void SpawnSecondary();
+	void SpawnSpecial();
+	void SpawnBoss();
 
 	FTransform SpawnLocation;
 	FRotator CurrentRotation;
 	FActorSpawnParameters SpawnInfo;
 
+	// Timer Data
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		FTimerHandle SpawnTimer;
+	float fSpawnTime;
+
+	// Overrides
+	int iEnemiesToSpawn;
+	float fEnemyHealth;
+	float fEnemyDamage;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-
 };
