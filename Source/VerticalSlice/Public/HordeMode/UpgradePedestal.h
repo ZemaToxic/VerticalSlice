@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "GM_HordeMode.h"
 #include "../VerticalSliceCharacter.h"
+#include "../Mech.h"
 #include "../interactableVolume.h"
 #include "UpgradePedestal.generated.h"
 
@@ -32,14 +33,16 @@ public:
 		void OnBoxEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void CheckPurchase();
-	void UpgradeMech();
+	void UpgradeMech(int _iChoosenUpgade);
+
+	void SetUpgrade();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	float fUpgradeCost;
-
+	int iCurrentUpgrade;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
