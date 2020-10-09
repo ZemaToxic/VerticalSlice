@@ -21,7 +21,7 @@ AGM_HordeMode::AGM_HordeMode()
 void AGM_HordeMode::BeginPlay()
 {
 	// Set Defaults.
-	iCurrentRound = 1;
+	iCurrentRound = 0;
 	iCurrentScore = 0;
 	// Override player Health & Damage.
 	fPlayerHealthOverride = 100.0f;
@@ -106,6 +106,11 @@ void AGM_HordeMode::SpawnEnemies(int _enemyCount, int _enemyType)
 float AGM_HordeMode::GetCurrency()
 {
 	return fCurrentMoney;
+}
+
+void AGM_HordeMode::SetCurrency(float _newCurrency)
+{
+	fCurrentMoney = fCurrentMoney - _newCurrency;
 }
 
 int AGM_HordeMode::GetCurrentEnemies()

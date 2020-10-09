@@ -70,6 +70,7 @@ void AUpgradePedestal::CheckPurchase()
 			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("PLAYER HAS ENOUGH CASH")); }
 			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT("Current Upgrade: " + FString::FromInt(iCurrentUpgrade))); }
 			UpgradeMech(iCurrentUpgrade);
+			GameMode->SetCurrency(fUpgradeCost);
 		}
 		else
 		{

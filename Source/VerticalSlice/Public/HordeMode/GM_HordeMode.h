@@ -68,6 +68,7 @@ public:
 		float fShopCooldown = 45.0f;
 
 	float GetCurrency();
+	void SetCurrency(float _newCurrency);
 	int GetCurrentEnemies();
 	void SetCurrentEnemies();
 
