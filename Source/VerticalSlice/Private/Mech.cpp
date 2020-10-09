@@ -187,15 +187,14 @@ void AMech::Landed(const FHitResult& Hit)
 
 						//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
 
-						FVector launchDirection = this->GetActorLocation() - HitActor->GetActorLocation();
+						FVector launchDirection = HitActor->GetActorLocation() - this->GetActorLocation();
 						launchDirection.Z = GroundPoundLaunchZ;
 
 						float dist = launchDirection.Size();
 						launchDirection.Normalize();
 
-						HitActor->GetMovementComponent()->StopMovementImmediately();
-						HitActor->LaunchCharacter(launchDirection * (GroundPoundLaunchPower / sqrt(dist)), false, false);
-						HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
+						HitActor->DamageMonster(GroundPoundDamage, HitActor->GetActorLocation(), Hit.BoneName);
+						HitActor->StunMonster(GroundPoundStunTime, launchDirection * GroundPoundLaunchPower);
 					}
 				}
 			}

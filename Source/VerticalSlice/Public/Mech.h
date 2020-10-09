@@ -336,6 +336,9 @@ private:
 
 	///Ground pound Variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundDamage = 50.0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float BaseGravityScale = 10;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
@@ -348,13 +351,16 @@ private:
 		float GroundPoundRangeScale = 1;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
-		float GroundPoundBaseRange = 1000;
+		float GroundPoundBaseRange = 500;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
-		float GroundPoundLaunchPower = 10000;
+		float GroundPoundLaunchPower = 1000;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float AirControlTemp = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundStunTime = 1.0;
 
 	//Upgrades
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
