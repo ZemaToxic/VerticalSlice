@@ -214,8 +214,9 @@ void AMech::Landed(const FHitResult& Hit)
 
 bool AMech::GroundPound()
 {
-	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound]) { return false; }
+	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound] || CurrentCharge - GroundPoundChargeCost < 0) { return false; }
 
+	giveCharge(false, -GroundPoundChargeCost);
 	IsGroundPounding = true;
 	GetCharacterMovement()->GravityScale = GroundPoundGravityScale;
 	GetCharacterMovement()->StopMovementImmediately();
@@ -324,6 +325,7 @@ void AMech::ChangeInput(bool Enable)
 
 void AMech::JumpStart()
 {
+	if (CurrentCharge - JumpChargeCost < 0) { return; }
 	//GetMovementComponent()->StopMovementImmediately();
 	JumpInput = true;
 }

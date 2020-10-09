@@ -362,6 +362,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float GroundPoundStunTime = 1.0;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundChargeCost = 100.0;
+
 	//Upgrades
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
 		float ReloadSpeedIncrement = 0.4f;
