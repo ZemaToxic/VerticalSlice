@@ -148,8 +148,14 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMech::Landed(const FHitResult& Hit)
 {
+
 	if (IsGroundPounding)
 	{
+		if (GroundPoundCS)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(GroundPoundCS);
+		}
+
 		// create tarray for hit results
 		TArray<FHitResult> OutHits;
 
@@ -181,15 +187,14 @@ void AMech::Landed(const FHitResult& Hit)
 
 						//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
 
-						FVector launchDirection = this->GetActorLocation() - HitActor->GetActorLocation();
+						FVector launchDirection = HitActor->GetActorLocation() - this->GetActorLocation();
 						launchDirection.Z = GroundPoundLaunchZ;
 
 						float dist = launchDirection.Size();
 						launchDirection.Normalize();
 
-						HitActor->GetMovementComponent()->StopMovementImmediately();
-						HitActor->LaunchCharacter(launchDirection * (GroundPoundLaunchPower / sqrt(dist)), false, false);
-						HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
+						HitActor->DamageMonster(GroundPoundDamage, HitActor->GetActorLocation(), Hit.BoneName);
+						HitActor->StunMonster(GroundPoundStunTime, launchDirection * GroundPoundLaunchPower);
 					}
 				}
 			}
@@ -200,11 +205,17 @@ void AMech::Landed(const FHitResult& Hit)
 		GetCharacterMovement()->AirControl = AirControlTemp;
 		//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
+	else if(LandingCS)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(LandingCS);
+	}
+
 }
 
 bool AMech::GroundPound()
 {
 	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound]) { return false; }
+
 	IsGroundPounding = true;
 	GetCharacterMovement()->GravityScale = GroundPoundGravityScale;
 	GetCharacterMovement()->StopMovementImmediately();
