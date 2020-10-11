@@ -40,4 +40,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	float fDoorCost;
+
+	void SetDoorCost(float _newCost);
+
 };

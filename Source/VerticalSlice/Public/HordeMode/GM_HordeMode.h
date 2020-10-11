@@ -7,6 +7,8 @@
 #include "GM_HordeMode.generated.h"
 
 class ABaseEnemySpawner;
+class APurchasableDoors;
+class AUpgradePedestal;
 
 /**
  * 
@@ -19,7 +21,11 @@ class VERTICALSLICE_API AGM_HordeMode : public AGameModeBase
 protected:
 	AGM_HordeMode();
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<ABaseEnemySpawner> ClassToFind;
+		TSubclassOf<ABaseEnemySpawner> _spawners;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<APurchasableDoors> _unlockableDoors;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AUpgradePedestal> _updradePedestals;
 
 public:
 	// Round Data
@@ -29,6 +35,8 @@ public:
 		int iCurrentScore;
 	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
 		int iCurrentEnemies;
+	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
+		int iWaveEnemies;
 	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
 		int iInitialEnemies;
 
@@ -60,17 +68,17 @@ public:
 		float fShopCooldown = 45.0f;
 
 	float GetCurrency();
+	void SetCurrency(float _newCurrency);
+	int GetCurrentEnemies();
+	void SetCurrentEnemies();
+
 private:
 	
 	void BeginPlay() override;
 	void StartGame();
 	void NextWave(int _roundCount);;
 
-	void SpawnEnemies(int _enemyCount);
-	void SpawnSecondary(int _secondaryCount);
-	void SpawnSpecial(int _specialCount);
-	void SpawnBoss(int _bossCount);
-
+	void SpawnEnemies(int _enemyCount, int _enemyType);
 
 	UFUNCTION(BlueprintCallable)
 		void RemoveEnemy();
