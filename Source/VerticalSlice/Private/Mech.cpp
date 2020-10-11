@@ -12,6 +12,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
@@ -147,8 +148,14 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMech::Landed(const FHitResult& Hit)
 {
+
 	if (IsGroundPounding)
 	{
+		if (GroundPoundCS)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(GroundPoundCS);
+		}
+
 		// create tarray for hit results
 		TArray<FHitResult> OutHits;
 
@@ -180,15 +187,14 @@ void AMech::Landed(const FHitResult& Hit)
 
 						//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
 
-						FVector launchDirection = this->GetActorLocation() - HitActor->GetActorLocation();
+						FVector launchDirection = HitActor->GetActorLocation() - this->GetActorLocation();
 						launchDirection.Z = GroundPoundLaunchZ;
 
 						float dist = launchDirection.Size();
 						launchDirection.Normalize();
 
-						HitActor->GetMovementComponent()->StopMovementImmediately();
-						HitActor->LaunchCharacter(launchDirection * (GroundPoundLaunchPower / sqrt(dist)), false, false);
-						HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
+						HitActor->DamageMonster(GroundPoundDamage, HitActor->GetActorLocation(), Hit.BoneName);
+						HitActor->StunMonster(GroundPoundStunTime, launchDirection * GroundPoundLaunchPower);
 					}
 				}
 			}
@@ -199,11 +205,18 @@ void AMech::Landed(const FHitResult& Hit)
 		GetCharacterMovement()->AirControl = AirControlTemp;
 		//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
+	else if(LandingCS)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(LandingCS);
+	}
+
 }
 
 bool AMech::GroundPound()
 {
-	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound]) { return false; }
+	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound] || CurrentCharge - GroundPoundChargeCost < 0) { return false; }
+
+	giveCharge(false, -GroundPoundChargeCost);
 	IsGroundPounding = true;
 	GetCharacterMovement()->GravityScale = GroundPoundGravityScale;
 	GetCharacterMovement()->StopMovementImmediately();
@@ -287,6 +300,10 @@ void AMech::StopAim_Implementation()
 
 void AMech::Damage_Implementation(float dmg, FVector Loc)
 {
+	if (DamageFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DamageFX, Loc);
+	}
 	giveHealth(false, -dmg);
 }
 
@@ -308,6 +325,7 @@ void AMech::ChangeInput(bool Enable)
 
 void AMech::JumpStart()
 {
+	if (CurrentCharge - JumpChargeCost < 0) { return; }
 	//GetMovementComponent()->StopMovementImmediately();
 	JumpInput = true;
 }

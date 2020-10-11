@@ -5,6 +5,7 @@
 #include "Mech.h"
 #include "MonsterBase.h"
 #include "ArmorBase.h"
+#include "EnergyBlast.h"
 
 #include <vector>
 
@@ -100,6 +101,11 @@ void AGunBase::ShootRaycasts_Implementation()
 		}
 	}
 
+	if (ShootCS)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(ShootCS, 1.0f);
+	}
+
 	FVector gunDir = Muzzle->GetForwardVector();
 
 	shotEnd.Empty();
@@ -153,6 +159,7 @@ void AGunBase::ShootRaycasts_Implementation()
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(hit.Actor.Get()->GetName())));
 
 		UArmorBase* ArmorPlate = Cast<UArmorBase>(hit.GetComponent());
+		AEnergyBlast* EnergyBlast = Cast<AEnergyBlast>(hit.GetActor());
 
 		if (ArmorPlate)
 		{
@@ -165,6 +172,10 @@ void AGunBase::ShootRaycasts_Implementation()
 				ArmorPlate->DamagePlate(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size())/10, hit.Location);
 			}
 			
+		}
+		else if(EnergyBlast)
+		{
+			EnergyBlast->StartExplosion();
 		}
 		else
 		{

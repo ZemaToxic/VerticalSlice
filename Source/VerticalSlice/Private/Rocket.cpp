@@ -10,6 +10,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
 
@@ -50,6 +51,8 @@ void ARocket::BeginPlay()
 {
 	Super::BeginPlay();
 
+	RocketCollision->OnComponentBeginOverlap.AddDynamic(this, &ARocket::BeginOverlap);
+
 	FVector NormalLaunchDir = LaunchLoc - GetActorLocation();
 	NormalLaunchDir.Normalize();
 	SetActorRotation(FQuat::FindBetweenNormals(FVector::UpVector, NormalLaunchDir));
@@ -76,6 +79,11 @@ void ARocket::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 
 void ARocket::Explode()
 {
+	if (ExplosionFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionFX, GetActorLocation());
+	}
+
 	// create tarray for hit results
 	TArray<FHitResult> OutHits;
 
@@ -87,7 +95,7 @@ void ARocket::Explode()
 	FCollisionShape ExplosionColl = FCollisionShape::MakeSphere(ExplosionRadius);
 
 	// draw collision box
-	DrawDebugSphere(GetWorld(), SweepStart, ExplosionRadius, 30, FColor::Purple, false, 1.0f);
+	//DrawDebugSphere(GetWorld(), SweepStart, ExplosionRadius, 30, FColor::Purple, false, 1.0f);
 
 	// check if something got hit in the sweep
 	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, ExplosionColl);
