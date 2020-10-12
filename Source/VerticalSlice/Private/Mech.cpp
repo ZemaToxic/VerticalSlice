@@ -156,6 +156,11 @@ void AMech::Landed(const FHitResult& Hit)
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(GroundPoundCS);
 		}
 
+		if (GroundPoundFX)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), GroundPoundFX, GetActorLocation() + (GetActorUpVector() * -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+		}
+
 		// create tarray for hit results
 		TArray<FHitResult> OutHits;
 
@@ -205,11 +210,17 @@ void AMech::Landed(const FHitResult& Hit)
 		GetCharacterMovement()->AirControl = AirControlTemp;
 		//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
-	else if(LandingCS)
+	else 
 	{
-		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(LandingCS);
+		if (LandingCS)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(LandingCS);
+		}
 	}
-
+	if (LandFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LandFX, GetActorLocation() + (GetActorUpVector() * -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+	}
 }
 
 bool AMech::GroundPound()

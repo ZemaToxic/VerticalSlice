@@ -77,7 +77,7 @@ void ARocket::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	Explode();
 }
 
-void ARocket::Explode()
+void ARocket::Explode_Implementation()
 {
 	if (ExplosionFX)
 	{
@@ -116,7 +116,7 @@ void ARocket::Explode()
 			}
 		}
 	}
-	Destroy();
+	//Destroy();
 }
 
 // Called every frame

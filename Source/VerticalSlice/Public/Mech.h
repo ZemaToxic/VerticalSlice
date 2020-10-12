@@ -391,11 +391,13 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
 		UNiagaraSystem* GroundPoundFX;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* LandFX;
+
 	//Camera Effects
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<UCameraShake> GroundPoundCS;
 
-	//Camera Effects
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<UCameraShake> LandingCS;
 
