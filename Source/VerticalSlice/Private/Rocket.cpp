@@ -51,6 +51,8 @@ void ARocket::BeginPlay()
 {
 	Super::BeginPlay();
 
+	RocketCollision->OnComponentBeginOverlap.AddDynamic(this, &ARocket::BeginOverlap);
+
 	FVector NormalLaunchDir = LaunchLoc - GetActorLocation();
 	NormalLaunchDir.Normalize();
 	SetActorRotation(FQuat::FindBetweenNormals(FVector::UpVector, NormalLaunchDir));
