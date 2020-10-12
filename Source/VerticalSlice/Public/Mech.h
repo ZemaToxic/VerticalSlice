@@ -126,6 +126,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
 		float JumpChargeCost = 100;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CustomVariables | Gameplay | Movement", meta = (AllowPrivateAccess = "true"))
+		float LookSensitivity = 1;
+
 	///Melee variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
 		float MeleeDamage = 10;
@@ -142,7 +145,7 @@ private:
 
 	///Ability variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ability", meta = (AllowPrivateAccess = "true"))
-		int ActiveAbility = 0;
+		int ActiveAbility = -1;
 
 	//Shotgun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
@@ -391,11 +394,13 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
 		UNiagaraSystem* GroundPoundFX;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* LandFX;
+
 	//Camera Effects
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<UCameraShake> GroundPoundCS;
 
-	//Camera Effects
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<UCameraShake> LandingCS;
 
@@ -420,6 +425,12 @@ protected:
 
 	/** Called for side to side input */
 	void MoveRight(float Value);
+
+	/** Called for Lookup input */
+	void LookUp(float Value);
+
+	/** Called for turn input */
+	void Turn(float Value);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
 		void Aim();

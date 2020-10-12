@@ -39,6 +39,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom Variables | Mech")
 		class AMech* PlayerMech = 0;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		float LookSensitivity = 1;
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
 		float MountRange = 300;
@@ -64,6 +67,12 @@ protected:
 
 	/** Called for side to side input */
 	void MoveRight(float Value);
+
+	/** Called for looking up input */
+	void LookUp(float Value);
+
+	/** Called for turning the camera input */
+	void Turn(float Value);
 
 	void Interact();
 
