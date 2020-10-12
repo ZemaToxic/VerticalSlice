@@ -2,6 +2,7 @@
 
 #include "HordeMode/GM_HordeMode.h"
 #include "HordeMode/BaseEnemySpawner.h"
+#include "HordeMode/UpgradePedestal.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -20,7 +21,7 @@ AGM_HordeMode::AGM_HordeMode()
 void AGM_HordeMode::BeginPlay()
 {
 	// Set Defaults.
-	iCurrentRound = 48;
+	iCurrentRound = 0;
 	iCurrentScore = 0;
 	// Override player Health & Damage.
 	fPlayerHealthOverride = 100.0f;
@@ -29,6 +30,7 @@ void AGM_HordeMode::BeginPlay()
 	fEnemyHealthOverride = 10.0f;// 50.0f;
 	fEnemyDamageOverride = 10.0f;
 	// Set Starting Enemy count.
+	iWaveEnemies = 0;
 	iCurrentEnemies = 1;
 	iInitialEnemies = 8;
 	// Start a time to countdown for 30s then Start the game.
@@ -46,107 +48,102 @@ void AGM_HordeMode::StartGame()
 void AGM_HordeMode::NextWave(int _roundCount)
 {
 	iCurrentRound ++;
+	iCurrentEnemies = 1;
 	// Spawn the boss enemy wave
 	if (iCurrentRound % 50 == 0)
 	{
-		iCurrentEnemies = 1;
-		SpawnBoss(iCurrentEnemies);
+		iWaveEnemies = 1;
+		SpawnEnemies(iWaveEnemies, 4);
 	}
 	// Spawn the special enemy wave
 	else if (iCurrentRound % 25 == 0)
 	{
-		iCurrentEnemies = 4;
-		SpawnSpecial(iCurrentEnemies);
+		iWaveEnemies = 4;
+		SpawnEnemies(iWaveEnemies, 3);
 	}	
 	// Spawn the secondary enemy wave.
 	else if (iCurrentRound % 5 == 0)
 	{
-		iCurrentEnemies = 4;	
-		SpawnSecondary(iCurrentEnemies);
+		iWaveEnemies = 4;
+		SpawnEnemies(iWaveEnemies, 2);
 	}
 	// Spawn the First enemy wave.
 	else
 	{ 
 		int enemyCount = (_roundCount * 4) + iInitialEnemies;
-		iCurrentEnemies = enemyCount; 
-		SpawnEnemies(enemyCount);
+		iWaveEnemies = enemyCount;
+		SpawnEnemies(iWaveEnemies, 1);
 	}
 	GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
 }
 
-void AGM_HordeMode::SpawnEnemies(int _enemyCount)
+void AGM_HordeMode::SpawnEnemies(int _enemyCount, int _enemyType)
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Enemies")); }
 
 	// Find all Monster Spawn locations and Put them in an Array.
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ClassToFind, FoundActors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), _spawners, FoundActors);
 	// Iterate over the FoundActors array.
-	for (int i = 0; i < FoundActors.Num(); i++)
-	{
-		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]); 
-		tempSpawner->SpawnEnemies(_enemyCount/FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride);
-	}
-}
-
-void AGM_HordeMode::SpawnSecondary(int _specialCount)
-{
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Secondary")); }
-
-	// Find all Monster Spawn locations and Put them in an Array.
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ClassToFind, FoundActors);
 	
-	// Iterate over the FoundActors array.
-	for (int i = 0; i < FoundActors.Num(); i++)
+	if (_enemyType != 4)
 	{
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]); 
+			tempSpawner->SpawnEnemies(_enemyCount/FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride, _enemyType);
+		}
+	}
+	else
+	{
+		int i = FMath::FRandRange(1, FoundActors.Num());
+		
 		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
-		tempSpawner->SpawnSecondary(_specialCount / FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride);
+		tempSpawner->SpawnEnemies(_enemyCount, fEnemyHealthOverride, fEnemyDamageOverride, _enemyType);
 	}
 }
 
-void AGM_HordeMode::SpawnSpecial(int _specialCount)
+float AGM_HordeMode::GetCurrency()
 {
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Special")); }
-
-	// Find all Monster Spawn locations and Put them in an Array.
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ClassToFind, FoundActors);
-
-	// Iterate over the FoundActors array.
-	for (int i = 0; i < FoundActors.Num(); i++)
-	{
-		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
-		tempSpawner->SpawnSpecial(_specialCount / FoundActors.Num(), fEnemyHealthOverride, fEnemyDamageOverride);
-	}
+	return fCurrentMoney;
 }
 
-void AGM_HordeMode::SpawnBoss(int _bossCount)
+void AGM_HordeMode::SetCurrency(float _newCurrency)
 {
-	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Boss")); }
+	fCurrentMoney = fCurrentMoney - _newCurrency;
+}
 
-	// Find all Monster Spawn locations and Put them in an Array.
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ClassToFind, FoundActors);
+int AGM_HordeMode::GetCurrentEnemies()
+{
+	return iCurrentEnemies;
+}
 
-	int i = FMath::FRandRange(1, FoundActors.Num());
-
-	ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
-	tempSpawner->SpawnBoss(_bossCount, fEnemyHealthOverride, fEnemyDamageOverride);
-
+void AGM_HordeMode::SetCurrentEnemies()
+{
+	iCurrentEnemies ++;
 }
 
 void AGM_HordeMode::RemoveEnemy()
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("GM Removing Enemy")); }
 
+	iWaveEnemies--;
 	iCurrentEnemies--;
-	fCurrentMoney += 100.0f;
-	if (iCurrentEnemies <= 0)
+	float rewardCurrency = FMath::FRandRange(50.0f, 150.0f);
+	fCurrentMoney += rewardCurrency;
+	if (iWaveEnemies <= 0)
 	{
+		// Setup shops 
+		// Find all upgrade Pedestals and Put them in an Array.
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), _updradePedestals, FoundActors);
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			AUpgradePedestal* tempUpgradePedestal = Cast<AUpgradePedestal>(FoundActors[i]);
+			tempUpgradePedestal->SetUpgrade();
+		}
 		// Delay the next round to allow shopping 
 		FTimerDelegate waveTimer =  FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
 		GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
 	}
-
 }

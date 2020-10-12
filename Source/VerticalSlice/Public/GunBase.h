@@ -6,6 +6,7 @@
 
 #include "GameFramework/Actor.h"
 #include "NiagaraSystem.h"
+#include "Camera/CameraShake.h"
 
 #include "GunBase.generated.h"
 
@@ -118,6 +119,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Upgrades")
 		float RangeUpgradeIncrement = 0;
+
+	//Camera Effects
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<UCameraShake> ShootCS;
 
 public:
 
