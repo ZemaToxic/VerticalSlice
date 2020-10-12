@@ -5,6 +5,7 @@
 
 #include "ArmorBase.h"
 #include "Mech.h"
+#include "EnergyBlast.h"
 
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
@@ -172,9 +173,14 @@ void AFlamethrowerBase::FlameShoot()
 			if(!ArmorPlate)
 			{
 				AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
+				AEnergyBlast* EnergyBlastActor = Cast<AEnergyBlast>(hit.GetActor());
 				if (HitActor)
 				{
 					UniqueHitMonsters.AddUnique(HitActor);
+				}
+				else if (EnergyBlastActor)
+				{
+					EnergyBlastActor->StartExplosion();
 				}
 			}
 		}
