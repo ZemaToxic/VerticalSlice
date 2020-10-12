@@ -142,8 +142,8 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AMech::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &AMech::LookUp);
 }
 
 void AMech::Landed(const FHitResult& Hit)
@@ -273,6 +273,16 @@ void AMech::MoveRight(float Value)
 	}
 }
 
+void AMech::LookUp(float Value)
+{
+	AddControllerPitchInput(Value * LookSensitivity);
+}
+
+void AMech::Turn(float Value)
+{
+	AddControllerYawInput(Value * LookSensitivity);
+}
+
 void AMech::Aim_Implementation()
 {
 	if (Sprinting)
@@ -393,6 +403,7 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	case FeatureUpgrades::Boosters:
 		break;
 	case FeatureUpgrades::Shotgun:
+		ActiveAbility = 0;
 		break;
 	case FeatureUpgrades::Dash:
 		break;
@@ -405,8 +416,10 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	case FeatureUpgrades::HPPotion://to do
 		break;
 	case FeatureUpgrades::Flamethrower:
+		ActiveAbility = 1;
 		break;
 	case FeatureUpgrades::RocketLauncher:
+		ActiveAbility = 2;
 		break;
 	default:
 		break;
@@ -761,7 +774,7 @@ bool AMech::SwitchAbility()
 		}
 		else if (!FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && !FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
 		{
-			ActiveAbility = 0;
+			ActiveAbility = -1;
 			break;
 		}
 	}
