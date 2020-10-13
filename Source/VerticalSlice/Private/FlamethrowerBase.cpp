@@ -65,7 +65,7 @@ void AFlamethrowerBase::FlameTick()
 		}
 		else
 		{
-			IgnitedIterator.Key()->DamageMonster(FlameTickDamage, IgnitedIterator.Key()->GetActorLocation(), FName());
+			IgnitedIterator.Key()->DamageMonster(FlameTickDamage, IgnitedIterator.Key()->GetActorLocation(), FName(),0);
 
 			IgnitedMonsters[IgnitedIterator.Key()].CurrentTicks++;
 
@@ -206,7 +206,7 @@ void AFlamethrowerBase::FlameShoot()
 		}
 		else
 		{
-			MonsterIterator.Key()->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - MonsterIterator.Key()->GetActorLocation()).Size()), MonsterIterator.Key()->GetActorLocation(), FName());
+			MonsterIterator.Key()->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - MonsterIterator.Key()->GetActorLocation()).Size()), MonsterIterator.Key()->GetActorLocation(), FName(),0);
 
 			if (HitMonsters[MonsterIterator.Key()] > MaxHitsToIgnite)
 			{
