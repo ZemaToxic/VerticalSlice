@@ -182,7 +182,7 @@ void AGunBase::ShootRaycasts_Implementation()
 			AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
 			if (HitActor)
 			{
-				HitActor->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size()), hit.Location, hit.BoneName,0);
+				HitActor->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size()), hit.Location, hit.BoneName, KnockbackForce);
 				if (HitPS)
 				{
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");

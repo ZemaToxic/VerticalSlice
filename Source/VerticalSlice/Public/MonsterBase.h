@@ -84,6 +84,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
 		void Knockback(AActor* _ActorRef, float _KnockbackForce);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster")
+		void ActivateRagdoll();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
