@@ -65,6 +65,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		bool DestroysArmourPlate = false;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float KnockbackForce = 10000;
+
 	//gun internal properties
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		bool Shooting = false;
