@@ -605,7 +605,7 @@ void AMech::Melee()
 				{
 					HitMonsters.Add(HitActor);
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "HitMonster");
-					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
+					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName,0);
 				}
 			}
 		}
