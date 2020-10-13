@@ -2,6 +2,7 @@
 
 
 #include "MonsterBase.h"
+#include "Components/SkeletalMeshComponent.h"
 //#include "AIControllerBase.h"
 #include "DropsBase.h"
 
@@ -46,6 +47,11 @@ void AMonsterBase::StunMonster_Implementation(float _Duration, FVector _LaunchVe
 // Called when the Monster should be knocked back, ActorRef is the actor the monster will be knocked away from
 void AMonsterBase::Knockback_Implementation(AActor* _ActorRef, float _KnockbackForce)
 {
+}
+
+void AMonsterBase::ActivateRagdoll_Implementation()
+{
+	GetMesh()->SetSimulatePhysics(true);
 }
 
 // Called every frame
