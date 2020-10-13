@@ -604,7 +604,7 @@ void AMech::Melee()
 				if (!(HitMonsters.Contains(HitActor)))
 				{
 					HitMonsters.Add(HitActor);
-					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "HitMonster");
+					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), MeleeKnockback));
 					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName, MeleeKnockback);
 				}
 			}
