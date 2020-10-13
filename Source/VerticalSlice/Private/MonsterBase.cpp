@@ -5,6 +5,7 @@
 //#include "AIControllerBase.h"
 #include "DropsBase.h"
 
+#include "Engine.h"
 
 // Sets default values
 AMonsterBase::AMonsterBase()
