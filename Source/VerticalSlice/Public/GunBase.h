@@ -142,7 +142,7 @@ public:
 
 	void setShootAnim(class UAnimMontage* newAnim);
 	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Shoot")
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | Shoot")
 		void ShootRaycasts();
 
 	void ReloadUsingAmmoPool(int& _AmmoPool);

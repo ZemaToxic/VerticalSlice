@@ -477,7 +477,10 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Landed(const FHitResult& Hit) override;
-	bool GroundPound();
+	bool CanGroundPound();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | GroundPound")
+		void DoGroundPound();
 
 public:
 	void Reload();
