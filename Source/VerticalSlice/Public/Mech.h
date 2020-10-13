@@ -136,6 +136,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
 		 FVector MeleeRange = FVector(150,150,450);
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
+		float MeleeKnockback = 10000;
+
 	///Gun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<AGunBase> GunClass;

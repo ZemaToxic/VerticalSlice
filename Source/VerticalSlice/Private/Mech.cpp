@@ -229,7 +229,7 @@ void AMech::DoGroundPound_Implementation()
 					float dist = launchDirection.Size();
 					launchDirection.Normalize();
 
-					HitActor->DamageMonster(GroundPoundDamage, HitActor->GetActorLocation(), Hit.BoneName);
+					HitActor->DamageMonster(GroundPoundDamage, HitActor->GetActorLocation(), Hit.BoneName, 0);
 					HitActor->StunMonster(GroundPoundStunTime, launchDirection * GroundPoundLaunchPower);
 				}
 			}
@@ -605,7 +605,7 @@ void AMech::Melee()
 				{
 					HitMonsters.Add(HitActor);
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "HitMonster");
-					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName,0);
+					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName, MeleeKnockback);
 				}
 			}
 		}
