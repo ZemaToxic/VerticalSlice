@@ -111,7 +111,7 @@ void ARocket::Explode_Implementation()
 			{
 				if (!(HitMonsters.Contains(HitActor)))
 				{
-					HitActor->DamageMonster(Damage, HitActor->GetActorLocation(), Hit.BoneName);
+					HitActor->DamageMonster(Damage, HitActor->GetActorLocation(), Hit.BoneName,0);
 				}
 			}
 		}
