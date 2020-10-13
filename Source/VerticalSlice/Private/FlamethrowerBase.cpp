@@ -11,7 +11,7 @@
 #include "NiagaraComponent.h"
 #include "Engine.h"
 
-void AFlamethrowerBase::Shoot()
+void AFlamethrowerBase::Shoot_Implementation()
 {
 	if (ShootingTimer < SecondsBetweenShots) { return; }
 
@@ -26,7 +26,7 @@ void AFlamethrowerBase::Shoot()
 	Shooting = Automatic;
 }
 
-void AFlamethrowerBase::StopShoot()
+void AFlamethrowerBase::StopShoot_Implementation()
 {
 	Super::StopShoot();
 

@@ -53,7 +53,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Custom | Damage", meta = (AllowPrivateAccess = "true"))
 		float ExplosionKnockBack = 10000;
 
-	UPROPERTY(EditAnywhere, Category = "Custom | Damage", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Custom | Damage", meta = (AllowPrivateAccess = "true"))
 		float Damage = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Custom | Launch Variables", meta = (AllowPrivateAccess = "true"))

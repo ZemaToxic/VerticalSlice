@@ -195,8 +195,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
 		FTimerHandle RocketLauncherTimerHandle;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
-		float RocketLauncherCooldown = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		float RocketLauncherCooldown = 3.0f;
 
 	///resource variables
 	//ammo
