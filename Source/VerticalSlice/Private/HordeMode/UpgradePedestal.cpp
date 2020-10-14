@@ -25,7 +25,7 @@ AUpgradePedestal::AUpgradePedestal()
 	Text->SetText(FText::FromString(TEXT("Default Text")));
 	Text->SetXScale(1.f);
 	Text->SetYScale(1.f);
-	Text->SetWorldSize(25);
+	Text->SetWorldSize(20);
 	Text->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 	Text->SetRelativeLocation(FVector(55.0, 0.0f, 0.0f));
 	Text->SetVisibility(false);
