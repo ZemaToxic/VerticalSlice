@@ -136,6 +136,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
 		 FVector MeleeRange = FVector(150,150,450);
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
+		float MeleeKnockback = 10000;
+
 	///Gun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
 		TSubclassOf<AGunBase> GunClass;
@@ -192,8 +195,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
 		FTimerHandle RocketLauncherTimerHandle;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
-		float RocketLauncherCooldown = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		float RocketLauncherCooldown = 3.0f;
 
 	///resource variables
 	//ammo
@@ -477,7 +480,10 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Landed(const FHitResult& Hit) override;
-	bool GroundPound();
+	bool CanGroundPound();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | GroundPound")
+		void DoGroundPound();
 
 public:
 	void Reload();
