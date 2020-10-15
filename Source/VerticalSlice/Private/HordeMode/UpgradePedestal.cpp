@@ -253,7 +253,7 @@ void AUpgradePedestal::UpgradeMech(int _iChoosenUpgade)
 void AUpgradePedestal::SetUpgrade()
 {
 	// Pick next Upgrade.
-	iCurrentUpgrade = FMath::RandRange(1, Upgrades.Num());
+	iCurrentUpgrade = FMath::RandRange(1, (Upgrades.Num() - 1));
 	// Hide Upgrade "Box" and Text.
 	UpgradeMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	UpgradeMesh->SetVisibility(true);
