@@ -72,6 +72,9 @@ public:
 	int GetCurrentEnemies();
 	void SetCurrentEnemies();
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void PlayerDead();
+
 private:
 	
 	void BeginPlay() override;

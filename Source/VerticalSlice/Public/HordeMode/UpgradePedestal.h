@@ -11,6 +11,7 @@
 #include "UpgradePedestal.generated.h"
 
 class AGM_HordeMode;
+class UTextRenderComponent;
 
 UCLASS()
 class VERTICALSLICE_API AUpgradePedestal : public AActor
@@ -26,6 +27,8 @@ public:
 		UBoxComponent* BoxComponent;
 	UPROPERTY(EditAnywhere)
 		AInteractableVolume* Interactable;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTextRenderComponent* Text;
 
 	UFUNCTION()
 		void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -47,4 +50,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void PopulateUpgradeArray();
+	TArray<FString> Upgrades;
 };
