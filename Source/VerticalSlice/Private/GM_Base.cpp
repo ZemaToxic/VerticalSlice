@@ -50,8 +50,7 @@ bool AGM_Base::CheckIfPartsEmpty()
 {
 	for (auto& Part : partsCollected)
 	{
-		if (Part.Value == 0) break;
-		else return false;
+		if (Part.Value > 0) return false;
 	}
 	return true;
 }

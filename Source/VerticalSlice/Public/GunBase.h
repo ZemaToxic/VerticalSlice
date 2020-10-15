@@ -65,6 +65,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
 		bool DestroysArmourPlate = false;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Behaviour")
+		float KnockbackForce = 10000;
+
 	//gun internal properties
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables", meta = (AllowPrivateAccess = "true"))
 		bool Shooting = false;
@@ -139,7 +142,7 @@ public:
 
 	void setShootAnim(class UAnimMontage* newAnim);
 	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Shoot")
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | Shoot")
 		void ShootRaycasts();
 
 	void ReloadUsingAmmoPool(int& _AmmoPool);

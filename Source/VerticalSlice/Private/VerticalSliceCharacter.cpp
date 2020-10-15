@@ -68,8 +68,8 @@ void AVerticalSliceCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AVerticalSliceCharacter::Crouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AVerticalSliceCharacter::StopCrouch);
 
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AVerticalSliceCharacter::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &AVerticalSliceCharacter::LookUp);
 }
 
 void AVerticalSliceCharacter::initalise(AMech* mech)
@@ -114,6 +114,16 @@ void AVerticalSliceCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void AVerticalSliceCharacter::LookUp(float Value)
+{
+	AddControllerPitchInput(Value * LookSensitivity);
+}
+
+void AVerticalSliceCharacter::Turn(float Value)
+{
+	AddControllerYawInput(Value * LookSensitivity);
 }
 
 void AVerticalSliceCharacter::Interact()
@@ -268,9 +278,10 @@ void AVerticalSliceCharacter::SetClimbing(bool _Climbing, FVector _Forward, FVec
 	charMovement->bOrientRotationToMovement = !climbing;
 	if (climbing)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *_Location.ToString()));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *_Location.ToString()));
 		FVector NewLocation = FVector(_Location.X, _Location.Y, GetActorLocation().Z);
 		SetActorLocation(NewLocation);
+		SetActorRotation(_Forward.Rotation());
 	}
 }
 
