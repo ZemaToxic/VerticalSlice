@@ -5,6 +5,7 @@
 
 #include "MonsterBase.h"
 #include "Mech.h"
+#include "DropsBase.h"
 
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -72,7 +73,7 @@ void ARocket::BeginPlay()
 
 void ARocket::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (Cast<ARocket>(OtherActor) || Cast<AMech>(OtherActor)) { return; }
+	if (Cast<ARocket>(OtherActor) || Cast<AMech>(OtherActor) || Cast<ADropsBase>(OtherActor)) { return; }
 	GetWorldTimerManager().ClearTimer(FlyTime);
 	Explode();
 }
@@ -111,7 +112,8 @@ void ARocket::Explode_Implementation()
 			{
 				if (!(HitMonsters.Contains(HitActor)))
 				{
-					HitActor->DamageMonster(Damage, HitActor->GetActorLocation(), Hit.BoneName,0);
+					HitActor->DamageMonster(Damage, HitActor->GetActorLocation(), Hit.BoneName, 0);
+					HitActor->Knockback(this, ExplosionKnockBack);
 				}
 			}
 		}
