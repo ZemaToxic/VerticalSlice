@@ -11,7 +11,7 @@
 #include "NiagaraComponent.h"
 #include "Engine.h"
 
-void AFlamethrowerBase::Shoot()
+void AFlamethrowerBase::Shoot_Implementation()
 {
 	if (ShootingTimer < SecondsBetweenShots) { return; }
 
@@ -26,7 +26,7 @@ void AFlamethrowerBase::Shoot()
 	Shooting = Automatic;
 }
 
-void AFlamethrowerBase::StopShoot()
+void AFlamethrowerBase::StopShoot_Implementation()
 {
 	Super::StopShoot();
 
@@ -48,7 +48,7 @@ void AFlamethrowerBase::StopShoot()
 
 void AFlamethrowerBase::FlameTick()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("fire")));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("fire")));
 	auto IgnitedIterator = IgnitedMonsters.CreateConstIterator();
 	while (IgnitedIterator)
 	{
@@ -65,12 +65,17 @@ void AFlamethrowerBase::FlameTick()
 		}
 		else
 		{
-			IgnitedIterator.Key()->DamageMonster(FlameTickDamage, IgnitedIterator.Key()->GetActorLocation(), FName());
+			IgnitedIterator.Key()->DamageMonster(FlameTickDamage, IgnitedIterator.Key()->GetActorLocation(), FName(), KnockbackForce);
 
 			IgnitedMonsters[IgnitedIterator.Key()].CurrentTicks++;
 
 			++IgnitedIterator;
 		}
+	}
+
+	if (IgnitedMonsters.Num() > 0)
+	{
+		GetWorldTimerManager().SetTimer(FlameTickHandle, this, &AFlamethrowerBase::FlameTick, FlameTickRate);
 	}
 }
 
@@ -206,7 +211,7 @@ void AFlamethrowerBase::FlameShoot()
 		}
 		else
 		{
-			MonsterIterator.Key()->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - MonsterIterator.Key()->GetActorLocation()).Size()), MonsterIterator.Key()->GetActorLocation(), FName());
+			MonsterIterator.Key()->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - MonsterIterator.Key()->GetActorLocation()).Size()), MonsterIterator.Key()->GetActorLocation(), FName(), KnockbackForce);
 
 			if (HitMonsters[MonsterIterator.Key()] > MaxHitsToIgnite)
 			{

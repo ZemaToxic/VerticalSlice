@@ -85,9 +85,11 @@ private:
 
 public:
 
-	virtual void Shoot() override;
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | Shoot")
+		void Shoot() override;
 
-	virtual void StopShoot() override;
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | Shoot")
+		void StopShoot() override;
 
 	void FlameTick();
 	void FlameShoot();

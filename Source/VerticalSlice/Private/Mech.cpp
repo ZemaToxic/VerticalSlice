@@ -142,8 +142,8 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AMech::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &AMech::LookUp);
 }
 
 void AMech::Landed(const FHitResult& Hit)
@@ -151,68 +151,22 @@ void AMech::Landed(const FHitResult& Hit)
 
 	if (IsGroundPounding)
 	{
-		if (GroundPoundCS)
-		{
-			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(GroundPoundCS);
-		}
-
-		// create tarray for hit results
-		TArray<FHitResult> OutHits;
-
-		// start and end locations
-		FVector SweepStart = GetActorLocation();
-		FVector SweepEnd = SweepStart + FVector(0.1,0,0);
-
-		// create a collision sphere
-		FCollisionShape MyGroundPoundColl = FCollisionShape::MakeSphere(GroundPoundBaseRange + (GetCharacterMovement()->Velocity.Size() * GroundPoundRangeScale));
-
-		// draw collision box
-		//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
-
-		// check if something got hit in the sweep
-		bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, MyGroundPoundColl);
-
-		if (isHit)
-		{
-			TArray<AMonsterBase*> HitMonsters;
-			// loop through TArray
-			for (auto& Hit : OutHits)
-			{
-				AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
-				if (HitActor)
-				{
-					if (!(HitMonsters.Contains(HitActor)))
-					{
-						HitMonsters.Add(HitActor);
-
-						//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
-
-						FVector launchDirection = HitActor->GetActorLocation() - this->GetActorLocation();
-						launchDirection.Z = GroundPoundLaunchZ;
-
-						float dist = launchDirection.Size();
-						launchDirection.Normalize();
-
-						HitActor->DamageMonster(GroundPoundDamage, HitActor->GetActorLocation(), Hit.BoneName);
-						HitActor->StunMonster(GroundPoundStunTime, launchDirection * GroundPoundLaunchPower);
-					}
-				}
-			}
-		}
-
-		IsGroundPounding = false;
-		GetCharacterMovement()->GravityScale = BaseGravityScale;
-		GetCharacterMovement()->AirControl = AirControlTemp;
-		//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		DoGroundPound();
 	}
-	else if(LandingCS)
+	else 
 	{
-		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(LandingCS);
+		if (LandingCS)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(LandingCS);
+		}
 	}
-
+	if (LandFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LandFX, GetActorLocation() + (GetActorUpVector() * -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+	}
 }
 
-bool AMech::GroundPound()
+bool AMech::CanGroundPound()
 {
 	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound] || CurrentCharge - GroundPoundChargeCost < 0) { return false; }
 
@@ -224,6 +178,68 @@ bool AMech::GroundPound()
 	GetCharacterMovement()->AirControl = 0;
 	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	return true;
+}
+
+void AMech::DoGroundPound_Implementation()
+{
+	if (GroundPoundCS)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(GroundPoundCS);
+	}
+
+	if (GroundPoundFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), GroundPoundFX, GetActorLocation() + (GetActorUpVector() * -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+	}
+
+	// create tarray for hit results
+	TArray<FHitResult> OutHits;
+
+	// start and end locations
+	FVector SweepStart = GetActorLocation();
+	FVector SweepEnd = SweepStart + FVector(0.1, 0, 0);
+
+	// create a collision sphere
+	FCollisionShape MyGroundPoundColl = FCollisionShape::MakeSphere(GroundPoundBaseRange + (GetCharacterMovement()->Velocity.Size() * GroundPoundRangeScale));
+
+	// draw collision box
+	//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
+
+	// check if something got hit in the sweep
+	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, MyGroundPoundColl);
+
+	if (isHit)
+	{
+		TArray<AMonsterBase*> HitMonsters;
+		// loop through TArray
+		for (auto& Hit : OutHits)
+		{
+			AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
+			if (HitActor)
+			{
+				if (!(HitMonsters.Contains(HitActor)))
+				{
+					HitMonsters.Add(HitActor);
+
+					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
+
+					FVector launchDirection = HitActor->GetActorLocation() - this->GetActorLocation();
+					launchDirection.Z = GroundPoundLaunchZ;
+
+					float dist = launchDirection.Size();
+					launchDirection.Normalize();
+
+					HitActor->DamageMonster(GroundPoundDamage, HitActor->GetActorLocation(), Hit.BoneName, 0);
+					HitActor->StunMonster(GroundPoundStunTime, launchDirection * GroundPoundLaunchPower);
+				}
+			}
+		}
+	}
+
+	IsGroundPounding = false;
+	GetCharacterMovement()->GravityScale = BaseGravityScale;
+	GetCharacterMovement()->AirControl = AirControlTemp;
+	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 }
 
 void AMech::initalise(AVerticalSliceCharacter* Player)
@@ -260,6 +276,16 @@ void AMech::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void AMech::LookUp(float Value)
+{
+	AddControllerPitchInput(Value * LookSensitivity);
+}
+
+void AMech::Turn(float Value)
+{
+	AddControllerYawInput(Value * LookSensitivity);
 }
 
 void AMech::Aim_Implementation()
@@ -361,12 +387,11 @@ void AMech::Dash()
 {
 	if (FeatureUpgradesMap[FeatureUpgrades::Dash])
 	{
-		if (CurrentCharge - DashChargeCost > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+		if (CurrentCharge - DashChargeCost > 0 && !(MoveRightAxis == 0))
 		{
 			//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
 			FVector launchDir = GetCharacterMovement()->Velocity;
 			launchDir.Normalize();
-			CurrentCharge -= DashChargeCost;
 			giveCharge(false, -DashChargeCost);
 			LaunchCharacter(launchDir * DashForce, false, false);
 		}
@@ -382,6 +407,7 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	case FeatureUpgrades::Boosters:
 		break;
 	case FeatureUpgrades::Shotgun:
+		ActiveAbility = 0;
 		break;
 	case FeatureUpgrades::Dash:
 		break;
@@ -394,8 +420,10 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	case FeatureUpgrades::HPPotion://to do
 		break;
 	case FeatureUpgrades::Flamethrower:
+		ActiveAbility = 1;
 		break;
 	case FeatureUpgrades::RocketLauncher:
+		ActiveAbility = 2;
 		break;
 	default:
 		break;
@@ -531,7 +559,7 @@ void AMech::StopSprint()
 
 void AMech::Melee()
 {
-	if (GroundPound()) { return; }
+	if (CanGroundPound()) { return; }
 	if (MeleeAnim)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
@@ -575,8 +603,8 @@ void AMech::Melee()
 				if (!(HitMonsters.Contains(HitActor)))
 				{
 					HitMonsters.Add(HitActor);
-					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "HitMonster");
-					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
+					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), MeleeKnockback));
+					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName, MeleeKnockback);
 				}
 			}
 		}
@@ -750,7 +778,7 @@ bool AMech::SwitchAbility()
 		}
 		else if (!FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && !FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
 		{
-			ActiveAbility = 0;
+			ActiveAbility = -1;
 			break;
 		}
 	}

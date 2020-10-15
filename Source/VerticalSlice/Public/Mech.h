@@ -126,12 +126,18 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
 		float JumpChargeCost = 100;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CustomVariables | Gameplay | Movement", meta = (AllowPrivateAccess = "true"))
+		float LookSensitivity = 1;
+
 	///Melee variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
 		float MeleeDamage = 10;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
 		 FVector MeleeRange = FVector(150,150,450);
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
+		float MeleeKnockback = 10000;
 
 	///Gun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
@@ -142,7 +148,7 @@ private:
 
 	///Ability variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ability", meta = (AllowPrivateAccess = "true"))
-		int ActiveAbility = 0;
+		int ActiveAbility = -1;
 
 	//Shotgun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
@@ -189,8 +195,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
 		FTimerHandle RocketLauncherTimerHandle;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
-		float RocketLauncherCooldown = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		float RocketLauncherCooldown = 3.0f;
 
 	///resource variables
 	//ammo
@@ -243,7 +249,7 @@ private:
 
 	///Dash Variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
-		float DashChargeCost = 300;
+		float DashChargeCost = 150;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
 		float DashForce = 10000;
@@ -391,11 +397,13 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
 		UNiagaraSystem* GroundPoundFX;
 
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* LandFX;
+
 	//Camera Effects
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<UCameraShake> GroundPoundCS;
 
-	//Camera Effects
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<UCameraShake> LandingCS;
 
@@ -420,6 +428,12 @@ protected:
 
 	/** Called for side to side input */
 	void MoveRight(float Value);
+
+	/** Called for Lookup input */
+	void LookUp(float Value);
+
+	/** Called for turn input */
+	void Turn(float Value);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
 		void Aim();
@@ -466,7 +480,10 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Landed(const FHitResult& Hit) override;
-	bool GroundPound();
+	bool CanGroundPound();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | GroundPound")
+		void DoGroundPound();
 
 public:
 	void Reload();
