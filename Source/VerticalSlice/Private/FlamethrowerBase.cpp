@@ -48,7 +48,7 @@ void AFlamethrowerBase::StopShoot_Implementation()
 
 void AFlamethrowerBase::FlameTick()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("fire")));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("fire")));
 	auto IgnitedIterator = IgnitedMonsters.CreateConstIterator();
 	while (IgnitedIterator)
 	{
@@ -71,6 +71,11 @@ void AFlamethrowerBase::FlameTick()
 
 			++IgnitedIterator;
 		}
+	}
+
+	if (IgnitedMonsters.Num() > 0)
+	{
+		GetWorldTimerManager().SetTimer(FlameTickHandle, this, &AFlamethrowerBase::FlameTick, FlameTickRate);
 	}
 }
 
