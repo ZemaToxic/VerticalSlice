@@ -249,7 +249,7 @@ private:
 
 	///Dash Variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
-		float DashChargeCost = 300;
+		float DashChargeCost = 150;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
 		float DashForce = 10000;

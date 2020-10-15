@@ -387,12 +387,11 @@ void AMech::Dash()
 {
 	if (FeatureUpgradesMap[FeatureUpgrades::Dash])
 	{
-		if (CurrentCharge - DashChargeCost > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+		if (CurrentCharge - DashChargeCost > 0 && !(MoveRightAxis == 0))
 		{
 			//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
 			FVector launchDir = GetCharacterMovement()->Velocity;
 			launchDir.Normalize();
-			CurrentCharge -= DashChargeCost;
 			giveCharge(false, -DashChargeCost);
 			LaunchCharacter(launchDir * DashForce, false, false);
 		}
