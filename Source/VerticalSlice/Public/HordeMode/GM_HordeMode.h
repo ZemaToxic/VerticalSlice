@@ -59,7 +59,8 @@ public:
 		FTimerHandle RoundTimer;
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
 		FTimerHandle ShopTimer;
-
+	FTimerHandle PlayerBuff;
+	
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
 		float fStartTime = 10.0f;
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
@@ -81,6 +82,7 @@ private:
 	void StartGame();
 	void NextWave(int _roundCount);;
 
+	void BuffPlayer();
 	void SpawnEnemies(int _enemyCount, int _enemyType);
 
 	UFUNCTION(BlueprintCallable)

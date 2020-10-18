@@ -33,8 +33,20 @@ void AGM_HordeMode::BeginPlay()
 	iWaveEnemies = 0;
 	iCurrentEnemies = 1;
 	iInitialEnemies = 8;
+	// Wait a tic to make sure Mech is spawned then buff player.
+	GetWorld()->GetTimerManager().SetTimer(PlayerBuff, this, &AGM_HordeMode::BuffPlayer, 0.2f, true);
 	// Start a time to countdown for 30s then Start the game.
 	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::StartGame, fStartTime, true);
+}
+
+void AGM_HordeMode::BuffPlayer()
+{
+	// Increase the Default Ammo the player has.
+	AVerticalSliceCharacter* player = Cast<AVerticalSliceCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if (player) {
+		player->PlayerMech->UpgradeStats(StatUpgrades::RifleReserveAmmo, 2, true); // 2 = 80 bullets
+	}
+	GetWorld()->GetTimerManager().ClearTimer(PlayerBuff);
 }
 
 void AGM_HordeMode::StartGame()

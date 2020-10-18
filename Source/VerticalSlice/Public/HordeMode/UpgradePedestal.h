@@ -46,6 +46,7 @@ protected:
 
 	float fUpgradeCost;
 	int iCurrentUpgrade;
+	bool bSinglePurchase;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

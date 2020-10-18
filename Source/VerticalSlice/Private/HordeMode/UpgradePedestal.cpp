@@ -49,9 +49,19 @@ void AUpgradePedestal::BeginPlay()
 void AUpgradePedestal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (Interactable->GetActivated())
+	// Check if Interactable exists.
+	if (Interactable)
 	{
-		CheckPurchase();
+		// Check if the Interactable is Activated.
+		if (Interactable->GetActivated())
+		{
+			// Check if the upgrade has not been purchased already.
+			if (!bSinglePurchase)
+			{
+				// Check if player can buy the upgrade.
+				CheckPurchase();
+			}
+		}
 	}
 }
 
@@ -92,7 +102,7 @@ void AUpgradePedestal::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 	if (OtherActor == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 	{
 		// Display the current Price of the Upgrade.
-		Text->SetText(TEXT("$ " + FString::FromInt(fUpgradeCost) + " to unlock - " + Upgrades[iCurrentUpgrade]));
+		Text->SetText(TEXT("$ " + FString::FromInt(fUpgradeCost) + " to unlock - " + Upgrades[iCurrentUpgrade - 1]));
 		Text->SetVisibility(true);
 	}
 }
@@ -110,6 +120,9 @@ void AUpgradePedestal::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAct
 
 void AUpgradePedestal::CheckPurchase()
 {
+	// Make sure upgrade can only be purchased once.
+	bSinglePurchase = true;
+	// Get the current GameMode.
 	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
 	if (GameMode)
 	{
@@ -260,8 +273,7 @@ void AUpgradePedestal::SetUpgrade()
 	Text->bHiddenInGame = false;
 	// Set the price of the Upgrade.
 	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
-	if (GameMode)
-	{
-		fUpgradeCost = GameMode->iCurrentRound * 250.0f;
-	}
+	if (GameMode) { fUpgradeCost = GameMode->iCurrentRound * 250.0f; }
+	// Allow purchase of upgrade again.
+	bSinglePurchase = false;
 }

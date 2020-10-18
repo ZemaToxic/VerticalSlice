@@ -53,6 +53,7 @@ void APurchasableDoors::Tick(float DeltaTime)
 			DoorMesh->SetVisibility(false);
 			Text->bHiddenInGame = true;
 			Interactable->Destroy();
+			Destroy();
 		}
 	}
 }
