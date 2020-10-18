@@ -278,9 +278,10 @@ void AVerticalSliceCharacter::SetClimbing(bool _Climbing, FVector _Forward, FVec
 	charMovement->bOrientRotationToMovement = !climbing;
 	if (climbing)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *_Location.ToString()));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *_Location.ToString()));
 		FVector NewLocation = FVector(_Location.X, _Location.Y, GetActorLocation().Z);
 		SetActorLocation(NewLocation);
+		SetActorRotation(_Forward.Rotation());
 	}
 }
 
