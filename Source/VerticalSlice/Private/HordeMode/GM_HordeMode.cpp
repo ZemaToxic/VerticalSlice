@@ -27,7 +27,7 @@ void AGM_HordeMode::BeginPlay()
 	fPlayerHealthOverride = 100.0f;
 	fPlayerDamageOverride = 15.0f;
 	// Override base enemy Health & Damage.
-	fEnemyHealthOverride = 10.0f;// 50.0f;
+	fEnemyHealthOverride = 50.0f;
 	fEnemyDamageOverride = 10.0f;
 	// Set Starting Enemy count.
 	iWaveEnemies = 0;
@@ -92,6 +92,9 @@ void AGM_HordeMode::NextWave(int _roundCount)
 void AGM_HordeMode::SpawnEnemies(int _enemyCount, int _enemyType)
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Enemies")); }
+
+	// Modify Health for the Enemies each wave.
+	fEnemyHealthOverride = fEnemyHealthOverride + (iCurrentRound * 5.0f);
 
 	// Find all Monster Spawn locations and Put them in an Array.
 	TArray<AActor*> FoundActors;
