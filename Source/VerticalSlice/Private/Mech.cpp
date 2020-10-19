@@ -1,4 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Mech.h"
@@ -387,10 +388,10 @@ void AMech::Dash()
 {
 	if (FeatureUpgradesMap[FeatureUpgrades::Dash])
 	{
-		if (CurrentCharge - DashChargeCost > 0 && !(MoveRightAxis == 0))
+		if (CurrentCharge - DashChargeCost > 0)
 		{
 			//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
-			FVector launchDir = GetCharacterMovement()->Velocity;
+			FVector launchDir = (GetActorRightVector() * MoveRightAxis) + (GetActorForwardVector() * MoveForwardAxis);
 			launchDir.Normalize();
 			giveCharge(false, -DashChargeCost);
 			LaunchCharacter(launchDir * DashForce, false, false);
@@ -573,42 +574,42 @@ void AMech::Melee()
 		}
 	}
 	
-	// create tarray for hit results
-	TArray<FHitResult> OutHits;
+	//// create tarray for hit results
+	//TArray<FHitResult> OutHits;
 
-	FVector MeleeDir = GetActorForwardVector();
+	//FVector MeleeDir = GetActorForwardVector();
 
-	// start and end locations
-	FVector SweepStart = GetActorLocation() + (MeleeDir*(MeleeRange.Y));
-	FVector SweepEnd = SweepStart + (MeleeDir*0.1);
+	//// start and end locations
+	//FVector SweepStart = GetActorLocation() + (MeleeDir*(MeleeRange.Y));
+	//FVector SweepEnd = SweepStart + (MeleeDir*0.1);
 
-	// create a collision sphere
-	FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);	
-	
-	// draw collision box
-	//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
+	//// create a collision sphere
+	//FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);	
+	//
+	//// draw collision box
+	////DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
 
-	// check if something got hit in the sweep
-	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, Gun->ignoredActors);
+	//// check if something got hit in the sweep
+	//bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, Gun->ignoredActors);
 
-	if (isHit)
-	{
-		TArray<AMonsterBase*> HitMonsters;
-		// loop through TArray
-		for (auto& Hit : OutHits)
-		{
-			AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
-			if (HitActor)
-			{ 
-				if (!(HitMonsters.Contains(HitActor)))
-				{
-					HitMonsters.Add(HitActor);
-					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), MeleeKnockback));
-					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName, MeleeKnockback);
-				}
-			}
-		}
-	}
+	//if (isHit)
+	//{
+	//	TArray<AMonsterBase*> HitMonsters;
+	//	// loop through TArray
+	//	for (auto& Hit : OutHits)
+	//	{
+	//		AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
+	//		if (HitActor)
+	//		{ 
+	//			if (!(HitMonsters.Contains(HitActor)))
+	//			{
+	//				HitMonsters.Add(HitActor);
+	//				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), MeleeKnockback));
+	//				HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName, MeleeKnockback);
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 void AMech::Shoot()
@@ -665,20 +666,16 @@ void AMech::Dismount_Implementation()
 	{
 		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 500;
 
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
-
 		FHitResult SweepHit;
-		bool bhit = true;
 
-		while (bhit)
+
+		GetWorld()->SweepSingleByChannel(SweepHit, GetActorLocation(), spawnLoc, FQuat::Identity, ECollisionChannel::ECC_Pawn, PlayerChar->GetCapsuleComponent()->GetCollisionShape(), Gun->ignoredActors);
+		if (SweepHit.bBlockingHit)
 		{
-			GetWorld()->SweepSingleByChannel(SweepHit, spawnLoc, spawnLoc + FVector(0, 0.1, 0), FQuat::Identity, ECollisionChannel::ECC_Pawn, PlayerChar->GetCapsuleComponent()->GetCollisionShape());
-			bhit = SweepHit.bBlockingHit;
-			if (bhit)
-			{
-				spawnLoc += GetActorForwardVector();
-			}
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, SweepHit.Actor.Get()->GetName());
+			return;
 		}
+
 		PlayerChar->SetActorLocationAndRotation(spawnLoc, GetActorRotation());
 
 		PlayerChar->SetVisible(true, true, true);
