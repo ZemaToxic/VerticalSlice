@@ -117,7 +117,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
 		float SprintWalkSpeed = 1200;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
 		bool Sprinting = false;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
