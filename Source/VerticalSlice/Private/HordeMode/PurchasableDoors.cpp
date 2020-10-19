@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/TextRenderComponent.h"
+
 // Sets default values
 APurchasableDoors::APurchasableDoors()
 {
@@ -47,13 +48,7 @@ void APurchasableDoors::Tick(float DeltaTime)
 	{
 		if (Interactable->GetActivated())
 		{
-			if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("INTERACT REGISTERED")); }
-			// Remove Door Mesh and allow play to walk through.
-			DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			DoorMesh->SetVisibility(false);
-			Text->bHiddenInGame = true;
-			Interactable->Destroy();
-			Destroy();
+			CheckPurchase();
 		}
 	}
 }
@@ -67,11 +62,7 @@ void APurchasableDoors::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, A
 {
 	if (OtherActor == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 	{
-
-		//AVerticalSliceCharacter* character = Cast<AVerticalSliceCharacter>(OtherActor);
-		//AMech* mechChar = Cast<AMech>(character->PlayerMech);
-
-		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("PLAYER OVERLAP REGISTERED")); }
+		Text->SetWorldSize(25);
 		Text->SetText(TEXT("$" + FString::FromInt(fDoorCost) + " to unlock."));
 		Text->SetVisibility(true);
 	}
@@ -82,10 +73,36 @@ void APurchasableDoors::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAc
 {
 	if (OtherActor == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 	{
-		if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("PLAYER OVERLAP ENDED")); }
 		// Reset the Interactable object
 		Interactable->Reset();
 		Text->SetVisibility(false);
 	}
 }
-  
+
+void APurchasableDoors::CheckPurchase()
+{
+	// Get the current GameMode.
+	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+	if (GameMode)
+	{
+		// Get the Players current money.
+		float currentCash = GameMode->GetCurrency();
+		// If the player has more money then the cost of the upgrade.
+		if (currentCash >= fDoorCost)
+		{
+			// Deduct cost of door from players money.
+			GameMode->SetCurrency(fDoorCost);
+			// Remove Door Mesh and allow play to walk through.
+			DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			DoorMesh->SetVisibility(false);
+			Text->bHiddenInGame = true;
+			Interactable->Destroy();
+			Destroy();
+		}
+		else
+		{
+			Text->SetWorldSize(15);
+			Text->SetText(TEXT("You do not have enough Cash to unlock this."));
+		}
+	}
+}

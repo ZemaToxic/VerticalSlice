@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GM_HordeMode.h"
 #include "../VerticalSliceCharacter.h"
 #include "../interactableVolume.h"
 #include "PurchasableDoors.generated.h"
@@ -39,6 +40,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void CheckPurchase();
 
 	float fDoorCost;
 
