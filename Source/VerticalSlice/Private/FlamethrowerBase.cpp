@@ -48,7 +48,7 @@ void AFlamethrowerBase::StopShoot_Implementation()
 
 void AFlamethrowerBase::FlameTick()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("fire")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("fire")));
 	auto IgnitedIterator = IgnitedMonsters.CreateConstIterator();
 	while (IgnitedIterator)
 	{
@@ -254,8 +254,10 @@ void AFlamethrowerBase::IgniteMonster(AMonsterBase* Monster)
 		UNiagaraComponent* OnFire = 0;
 		if (OnFireEffect)
 		{
-			OnFire = UNiagaraFunctionLibrary::SpawnSystemAttached(OnFireEffect, Cast<USceneComponent>(Monster), FName(), FVector(), FRotator(), EAttachLocation::SnapToTarget, false);
+			OnFire = UNiagaraFunctionLibrary::SpawnSystemAttached(OnFireEffect, Cast<USceneComponent>(Monster->GetRootComponent()), FName(), FVector(), FRotator(), EAttachLocation::SnapToTarget, false);
 		}
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *OnFire->GetName()));
+		
 		IgnitedMonsters.Add(Monster, FOnFire(FMath::RandRange(MinFlameTicks, MaxFlameTicks), 0, OnFire));
 	}
 }
