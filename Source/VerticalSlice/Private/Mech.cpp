@@ -388,8 +388,9 @@ void AMech::Dash()
 {
 	if (FeatureUpgradesMap[FeatureUpgrades::Dash])
 	{
-		if (CurrentCharge - DashChargeCost > 0)
+		if (CurrentCharge - DashChargeCost > 0 && !HasDashed && (MoveRightAxis != 0 || MoveForwardAxis != 0))
 		{
+			HasDashed = true;
 			//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
 			FVector launchDir = (GetActorRightVector() * MoveRightAxis) + (GetActorForwardVector() * MoveForwardAxis);
 			launchDir.Normalize();
@@ -832,7 +833,7 @@ void AMech::giveHealth(bool Max, int amount)
 	}
 }
 
-void AMech::giveCharge(bool Max, int amount)
+void AMech::giveCharge_Implementation(bool Max, int amount)
 {
 	if (Max || CurrentCharge + amount >= MaxCharge)
 	{
