@@ -2,9 +2,11 @@
 
 
 #include "MonsterBase.h"
+#include "Components/SkeletalMeshComponent.h"
 //#include "AIControllerBase.h"
 #include "DropsBase.h"
 
+#include "Engine.h"
 
 // Sets default values
 AMonsterBase::AMonsterBase()
@@ -26,9 +28,9 @@ void AMonsterBase::BeginPlay()
 }
 
 // Called when the monster takes damage
-void AMonsterBase::DamageMonster_Implementation(float _damage, FVector _hitLoc, FName _boneHit)
+void AMonsterBase::DamageMonster_Implementation(float _Damage, FVector _HitLoc, FName _BoneHit, float _KnockbackForce)
 {
-	health -= _damage;
+	health -= _Damage;
 }
 
 // Called when the monster successfully hits the player
@@ -40,6 +42,16 @@ void AMonsterBase::DamagePlayer_Implementation()
 void AMonsterBase::StunMonster_Implementation(float _Duration, FVector _LaunchVelocity)
 {
 
+}
+
+// Called when the Monster should be knocked back, ActorRef is the actor the monster will be knocked away from
+void AMonsterBase::Knockback_Implementation(AActor* _ActorRef, float _KnockbackForce)
+{
+}
+
+void AMonsterBase::ActivateRagdoll_Implementation()
+{
+	GetMesh()->SetSimulatePhysics(true);
 }
 
 // Called every frame

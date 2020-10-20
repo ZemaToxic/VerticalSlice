@@ -39,6 +39,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom Variables | Mech")
 		class AMech* PlayerMech = 0;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Custom Variables | Gameplay")
+		float LookSensitivity = 1;
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Custom Variables | Gameplay")
 		float MountRange = 300;
@@ -65,6 +68,12 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
+	/** Called for looking up input */
+	void LookUp(float Value);
+
+	/** Called for turning the camera input */
+	void Turn(float Value);
+
 	void Interact();
 
 	void CheckInteract();
@@ -81,7 +90,7 @@ protected:
 		bool Mount();
 
 	UFUNCTION(BlueprintCallable, category = "Custom | Climbing")
-		void SetClimbing(bool newClimb, FVector Forward, FVector Up);
+		void SetClimbing(bool _Climbing, FVector _Forward, FVector _Up, FVector _Location);
 
 protected:
 	// APawn interface

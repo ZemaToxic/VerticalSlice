@@ -5,11 +5,13 @@
 
 #include "MonsterBase.h"
 #include "Mech.h"
+#include "DropsBase.h"
 
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
 
@@ -50,6 +52,8 @@ void ARocket::BeginPlay()
 {
 	Super::BeginPlay();
 
+	RocketCollision->OnComponentBeginOverlap.AddDynamic(this, &ARocket::BeginOverlap);
+
 	FVector NormalLaunchDir = LaunchLoc - GetActorLocation();
 	NormalLaunchDir.Normalize();
 	SetActorRotation(FQuat::FindBetweenNormals(FVector::UpVector, NormalLaunchDir));
@@ -69,13 +73,18 @@ void ARocket::BeginPlay()
 
 void ARocket::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (Cast<ARocket>(OtherActor) || Cast<AMech>(OtherActor)) { return; }
+	if (Cast<ARocket>(OtherActor) || Cast<AMech>(OtherActor) || Cast<ADropsBase>(OtherActor)) { return; }
 	GetWorldTimerManager().ClearTimer(FlyTime);
 	Explode();
 }
 
-void ARocket::Explode()
+void ARocket::Explode_Implementation()
 {
+	if (ExplosionFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionFX, GetActorLocation());
+	}
+
 	// create tarray for hit results
 	TArray<FHitResult> OutHits;
 
@@ -87,7 +96,7 @@ void ARocket::Explode()
 	FCollisionShape ExplosionColl = FCollisionShape::MakeSphere(ExplosionRadius);
 
 	// draw collision box
-	DrawDebugSphere(GetWorld(), SweepStart, ExplosionRadius, 30, FColor::Purple, false, 1.0f);
+	//DrawDebugSphere(GetWorld(), SweepStart, ExplosionRadius, 30, FColor::Purple, false, 1.0f);
 
 	// check if something got hit in the sweep
 	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, ExplosionColl);
@@ -103,12 +112,13 @@ void ARocket::Explode()
 			{
 				if (!(HitMonsters.Contains(HitActor)))
 				{
-					HitActor->DamageMonster(Damage, HitActor->GetActorLocation(), Hit.BoneName);
+					HitActor->DamageMonster(Damage, HitActor->GetActorLocation(), Hit.BoneName, 0);
+					HitActor->Knockback(this, ExplosionKnockBack);
 				}
 			}
 		}
 	}
-	Destroy();
+	//Destroy();
 }
 
 // Called every frame
@@ -116,7 +126,7 @@ void ARocket::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetActorLocation().Equals(LaunchLoc, 100))
+	if (PastLaunchLocation)
 	{
 		float speed = RocketMove->Velocity.Size();
 		RocketMove->Velocity.Normalize();
@@ -126,12 +136,16 @@ void ARocket::Tick(float DeltaTime)
 			AtLaunch = true;
 		}
 	}
+	else
+	{
+		PastLaunchLocation = GetActorLocation().Equals(LaunchLoc, 100);
+	}
 
 	if (AtLaunch)
 	{
 		FVector NormalAimDir = AimLoc - GetActorLocation();
 		NormalAimDir.Normalize();
-		RotGoal = FQuat::FindBetweenNormals(FVector::UpVector, NormalAimDir);
+		FQuat RotGoal = FQuat::FindBetweenNormals(FVector::UpVector, NormalAimDir);
 
 		if (GetActorQuat().Equals(RotGoal, RotationTolerance))
 		{

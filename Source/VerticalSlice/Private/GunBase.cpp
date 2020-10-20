@@ -5,6 +5,7 @@
 #include "Mech.h"
 #include "MonsterBase.h"
 #include "ArmorBase.h"
+#include "EnergyBlast.h"
 
 #include <vector>
 
@@ -100,6 +101,11 @@ void AGunBase::ShootRaycasts_Implementation()
 		}
 	}
 
+	if (ShootCS)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(ShootCS, 1.0f);
+	}
+
 	FVector gunDir = Muzzle->GetForwardVector();
 
 	shotEnd.Empty();
@@ -153,6 +159,7 @@ void AGunBase::ShootRaycasts_Implementation()
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(hit.Actor.Get()->GetName())));
 
 		UArmorBase* ArmorPlate = Cast<UArmorBase>(hit.GetComponent());
+		AEnergyBlast* EnergyBlast = Cast<AEnergyBlast>(hit.GetActor());
 
 		if (ArmorPlate)
 		{
@@ -166,12 +173,16 @@ void AGunBase::ShootRaycasts_Implementation()
 			}
 			
 		}
+		else if(EnergyBlast)
+		{
+			EnergyBlast->StartExplosion();
+		}
 		else
 		{
 			AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
 			if (HitActor)
 			{
-				HitActor->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size()), hit.Location, hit.BoneName);
+				HitActor->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - hit.GetComponent()->GetComponentLocation()).Size()), hit.Location, hit.BoneName, KnockbackForce);
 				if (HitPS)
 				{
 					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Yay");
@@ -203,7 +214,7 @@ void AGunBase::ReloadUsingAmmoPool(int& _AmmoPool)
 
 bool AGunBase::Reload(int _Amount)
 {
-	if (CurrentClipSize <= MaxClipSize && !Shooting)
+	if (CurrentClipSize < MaxClipSize && !Shooting)
 	{
 		bool isClipFull = (_Amount + CurrentClipSize >= MaxClipSize);
 		if (isClipFull)
@@ -220,23 +231,23 @@ bool AGunBase::Reload(int _Amount)
 	return true;
 }
 
-void AGunBase::UpgradeDamage(float _Amount)
+void AGunBase::UpgradeDamage(int _Amount)
 {
 	Damage = DefaultGun->Damage + DamageUpgradeIncrement * _Amount;
 }
 
-void AGunBase::UpgradeClipSize(float _Amount)
+void AGunBase::UpgradeClipSize(int _Amount)
 {
 	MaxClipSize = DefaultGun->MaxClipSize + ClipSizeUpgradeIncrement * _Amount;
 	CurrentClipSize = MaxClipSize;
 }
 
-void AGunBase::UpgradeBulletsPerShot(float _Amount)
+void AGunBase::UpgradeBulletsPerShot(int _Amount)
 {
 	BulletsPerShot = DefaultGun->BulletsPerShot + BulletsPerShotUpgradeIncrement * _Amount;
 }
 
-void AGunBase::UpgradeRange(float _Amount)
+void AGunBase::UpgradeRange(int _Amount)
 {
 	MaxRange = DefaultGun->MaxRange + RangeUpgradeIncrement * _Amount;
 }

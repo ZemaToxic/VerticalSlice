@@ -1,4 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Mech.h"
@@ -12,6 +13,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
@@ -136,74 +138,40 @@ void AMech::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AMech::UseAbility);
 	PlayerInputComponent->BindAction("Shotgun", IE_Released, this, &AMech::StopAbility);
 
-	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbility);
+	PlayerInputComponent->BindAction("Switch", IE_Pressed, this, &AMech::SwitchAbilityInput);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMech::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMech::MoveRight);
 
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AMech::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &AMech::LookUp);
 }
 
 void AMech::Landed(const FHitResult& Hit)
 {
+
 	if (IsGroundPounding)
 	{
-		// create tarray for hit results
-		TArray<FHitResult> OutHits;
-
-		// start and end locations
-		FVector SweepStart = GetActorLocation();
-		FVector SweepEnd = SweepStart + FVector(0.1,0,0);
-
-		// create a collision sphere
-		FCollisionShape MyGroundPoundColl = FCollisionShape::MakeSphere(GroundPoundBaseRange + (GetCharacterMovement()->Velocity.Size() * GroundPoundRangeScale));
-
-		// draw collision box
-		//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
-
-		// check if something got hit in the sweep
-		bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, MyGroundPoundColl);
-
-		if (isHit)
+		DoGroundPound();
+	}
+	else 
+	{
+		if (LandingCS)
 		{
-			TArray<AMonsterBase*> HitMonsters;
-			// loop through TArray
-			for (auto& Hit : OutHits)
-			{
-				AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
-				if (HitActor)
-				{
-					if (!(HitMonsters.Contains(HitActor)))
-					{
-						HitMonsters.Add(HitActor);
-
-						//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
-
-						FVector launchDirection = this->GetActorLocation() - HitActor->GetActorLocation();
-						launchDirection.Z = GroundPoundLaunchZ;
-
-						float dist = launchDirection.Size();
-						launchDirection.Normalize();
-
-						HitActor->GetMovementComponent()->StopMovementImmediately();
-						HitActor->LaunchCharacter(launchDirection * (GroundPoundLaunchPower / sqrt(dist)), false, false);
-						HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
-					}
-				}
-			}
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(LandingCS);
 		}
-
-		IsGroundPounding = false;
-		GetCharacterMovement()->GravityScale = BaseGravityScale;
-		GetCharacterMovement()->AirControl = AirControlTemp;
-		//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	}
+	if (LandFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LandFX, GetActorLocation() + (GetActorUpVector() * -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 	}
 }
 
-bool AMech::GroundPound()
+bool AMech::CanGroundPound()
 {
-	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound]) { return false; }
+	if (!GetCharacterMovement()->IsFalling() || !FeatureUpgradesMap[FeatureUpgrades::GroundPound] || CurrentCharge - GroundPoundChargeCost < 0) { return false; }
+
+	giveCharge(false, -GroundPoundChargeCost);
 	IsGroundPounding = true;
 	GetCharacterMovement()->GravityScale = GroundPoundGravityScale;
 	GetCharacterMovement()->StopMovementImmediately();
@@ -211,6 +179,68 @@ bool AMech::GroundPound()
 	GetCharacterMovement()->AirControl = 0;
 	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	return true;
+}
+
+void AMech::DoGroundPound_Implementation()
+{
+	if (GroundPoundCS)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(GroundPoundCS);
+	}
+
+	if (GroundPoundFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), GroundPoundFX, GetActorLocation() + (GetActorUpVector() * -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+	}
+
+	// create tarray for hit results
+	TArray<FHitResult> OutHits;
+
+	// start and end locations
+	FVector SweepStart = GetActorLocation();
+	FVector SweepEnd = SweepStart + FVector(0.1, 0, 0);
+
+	// create a collision sphere
+	FCollisionShape MyGroundPoundColl = FCollisionShape::MakeSphere(GroundPoundBaseRange + (GetCharacterMovement()->Velocity.Size() * GroundPoundRangeScale));
+
+	// draw collision box
+	//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
+
+	// check if something got hit in the sweep
+	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_GameTraceChannel1, MyGroundPoundColl);
+
+	if (isHit)
+	{
+		TArray<AMonsterBase*> HitMonsters;
+		// loop through TArray
+		for (auto& Hit : OutHits)
+		{
+			AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
+			if (HitActor)
+			{
+				if (!(HitMonsters.Contains(HitActor)))
+				{
+					HitMonsters.Add(HitActor);
+
+					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *(Hit.Actor.Get()->GetName())));
+
+					FVector launchDirection = HitActor->GetActorLocation() - this->GetActorLocation();
+					launchDirection.Z = GroundPoundLaunchZ;
+
+					float dist = launchDirection.Size();
+					launchDirection.Normalize();
+
+					HitActor->DamageMonster(GroundPoundDamage, HitActor->GetActorLocation(), Hit.BoneName, 0);
+					HitActor->StunMonster(GroundPoundStunTime, launchDirection * GroundPoundLaunchPower);
+				}
+			}
+		}
+	}
+
+	IsGroundPounding = false;
+	GetCharacterMovement()->GravityScale = BaseGravityScale;
+	GetCharacterMovement()->AirControl = AirControlTemp;
+	//GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 }
 
 void AMech::initalise(AVerticalSliceCharacter* Player)
@@ -247,6 +277,16 @@ void AMech::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void AMech::LookUp(float Value)
+{
+	AddControllerPitchInput(Value * LookSensitivity);
+}
+
+void AMech::Turn(float Value)
+{
+	AddControllerYawInput(Value * LookSensitivity);
 }
 
 void AMech::Aim_Implementation()
@@ -287,6 +327,10 @@ void AMech::StopAim_Implementation()
 
 void AMech::Damage_Implementation(float dmg, FVector Loc)
 {
+	if (DamageFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), DamageFX, Loc);
+	}
 	giveHealth(false, -dmg);
 }
 
@@ -308,6 +352,7 @@ void AMech::ChangeInput(bool Enable)
 
 void AMech::JumpStart()
 {
+	if (CurrentCharge - JumpChargeCost < 0) { return; }
 	//GetMovementComponent()->StopMovementImmediately();
 	JumpInput = true;
 }
@@ -343,12 +388,12 @@ void AMech::Dash()
 {
 	if (FeatureUpgradesMap[FeatureUpgrades::Dash])
 	{
-		if (CurrentCharge - DashChargeCost > 0 && !(GetCharacterMovement()->IsFalling()) && !(MoveRightAxis == 0))
+		if (CurrentCharge - DashChargeCost > 0 && !HasDashed && (MoveRightAxis != 0 || MoveForwardAxis != 0))
 		{
+			HasDashed = true;
 			//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
-			FVector launchDir = GetCharacterMovement()->Velocity;
+			FVector launchDir = (GetActorRightVector() * MoveRightAxis) + (GetActorForwardVector() * MoveForwardAxis);
 			launchDir.Normalize();
-			CurrentCharge -= DashChargeCost;
 			giveCharge(false, -DashChargeCost);
 			LaunchCharacter(launchDir * DashForce, false, false);
 		}
@@ -364,6 +409,7 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	case FeatureUpgrades::Boosters:
 		break;
 	case FeatureUpgrades::Shotgun:
+		ActiveAbility = 0;
 		break;
 	case FeatureUpgrades::Dash:
 		break;
@@ -376,8 +422,10 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 	case FeatureUpgrades::HPPotion://to do
 		break;
 	case FeatureUpgrades::Flamethrower:
+		ActiveAbility = 1;
 		break;
 	case FeatureUpgrades::RocketLauncher:
+		ActiveAbility = 2;
 		break;
 	default:
 		break;
@@ -513,7 +561,7 @@ void AMech::StopSprint()
 
 void AMech::Melee()
 {
-	if (GroundPound()) { return; }
+	if (CanGroundPound()) { return; }
 	if (MeleeAnim)
 	{
 		UAnimInstance* mechAnim = GetMesh()->GetAnimInstance();
@@ -527,42 +575,42 @@ void AMech::Melee()
 		}
 	}
 	
-	// create tarray for hit results
-	TArray<FHitResult> OutHits;
+	//// create tarray for hit results
+	//TArray<FHitResult> OutHits;
 
-	FVector MeleeDir = GetActorForwardVector();
+	//FVector MeleeDir = GetActorForwardVector();
 
-	// start and end locations
-	FVector SweepStart = GetActorLocation() + (MeleeDir*(MeleeRange.Y));
-	FVector SweepEnd = SweepStart + (MeleeDir*0.1);
+	//// start and end locations
+	//FVector SweepStart = GetActorLocation() + (MeleeDir*(MeleeRange.Y));
+	//FVector SweepEnd = SweepStart + (MeleeDir*0.1);
 
-	// create a collision sphere
-	FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);	
-	
-	// draw collision box
-	//DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
+	//// create a collision sphere
+	//FCollisionShape MyMeleeColl = FCollisionShape::MakeBox(MeleeRange);	
+	//
+	//// draw collision box
+	////DrawDebugBox(GetWorld(), SweepStart, MyMeleeColl.GetExtent(), FColor::Purple, false, 1.0f);
 
-	// check if something got hit in the sweep
-	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, Gun->ignoredActors);
+	//// check if something got hit in the sweep
+	//bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_Visibility, MyMeleeColl, Gun->ignoredActors);
 
-	if (isHit)
-	{
-		TArray<AMonsterBase*> HitMonsters;
-		// loop through TArray
-		for (auto& Hit : OutHits)
-		{
-			AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
-			if (HitActor)
-			{ 
-				if (!(HitMonsters.Contains(HitActor)))
-				{
-					HitMonsters.Add(HitActor);
-					//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "HitMonster");
-					HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName);
-				}
-			}
-		}
-	}
+	//if (isHit)
+	//{
+	//	TArray<AMonsterBase*> HitMonsters;
+	//	// loop through TArray
+	//	for (auto& Hit : OutHits)
+	//	{
+	//		AMonsterBase* HitActor = Cast<AMonsterBase>(Hit.GetActor());
+	//		if (HitActor)
+	//		{ 
+	//			if (!(HitMonsters.Contains(HitActor)))
+	//			{
+	//				HitMonsters.Add(HitActor);
+	//				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), MeleeKnockback));
+	//				HitActor->DamageMonster(MeleeDamage, HitActor->GetActorLocation(), Hit.BoneName, MeleeKnockback);
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 void AMech::Shoot()
@@ -619,20 +667,16 @@ void AMech::Dismount_Implementation()
 	{
 		FVector spawnLoc = GetActorLocation() + GetActorForwardVector() * 500;
 
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, spawnLoc.ToString());
-
 		FHitResult SweepHit;
-		bool bhit = true;
 
-		while (bhit)
+
+		GetWorld()->SweepSingleByChannel(SweepHit, GetActorLocation(), spawnLoc, FQuat::Identity, ECollisionChannel::ECC_Pawn, PlayerChar->GetCapsuleComponent()->GetCollisionShape(), Gun->ignoredActors);
+		if (SweepHit.bBlockingHit)
 		{
-			GetWorld()->SweepSingleByChannel(SweepHit, spawnLoc, spawnLoc + FVector(0, 0.1, 0), FQuat::Identity, ECollisionChannel::ECC_Pawn, PlayerChar->GetCapsuleComponent()->GetCollisionShape());
-			bhit = SweepHit.bBlockingHit;
-			if (bhit)
-			{
-				spawnLoc += GetActorForwardVector();
-			}
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, SweepHit.Actor.Get()->GetName());
+			return;
 		}
+
 		PlayerChar->SetActorLocationAndRotation(spawnLoc, GetActorRotation());
 
 		PlayerChar->SetVisible(true, true, true);
@@ -674,12 +718,16 @@ void AMech::UseAbility()
 			GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
 		}
 	}
+	else if (SwitchAbility())
+	{
+		UseAbility();
+	}
 }
 
 void AMech::StopAbility()
 {
 	Flamethrower->StopShoot();
-	GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
+	GetWorldTimerManager().SetTimer(FlamethrowerTimerHandle, this, &AMech::FlamethrowerRecharge, FlamethrowerRechargeDelay);
 
 	Shotgun->StopShoot();
 
@@ -701,14 +749,13 @@ void AMech::FlamethrowerRecharge()
 
 void AMech::RocketLauncherRecharge()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Recharged Rocket")));
 	if (!RocketLauncher->Reload(1))
 	{
 		GetWorldTimerManager().SetTimer(RocketLauncherTimerHandle, this, &AMech::RocketLauncherRecharge, RocketLauncherCooldown);
 	}
 }
 
-void AMech::SwitchAbility()
+bool AMech::SwitchAbility()
 {
 	bool Available = false;
 	while (!Available)
@@ -729,12 +776,11 @@ void AMech::SwitchAbility()
 		}
 		else if (!FeatureUpgradesMap[FeatureUpgrades::Shotgun] && !FeatureUpgradesMap[FeatureUpgrades::Flamethrower] && !FeatureUpgradesMap[FeatureUpgrades::RocketLauncher])
 		{
-			ActiveAbility = 0;
-			Available = true;
+			ActiveAbility = -1;
+			break;
 		}
 	}
-	
-	
+	return Available;
 }
 
 void AMech::giveAmmo(bool Max, int amount)
@@ -787,7 +833,7 @@ void AMech::giveHealth(bool Max, int amount)
 	}
 }
 
-void AMech::giveCharge(bool Max, int amount)
+void AMech::giveCharge_Implementation(bool Max, int amount)
 {
 	if (Max || CurrentCharge + amount >= MaxCharge)
 	{
@@ -912,4 +958,3 @@ void AMech::Tick(float DeltaTime)
 		FlamethrowerRechargeTimer = 0.0f;
 	}
 }
-

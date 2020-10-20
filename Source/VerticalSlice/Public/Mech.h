@@ -117,7 +117,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
 		float SprintWalkSpeed = 1200;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Watchables")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Watchables", meta = (AllowPrivateAccess = "true"))
 		bool Sprinting = false;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
@@ -126,12 +126,15 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Movement")
 		float JumpChargeCost = 100;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CustomVariables | Gameplay | Movement", meta = (AllowPrivateAccess = "true"))
+		float LookSensitivity = 1;
+
 	///Melee variables
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float MeleeDamage = 10;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
-		 FVector MeleeRange = FVector(150,150,450);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float MeleeKnockback = 10000;
 
 	///Gun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
@@ -142,7 +145,7 @@ private:
 
 	///Ability variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Ability", meta = (AllowPrivateAccess = "true"))
-		int ActiveAbility = 0;
+		int ActiveAbility = -1;
 
 	//Shotgun variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Gun")
@@ -189,8 +192,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CustomVariables | Watchables | Ability", meta = (AllowPrivateAccess = "true"))
 		FTimerHandle RocketLauncherTimerHandle;
 
-	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Ability")
-		float RocketLauncherCooldown = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Ability")
+		float RocketLauncherCooldown = 3.0f;
 
 	///resource variables
 	//ammo
@@ -243,11 +246,13 @@ private:
 
 	///Dash Variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
-		float DashChargeCost = 300;
+		float DashChargeCost = 150;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
-		float DashForce = 10000;
+		float DashForce = 15000;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Gameplay | Dash", meta = (AllowPrivateAccess = "true"))
+		bool HasDashed = false;
 	///player character
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Player")
 		TSubclassOf<class AVerticalSliceCharacter> PlayerClass;
@@ -336,6 +341,9 @@ private:
 
 	///Ground pound Variables
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundDamage = 50.0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float BaseGravityScale = 10;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
@@ -348,13 +356,19 @@ private:
 		float GroundPoundRangeScale = 1;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
-		float GroundPoundBaseRange = 1000;
+		float GroundPoundBaseRange = 500;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
-		float GroundPoundLaunchPower = 10000;
+		float GroundPoundLaunchPower = 1000;
 
 	UPROPERTY(VisibleAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float AirControlTemp = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundStunTime = 1.0;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
+		float GroundPoundChargeCost = 100.0;
 
 	//Upgrades
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
@@ -374,6 +388,23 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Upgrades", meta = (AllowPrivateAccess = "true"))
 		float ChargeRegenIncrement = 12;
+
+	//VFX
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* DamageFX;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* GroundPoundFX;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | VFX", meta = (AllowPrivateAccess = "true"))
+		UNiagaraSystem* LandFX;
+
+	//Camera Effects
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<UCameraShake> GroundPoundCS;
+
+	UPROPERTY(EditAnywhere, Category = "CustomVariables | CS", meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<UCameraShake> LandingCS;
 
 public:
 	//variable/s the player needs to see and change
@@ -397,6 +428,12 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
+	/** Called for Lookup input */
+	void LookUp(float Value);
+
+	/** Called for turn input */
+	void Turn(float Value);
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Aim")
 		void Aim();
 
@@ -416,11 +453,15 @@ protected:
 	void UseAbility();
 	void StopAbility();
 
+	UFUNCTION()
 	void ShotgunRecharge();
+	UFUNCTION()
 	void FlamethrowerRecharge();
+	UFUNCTION()
 	void RocketLauncherRecharge();
 
-	void SwitchAbility();
+	bool SwitchAbility();
+	void SwitchAbilityInput() { SwitchAbility(); }
 
 	void JumpStart();
 	void JumpEnd();
@@ -438,7 +479,10 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Landed(const FHitResult& Hit) override;
-	bool GroundPound();
+	bool CanGroundPound();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Custom | GroundPound")
+		void DoGroundPound();
 
 public:
 	void Reload();
@@ -451,7 +495,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveHealth(bool Max, int amount = 0);
 
-	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Reset")
 		void giveCharge(bool Max, int amount = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")

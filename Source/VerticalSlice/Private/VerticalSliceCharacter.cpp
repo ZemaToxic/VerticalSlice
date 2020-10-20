@@ -68,8 +68,8 @@ void AVerticalSliceCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AVerticalSliceCharacter::Crouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AVerticalSliceCharacter::StopCrouch);
 
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AVerticalSliceCharacter::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &AVerticalSliceCharacter::LookUp);
 }
 
 void AVerticalSliceCharacter::initalise(AMech* mech)
@@ -103,7 +103,7 @@ void AVerticalSliceCharacter::MoveForward(float Value)
 
 void AVerticalSliceCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
+	if ( (Controller != NULL) && (Value != 0.0f) && !climbing )
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -114,6 +114,16 @@ void AVerticalSliceCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void AVerticalSliceCharacter::LookUp(float Value)
+{
+	AddControllerPitchInput(Value * LookSensitivity);
+}
+
+void AVerticalSliceCharacter::Turn(float Value)
+{
+	AddControllerYawInput(Value * LookSensitivity);
 }
 
 void AVerticalSliceCharacter::Interact()
@@ -222,7 +232,7 @@ void AVerticalSliceCharacter::Jump()
 {
 	if (climbing)
 	{
-		SetClimbing(false, FVector(), FVector());
+		SetClimbing(false, FVector(), FVector(), FVector());
 	}
 	else
 	{
@@ -256,16 +266,23 @@ bool AVerticalSliceCharacter::Mount_Implementation()
 	return false;
 }
 
-void AVerticalSliceCharacter::SetClimbing(bool newClimb, FVector Forward, FVector Up)
+void AVerticalSliceCharacter::SetClimbing(bool _Climbing, FVector _Forward, FVector _Up, FVector _Location)
 {
-	climbing = newClimb;
+	climbing = _Climbing;
 
 	UCharacterMovementComponent* charMovement = GetCharacterMovement();
 
 	charMovement->SetMovementMode((climbing) ? EMovementMode::MOVE_Flying : EMovementMode::MOVE_Walking);
 	charMovement->bConstrainToPlane = climbing;
-	charMovement->SetPlaneConstraintFromVectors(Forward, Up);
+	charMovement->SetPlaneConstraintFromVectors(_Forward, _Up);
 	charMovement->bOrientRotationToMovement = !climbing;
+	if (climbing)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *_Location.ToString()));
+		FVector NewLocation = FVector(_Location.X, _Location.Y, GetActorLocation().Z);
+		SetActorLocation(NewLocation);
+		SetActorRotation(_Forward.Rotation());
+	}
 }
 
 void AVerticalSliceCharacter::SetVisible(bool visibility, bool collision, bool movement)

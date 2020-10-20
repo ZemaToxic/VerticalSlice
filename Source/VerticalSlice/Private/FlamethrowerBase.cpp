@@ -5,12 +5,13 @@
 
 #include "ArmorBase.h"
 #include "Mech.h"
+#include "EnergyBlast.h"
 
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Engine.h"
 
-void AFlamethrowerBase::Shoot()
+void AFlamethrowerBase::Shoot_Implementation()
 {
 	if (ShootingTimer < SecondsBetweenShots) { return; }
 
@@ -25,7 +26,7 @@ void AFlamethrowerBase::Shoot()
 	Shooting = Automatic;
 }
 
-void AFlamethrowerBase::StopShoot()
+void AFlamethrowerBase::StopShoot_Implementation()
 {
 	Super::StopShoot();
 
@@ -56,17 +57,25 @@ void AFlamethrowerBase::FlameTick()
 			auto DestroyedIt = IgnitedIterator;
 			++IgnitedIterator;
 
-			IgnitedMonsters[DestroyedIt.Key()].Fire->DestroyInstance();
+			if (IsValid(IgnitedMonsters[DestroyedIt.Key()].Fire))
+			{
+				IgnitedMonsters[DestroyedIt.Key()].Fire->DestroyInstance();
+			}
 			IgnitedMonsters.Remove(DestroyedIt.Key());
 		}
 		else
 		{
-			IgnitedIterator.Key()->DamageMonster(FlameTickDamage, IgnitedIterator.Key()->GetActorLocation(), FName());
+			IgnitedIterator.Key()->DamageMonster(FlameTickDamage, IgnitedIterator.Key()->GetActorLocation(), FName(), KnockbackForce);
 
 			IgnitedMonsters[IgnitedIterator.Key()].CurrentTicks++;
 
 			++IgnitedIterator;
 		}
+	}
+
+	if (IgnitedMonsters.Num() > 0)
+	{
+		GetWorldTimerManager().SetTimer(FlameTickHandle, this, &AFlamethrowerBase::FlameTick, FlameTickRate);
 	}
 }
 
@@ -169,9 +178,14 @@ void AFlamethrowerBase::FlameShoot()
 			if(!ArmorPlate)
 			{
 				AMonsterBase* HitActor = Cast<AMonsterBase>(hit.GetActor());
+				AEnergyBlast* EnergyBlastActor = Cast<AEnergyBlast>(hit.GetActor());
 				if (HitActor)
 				{
 					UniqueHitMonsters.AddUnique(HitActor);
+				}
+				else if (EnergyBlastActor)
+				{
+					EnergyBlastActor->StartExplosion();
 				}
 			}
 		}
@@ -197,7 +211,7 @@ void AFlamethrowerBase::FlameShoot()
 		}
 		else
 		{
-			MonsterIterator.Key()->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - MonsterIterator.Key()->GetActorLocation()).Size()), MonsterIterator.Key()->GetActorLocation(), FName());
+			MonsterIterator.Key()->DamageMonster(CalcDamage((Muzzle->GetComponentLocation() - MonsterIterator.Key()->GetActorLocation()).Size()), MonsterIterator.Key()->GetActorLocation(), FName(), KnockbackForce);
 
 			if (HitMonsters[MonsterIterator.Key()] > MaxHitsToIgnite)
 			{
@@ -240,8 +254,10 @@ void AFlamethrowerBase::IgniteMonster(AMonsterBase* Monster)
 		UNiagaraComponent* OnFire = 0;
 		if (OnFireEffect)
 		{
-			OnFire = UNiagaraFunctionLibrary::SpawnSystemAttached(OnFireEffect, Cast<USceneComponent>(Monster), FName(), FVector(), FRotator(), EAttachLocation::SnapToTarget, false);
+			OnFire = UNiagaraFunctionLibrary::SpawnSystemAttached(OnFireEffect, Cast<USceneComponent>(Monster->GetRootComponent()), FName(), FVector(), FRotator(), EAttachLocation::SnapToTarget, false);
 		}
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *OnFire->GetName()));
+		
 		IgnitedMonsters.Add(Monster, FOnFire(FMath::RandRange(MinFlameTicks, MaxFlameTicks), 0, OnFire));
 	}
 }
