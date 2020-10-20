@@ -251,6 +251,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
 		float DashForce = 15000;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Gameplay | Dash", meta = (AllowPrivateAccess = "true"))
+		bool HasDashed = false;
 	///player character
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Player")
 		TSubclassOf<class AVerticalSliceCharacter> PlayerClass;
