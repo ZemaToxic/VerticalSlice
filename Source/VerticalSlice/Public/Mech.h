@@ -495,7 +495,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveHealth(bool Max, int amount = 0);
 
-	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Reset")
 		void giveCharge(bool Max, int amount = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
