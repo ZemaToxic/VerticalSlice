@@ -388,8 +388,9 @@ void AMech::Dash()
 {
 	if (FeatureUpgradesMap[FeatureUpgrades::Dash])
 	{
-		if (CurrentCharge - DashChargeCost > 0)
+		if (CurrentCharge - DashChargeCost > 0 && !HasDashed)
 		{
+			HasDashed = true;
 			//FVector launchDir = FVector(FVector2D(GetVelocity()), 0);
 			FVector launchDir = (GetActorRightVector() * MoveRightAxis) + (GetActorForwardVector() * MoveForwardAxis);
 			launchDir.Normalize();
