@@ -48,7 +48,7 @@ void APurchasableDoors::Tick(float DeltaTime)
 	{
 		if (Interactable->GetActivated())
 		{
-			CheckPurchase();
+			CanPurchase();
 		}
 	}
 }
@@ -79,7 +79,7 @@ void APurchasableDoors::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	}
 }
 
-void APurchasableDoors::CheckPurchase()
+void APurchasableDoors::CanPurchase()
 {
 	// Get the current GameMode.
 	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
@@ -90,14 +90,7 @@ void APurchasableDoors::CheckPurchase()
 		// If the player has more money then the cost of the upgrade.
 		if (currentCash >= fDoorCost)
 		{
-			// Deduct cost of door from players money.
-			GameMode->SetCurrency(fDoorCost);
-			// Remove Door Mesh and allow play to walk through.
-			DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			DoorMesh->SetVisibility(false);
-			Text->bHiddenInGame = true;
-			Interactable->Destroy();
-			Destroy();
+			ConfirmPurchase(GameMode);
 		}
 		else
 		{
@@ -105,4 +98,16 @@ void APurchasableDoors::CheckPurchase()
 			Text->SetText(TEXT("You do not have enough Cash to unlock this."));
 		}
 	}
+}
+
+void APurchasableDoors::ConfirmPurchase(AGM_HordeMode* const& GameMode)
+{
+	// Deduct cost of door from players money.
+	GameMode->SetCurrency(fDoorCost);
+	// Remove Door Mesh and allow play to walk through.
+	DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	DoorMesh->SetVisibility(false);
+	Text->bHiddenInGame = true;
+	Interactable->Destroy();
+	Destroy();
 }

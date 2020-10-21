@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "HordeMode/BaseEnemySpawner.h"
 #include "Engine/World.h"
 
@@ -64,6 +63,7 @@ void ABaseEnemySpawner::SpawnEnemies(int _enemyCount, float _HealthOverride, flo
 			break;
 		}
 		default:
+		// Shouldn't be hit, error out if do
 		break;
 	}
 }

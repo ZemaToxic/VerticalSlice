@@ -39,6 +39,7 @@ public:
 
 	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride, int _enemyType);
 
+private:
 	void SpawnDefault();
 	void SpawnSecondary();
 	void SpawnSpecial();
@@ -49,8 +50,8 @@ public:
 	FActorSpawnParameters SpawnInfo;
 
 	// Timer Data
-	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
-		FTimerHandle SpawnTimer;
+
+	FTimerHandle SpawnTimer;
 	float fSpawnTime;
 
 	// Overrides

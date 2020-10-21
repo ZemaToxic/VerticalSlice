@@ -41,10 +41,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void CheckPurchase();
+private:
+	void CanPurchase();
+	void ConfirmPurchase(AGM_HordeMode* const& GameMode);
+	void SetDoorCost(float _newCost);
 
 	float fDoorCost;
 
-	void SetDoorCost(float _newCost);
 
 };

@@ -10,12 +10,9 @@
 AGM_HordeMode::AGM_HordeMode()
 {
 	// Find the Player blueprint 
-	static ConstructorHelpers::FClassFinder<APawn> Blueprint(TEXT("/Game/Blueprints/Player/ThirdPersonCharacter"));
-	if (Blueprint.Class != NULL)
-	{
-		// If the player is found, set it as the default player for the GameMode
-		DefaultPawnClass = (UClass*)Blueprint.Class;
-	}
+	static ConstructorHelpers::FClassFinder<APawn> PlayerCharacter(TEXT("/Game/Blueprints/Player/ThirdPersonCharacter"));
+	// If the player is found, set it as the default player for the GameMode
+	if (PlayerCharacter.Class != NULL) { DefaultPawnClass = (UClass*)PlayerCharacter.Class; }
 }
 
 void AGM_HordeMode::BeginPlay()
@@ -148,17 +145,22 @@ void AGM_HordeMode::RemoveEnemy()
 	fCurrentMoney += rewardCurrency;
 	if (iWaveEnemies <= 0)
 	{
-		// Setup shops 
-		// Find all upgrade Pedestals and Put them in an Array.
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), _updradePedestals, FoundActors);
-		for (int i = 0; i < FoundActors.Num(); i++)
-		{
-			AUpgradePedestal* tempUpgradePedestal = Cast<AUpgradePedestal>(FoundActors[i]);
-			tempUpgradePedestal->SetUpgrade();
-		}
-		// Delay the next round to allow shopping 
-		FTimerDelegate waveTimer =  FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
-		GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
+		SetupNextWave();
 	}
+}
+
+void AGM_HordeMode::SetupNextWave()
+{
+	// Setup shops 
+	// Find all upgrade Pedestals and Put them in an Array.
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), _updradePedestals, FoundActors);
+	for (int i = 0; i < FoundActors.Num(); i++)
+	{
+		AUpgradePedestal* tempUpgradePedestal = Cast<AUpgradePedestal>(FoundActors[i]);
+		tempUpgradePedestal->SetUpgrade();
+	}
+	// Delay the next round to allow shopping 
+	FTimerDelegate waveTimer = FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
+	GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
 }

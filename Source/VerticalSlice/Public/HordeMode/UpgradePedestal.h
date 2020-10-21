@@ -13,14 +13,48 @@
 class AGM_HordeMode;
 class UTextRenderComponent;
 
+enum MechUpgrades {
+	Boosters,
+	Shotgun,
+	Dash,
+	GroundPound,
+	NoChargeRegenDelay,
+	HPRegen,
+	HPPotion,
+	Flamethrower,
+	RocketLauncher,
+	MaxAmmo,
+	MaxHealth,
+	RifleDamage,
+	RifleReload,
+	RifleClipSize,
+	RifleReserveAmmo,
+	ShotgunDamage,
+	ShotgunCharges,
+	ShotgunPellets,
+	ShotgunRange,
+	MechMaxHP,
+	MechMaxCharge,
+	MechHPRegen,
+	MechChargeRegen,
+	FlamethrowerDamage,
+	FlamethrowerFireDamage,
+	RocketAmount,
+	RocketRadius
+};
+
 UCLASS()
 class VERTICALSLICE_API AUpgradePedestal : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 	// Sets default values for this actor's properties
 	AUpgradePedestal();
+	void SetUpgrade();
+
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* UpgradeMesh;
 	UPROPERTY(EditAnywhere)
@@ -29,28 +63,24 @@ public:
 		AInteractableVolume* Interactable;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTextRenderComponent* Text;
-
+private:
 	UFUNCTION()
 		void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnBoxEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	void CheckPurchase();
-	void UpgradeMech(int _iChoosenUpgade);
-
-	void SetUpgrade();
-
-protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void CanPurchase();
+	void ConfirmPurchase(AGM_HordeMode* const& GameMode);
+	void UpgradeMech(int _iChoosenUpgade);
+
+	void PopulateUpgradeArray();
+
+	TArray<FString> Upgrades;
 
 	float fUpgradeCost;
 	int iCurrentUpgrade;
 	bool bSinglePurchase;
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	void PopulateUpgradeArray();
-	TArray<FString> Upgrades;
 };

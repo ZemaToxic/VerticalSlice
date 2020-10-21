@@ -52,15 +52,11 @@ void AUpgradePedestal::Tick(float DeltaTime)
 	// Check if Interactable exists.
 	if (Interactable)
 	{
-		// Check if the Interactable is Activated.
-		if (Interactable->GetActivated())
+		// Check if the Interactable is Activated. Check if the upgrade has not been purchased already.
+		if (Interactable->GetActivated() && !bSinglePurchase)
 		{
-			// Check if the upgrade has not been purchased already.
-			if (!bSinglePurchase)
-			{
-				// Check if player can buy the upgrade.
-				CheckPurchase();
-			}
+			// Check if player can buy the upgrade.
+			CanPurchase();
 		}
 	}
 }
@@ -118,7 +114,7 @@ void AUpgradePedestal::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAct
 	}
 }
 
-void AUpgradePedestal::CheckPurchase()
+void AUpgradePedestal::CanPurchase()
 {
 	// Make sure upgrade can only be purchased once.
 	bSinglePurchase = true;
@@ -131,129 +127,136 @@ void AUpgradePedestal::CheckPurchase()
 		// If the player has more money then the cost of the upgrade.
 		if (currentCash >= fUpgradeCost)
 		{
-			// Upgrade the Mech with the current Upgrade then deduct cost from players total.
-			UpgradeMech(iCurrentUpgrade);
-			GameMode->SetCurrency(fUpgradeCost);
-			// Remove Upgrade Mesh and hide text.
-			UpgradeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			UpgradeMesh->SetVisibility(false);
-			Text->bHiddenInGame = true;
+			ConfirmPurchase(GameMode);
 		}
 	}
+}
+
+void AUpgradePedestal::ConfirmPurchase(AGM_HordeMode* const& GameMode)
+{
+	// Upgrade the Mech with the current Upgrade then deduct cost from players total.
+	UpgradeMech(iCurrentUpgrade);
+	GameMode->SetCurrency(fUpgradeCost);
+	// Remove Upgrade Mesh and hide text.
+	UpgradeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	UpgradeMesh->SetVisibility(false);
+	Text->bHiddenInGame = true;
 }
 
 void AUpgradePedestal::UpgradeMech(int _iChoosenUpgade)
 {
 	AVerticalSliceCharacter* currentChar = Cast<AVerticalSliceCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	MechUpgrades eChoosenUpgrade = (MechUpgrades)_iChoosenUpgade;
+	
 	if (currentChar)
 	{
-		switch (_iChoosenUpgade)
+		switch (eChoosenUpgrade)
 		{
-		case 1: {
+		case Boosters: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::Boosters, true);
 			break;
 		}
-		case 2: {
+		case Shotgun: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::Shotgun, true);
 			break;
 		}
-		case 3: {
+		case Dash: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::Dash, true);
 			break;
 		}
-		case 4: {
+		case GroundPound: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::GroundPound, true);
 			break;
 		}
-		case 5: {
+		case NoChargeRegenDelay: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::NoChargeRegenDelay, true);
 			break;
 		}
-		case 6: {
+		case HPRegen: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::HPRegen, true);
 			break;
 		}
-		case 7: {
+		case HPPotion: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::HPPotion, true);
 			break;
 		}
-		case 8: {
+		case Flamethrower: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::Flamethrower, true);
 			break;
 		}
-		case 9: {
+		case RocketLauncher: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::RocketLauncher, true);
 			break;
 		}
-		case 10: {
+		case MaxAmmo: {
 			currentChar->PlayerMech->giveAmmo(true);
 			break;
 		}
-		case 11: {
+		case MaxHealth: {
 			currentChar->PlayerMech->giveHealth(true);
 			break;
 		}
-		case 12: {
+		case RifleDamage: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleDamage, 1, true);
 			break;
 		}
-		case 13: {
+		case RifleReload: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleReload, 1, true);
 			break;
 		}
-		case 14: {
+		case RifleClipSize: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleClipSize, 1, true);
 			break;
 		}
-		case 15: {
+		case RifleReserveAmmo: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleReserveAmmo, 1, true);
 			break;
 		}
-		case 16: {
+		case ShotgunDamage: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::ShotgunDamage, 1, true);
 			break;
 		}
-		case 17: {
+		case ShotgunCharges: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::ShotgunCharges, 1, true);
 			break;
 		}
-		case 18: {
+		case ShotgunPellets: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::ShotgunPellets, 1, true);
 			break;
 		}
-		case 19: {
+		case ShotgunRange: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::ShotgunRange, 1, true);
 			break;
 		}
-		case 20: {
+		case MechMaxHP: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::MechMaxHP, 1, true);
 			break;
 		}
-		case 21: {
+		case MechMaxCharge: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::MechMaxCharge, 1, true);
 			break;
 		}
-		case 22: {
+		case MechHPRegen: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::MechHPRegen, 1, true);
 			break;
 		}
-		case 23: {
+		case MechChargeRegen: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::MechChargeRegen, 1, true);
 			break;
 		}
-		case 24: {
+		case FlamethrowerDamage: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::FlamethrowerDamage, 1, true);
 			break;
 		}
-		case 25: {
+		case FlamethrowerFireDamage: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::FlamethrowerFireDamage, 1, true);
 			break;
 		}
-		case 26: {
+		case RocketAmount: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RocketAmount, 1, true);
 			break;
 		}
-		case 27: {
+		case RocketRadius: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RocketRadius, 1, true);
 			break;
 		}
