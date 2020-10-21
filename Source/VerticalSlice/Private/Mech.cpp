@@ -404,6 +404,8 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 {
 	FeatureUpgradesMap[_Upgrade] = _Enable;
 
+	if (!_Enable) { return; }
+
 	switch (_Upgrade)
 	{
 	case FeatureUpgrades::Boosters:
