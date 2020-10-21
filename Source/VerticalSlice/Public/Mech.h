@@ -130,13 +130,10 @@ private:
 		float LookSensitivity = 1;
 
 	///Melee variables
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float MeleeDamage = 10;
 
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
-		 FVector MeleeRange = FVector(150,150,450);
-
-	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Melee")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CustomVariables | Gameplay | Melee", meta = (AllowPrivateAccess = "true"))
 		float MeleeKnockback = 10000;
 
 	///Gun variables
@@ -252,8 +249,10 @@ private:
 		float DashChargeCost = 150;
 
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
-		float DashForce = 10000;
+		float DashForce = 15000;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Gameplay | Dash", meta = (AllowPrivateAccess = "true"))
+		bool HasDashed = false;
 	///player character
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Player")
 		TSubclassOf<class AVerticalSliceCharacter> PlayerClass;
@@ -496,7 +495,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveHealth(bool Max, int amount = 0);
 
-	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Reset")
 		void giveCharge(bool Max, int amount = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
