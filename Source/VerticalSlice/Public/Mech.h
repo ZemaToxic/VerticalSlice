@@ -251,6 +251,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Dash")
 		float DashForce = 15000;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CustomVariables | Gameplay | Dash", meta = (AllowPrivateAccess = "true"))
+		bool HasDashed = false;
 	///player character
 	UPROPERTY(EditAnywhere, Category = "CustomVariables | Gameplay | Player")
 		TSubclassOf<class AVerticalSliceCharacter> PlayerClass;
@@ -493,7 +495,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
 		void giveHealth(bool Max, int amount = 0);
 
-	UFUNCTION(BlueprintCallable, Category = "Custom | Reset")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Custom | Reset")
 		void giveCharge(bool Max, int amount = 0);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom | Upgrade")
