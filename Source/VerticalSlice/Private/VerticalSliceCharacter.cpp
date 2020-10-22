@@ -192,7 +192,7 @@ void AVerticalSliceCharacter::CheckInteract()
 					AInteractableVolume* intVol = Cast<AInteractableVolume>(hit.Actor);
 					if (intVol)
 					{
-						nearInteractableObject = true;
+						nearInteractableObject = !(intVol->GetActivated());
 						InteractObjectLocation = intVol->GetActorLocation();
 						return;
 					}
