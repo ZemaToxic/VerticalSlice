@@ -28,59 +28,63 @@ protected:
 		TSubclassOf<AUpgradePedestal> _updradePedestals;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void PlayerDead();
+	// Round Data
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Round Data")
+		int iCurrentRound;
+	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
+		int iCurrentScore;
+	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
+		int iCurrentEnemies;
+	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
+		int iWaveEnemies;
+	UPROPERTY(BlueprintReadWrite, Category = "Round Data")
+		int iInitialEnemies;
+
+	// Game Data
+	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
+		float fPlayerHealthOverride;
+	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
+		float fPlayerDamageOverride;
+	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
+		float fEnemyHealthOverride;
+	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
+		float fEnemyDamageOverride;
+	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
+		float fCurrentMoney;
+
+	// Timer Data
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		FTimerHandle StartTimer;
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		FTimerHandle RoundTimer;
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		FTimerHandle ShopTimer;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		float fStartTime = 10.0f;
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		float fRoundCooldown = 15.0f;
+	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
+		float fShopCooldown = 45.0f;
 
 	float GetCurrency();
 	void SetCurrency(float _newCurrency);
 	int GetCurrentEnemies();
 	void SetCurrentEnemies();
 
-	// Wave Data
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Round Data")
-		int iCurrentRound;
-	UPROPERTY(BlueprintReadOnly, Category = "Wave Data")
-		int iCurrentScore;
-	UPROPERTY(BlueprintReadOnly, Category = "Wave Data")
-		int iCurrentEnemies;
-	UPROPERTY(BlueprintReadOnly, Category = "Wave Data")
-		int iWaveEnemies;
-	UPROPERTY(BlueprintReadOnly, Category = "Wave Data")
-		int iInitialEnemies;
-	UPROPERTY(BlueprintReadOnly, Category = "Wave Data")
-		float fCurrentMoney;
-	// Timer Data
-	UPROPERTY(BlueprintReadOnly, Category = "Timer Data")
-		float fStartTime = 10.0f;
-	UPROPERTY(BlueprintReadOnly, Category = "Timer Data")
-		float fRoundCooldown = 15.0f;
-	UPROPERTY(BlueprintReadOnly, Category = "Timer Data")
-		float fShopCooldown = 45.0f;
-	UPROPERTY(BlueprintReadOnly, Category = "Timer Data")
-		FTimerHandle StartTimer;
-	UPROPERTY(BlueprintReadOnly, Category = "Timer Data")
-		FTimerHandle RoundTimer;
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void PlayerDead();
+
 private:
-	UFUNCTION(BlueprintCallable)
-		void RemoveEnemy();
-
-	void SetupNextWave();
-
+	
 	void BeginPlay() override;
 	void StartGame();
-	void NextWave(int _roundCount);
+	void NextWave(int _roundCount);;
 
-	void BuffPlayer();
 	void SpawnEnemies(int _enemyCount, int _enemyType);
 
-	// Game Data
-	float fPlayerHealthOverride;
-	float fPlayerDamageOverride;
-	float fEnemyHealthOverride;
-	float fEnemyDamageOverride;
-
-	// Timer Data
-	FTimerHandle ShopTimer;
-	FTimerHandle PlayerBuff;
+	UFUNCTION(BlueprintCallable)
+		void DecrementEnemies();
+	void SetupNextWave();
 };
 
