@@ -261,6 +261,7 @@ void AUpgradePedestal::UpgradeMech(int _iChoosenUpgade)
 			break;
 		}
 		default:
+		// If I hit this, error out
 			break;
 		}
 	}

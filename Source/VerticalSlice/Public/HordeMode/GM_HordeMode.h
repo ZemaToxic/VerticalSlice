@@ -80,6 +80,7 @@ private:
 	void BeginPlay() override;
 	void StartGame();
 	void NextWave(int _roundCount);;
+	void BuffPlayer()
 
 	void SpawnEnemies(int _enemyCount, int _enemyType);
 

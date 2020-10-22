@@ -27,14 +27,32 @@ void AGM_HordeMode::BeginPlay()
 	fPlayerHealthOverride = 100.0f;
 	fPlayerDamageOverride = 15.0f;
 	// Override base enemy Health & Damage.
-	fEnemyHealthOverride = 10.0f;// 50.0f;
+	fEnemyHealthOverride = 50.0f;
 	fEnemyDamageOverride = 10.0f;
 	// Set Starting Enemy count.
 	iWaveEnemies = 0;
 	iCurrentEnemies = 1;
 	iInitialEnemies = 8;
+	// Buff the player initially 
+	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::BuffPlayer, 0.2f, true);
 	// Start a time to countdown for 30s then Start the game.
 	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::StartGame, fStartTime, true);
+}
+
+/*
+Description: Increase the players base stats and ammo before the game starts.
+Author: Crystal Seymour
+*/
+void AGM_HordeMode::BuffPlayer()
+{
+	{
+		// Increase the Default Ammo the player has.
+		AVerticalSliceCharacter* player = Cast<AVerticalSliceCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		if (player) {
+			player->PlayerMech->UpgradeStats(StatUpgrades::RifleReserveAmmo, 2, true); // 2 = 80 bullets
+		}
+		GetWorld()->GetTimerManager().ClearTimer(PlayerBuff);
+	}
 }
 
 /*
@@ -92,6 +110,9 @@ Author: Crystal Seymour
 void AGM_HordeMode::SpawnEnemies(int _enemyCount, int _enemyType)
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Enemies")); }
+
+	// Modify Health for the Enemies each wave.
+	fEnemyHealthOverride = fEnemyHealthOverride + (iCurrentRound * 5.0f);
 
 	// Find all Monster Spawn locations and Put them in an Array.
 	TArray<AActor*> FoundActors;

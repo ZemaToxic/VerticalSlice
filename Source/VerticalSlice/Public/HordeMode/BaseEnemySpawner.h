@@ -50,7 +50,6 @@ private:
 	FActorSpawnParameters SpawnInfo;
 
 	// Timer Data
-
 	FTimerHandle SpawnTimer;
 	float fSpawnTime;
 
