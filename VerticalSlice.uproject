@@ -46,5 +46,12 @@
 			"Name": "NiagaraExtras",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"WindowsNoEditor",
+		"MacNoEditor",
+		"LinuxAArch64NoEditor",
+		"LinuxNoEditor",
+		"AllDesktop"
 	]
 }
