@@ -25,7 +25,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ACharacter> mainEnemy;	
 	UPROPERTY(EditAnywhere)
@@ -35,19 +34,14 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ACharacter> bossEnemy;
 
-	AGM_HordeMode* CurrentGameMode;
-
 	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride, int _enemyType);
 
 private:
-	void SpawnDefault();
-	void SpawnSecondary();
-	void SpawnSpecial();
-	void SpawnBoss();
-
+	AGM_HordeMode* CurrentGameMode;
 	FTransform SpawnLocation;
 	FRotator CurrentRotation;
 	FActorSpawnParameters SpawnInfo;
+	int iMaxEnemies;
 
 	// Timer Data
 	FTimerHandle SpawnTimer;
@@ -58,6 +52,8 @@ private:
 	float fEnemyHealth;
 	float fEnemyDamage;
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	void SpawnDefault();
+	void SpawnSecondary();
+	void SpawnSpecial();
+	void SpawnBoss();
 };

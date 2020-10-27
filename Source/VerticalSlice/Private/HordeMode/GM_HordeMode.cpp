@@ -34,7 +34,7 @@ void AGM_HordeMode::BeginPlay()
 	iCurrentEnemies = 1;
 	iInitialEnemies = 8;
 	// Buff the player initially 
-	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::BuffPlayer, 0.2f, true);
+	GetWorld()->GetTimerManager().SetTimer(PlayerBuff, this, &AGM_HordeMode::BuffPlayer, 0.2f, true);
 	// Start a time to countdown for 30s then Start the game.
 	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::StartGame, fStartTime, true);
 }
@@ -210,10 +210,3 @@ void AGM_HordeMode::SetupNextWave()
 	FTimerDelegate waveTimer = FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
 	GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
 }
-
-// TEMPLATE
-
-/*
-Description: 
-Author: Crystal Seymour
-*/

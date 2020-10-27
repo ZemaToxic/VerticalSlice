@@ -53,11 +53,19 @@ void APurchasableDoors::Tick(float DeltaTime)
 	}
 }
 
+/*
+Description: Set the door unlock cost.
+Author: Crystal Seymour
+*/
 void APurchasableDoors::SetDoorCost(float _newCost)
 {
 	fDoorCost = _newCost;
 }
 
+/*
+Description: When the player overlaps display the cost of the door.
+Author: Crystal Seymour
+*/
 void APurchasableDoors::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
@@ -68,7 +76,10 @@ void APurchasableDoors::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, A
 	}
 }
 
-
+/*
+Description: Hide the door cost text when the player leaves the area.
+Author: Crystal Seymour
+*/
 void APurchasableDoors::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (OtherActor == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
@@ -79,6 +90,10 @@ void APurchasableDoors::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	}
 }
 
+/*
+Description: Check if the player has enough money to unlock the door.
+Author: Crystal Seymour
+*/
 void APurchasableDoors::CanPurchase()
 {
 	// Get the current GameMode.
@@ -100,6 +115,10 @@ void APurchasableDoors::CanPurchase()
 	}
 }
 
+/*
+Description: Unlock the door then remove it from the level so that the player can walk through.
+Author: Crystal Seymour
+*/
 void APurchasableDoors::ConfirmPurchase(AGM_HordeMode* const& GameMode)
 {
 	// Deduct cost of door from players money.

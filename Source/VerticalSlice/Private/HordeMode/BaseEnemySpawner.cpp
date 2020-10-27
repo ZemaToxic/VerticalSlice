@@ -15,22 +15,20 @@ ABaseEnemySpawner::ABaseEnemySpawner()
 void ABaseEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	// Make sure all enemies start facing the same direction as the spawner.
-	CurrentRotation = GetActorRotation();
-	// Add the CurrentLocation to an FTransform.
-	SpawnLocation.SetRotation(CurrentRotation.Quaternion());
 	// Set Spawn parameters, (Adjust spawn location if colliding with another Actor)
+	CurrentRotation = GetActorRotation();
+	SpawnLocation.SetRotation(CurrentRotation.Quaternion());
 	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	// Get the current GameMode and Make sure its the HordeMode one.
 	CurrentGameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+	// Set total max enemies to spawn at once.
+	iMaxEnemies = 32;
 }
 
-// Called every frame
-void ABaseEnemySpawner::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
+/*
+Description: Spawn enemies based on the Enemy type. Start a repeat timer for each enemy type.
+Author: Crystal Seymour
+*/
 void ABaseEnemySpawner::SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride, int _enemyType)
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("BaseSpawner Spawning Enemies")); }
@@ -68,12 +66,16 @@ void ABaseEnemySpawner::SpawnEnemies(int _enemyCount, float _HealthOverride, flo
 	}
 }
 
+/*
+Description: Spawn the main enemy using a random location near the spawner, make sure not to spawn too many at once.
+Author: Crystal Seymour
+*/
 void ABaseEnemySpawner::SpawnDefault()
 {
 	int CurrentEnemyCount = CurrentGameMode->GetCurrentEnemies();
 
 	// Limit the total amount of enemies on screen at any time.
-	if ((CurrentEnemyCount <= 32) && (iEnemiesToSpawn != 0))
+	if ((CurrentEnemyCount <= iMaxEnemies) && (iEnemiesToSpawn != 0))
 	{
 		// Give a random location per Enemy.
 		FVector CurrentLocation = GetActorLocation();
@@ -99,11 +101,15 @@ void ABaseEnemySpawner::SpawnDefault()
 	}
 }
 
+/*
+Description: Spawn the ranged enemy using a random locaiton near the spawner, make sure not to spawn too many at once.
+Author: Crystal Seymour
+*/
 void ABaseEnemySpawner::SpawnSecondary()
 {
 	int CurrentEnemyCount = CurrentGameMode->GetCurrentEnemies();
 
-	if ((CurrentEnemyCount <= 50) && (iEnemiesToSpawn != 0))
+	if ((CurrentEnemyCount <= iMaxEnemies) && (iEnemiesToSpawn != 0))
 	{
 		// Give a random location per Enemy.
 		FVector CurrentLocation = GetActorLocation();
@@ -129,11 +135,15 @@ void ABaseEnemySpawner::SpawnSecondary()
 	}
 }
 
+/*
+Description: Spawn the special enemy using a random location near the spawner, make sure not to spawn too many at once.
+Author: Crystal Seymour
+*/
 void ABaseEnemySpawner::SpawnSpecial()
 {
 	int CurrentEnemyCount = CurrentGameMode->GetCurrentEnemies();
 
-	if ((CurrentEnemyCount <= 50) && (iEnemiesToSpawn != 0))
+	if ((CurrentEnemyCount <= iMaxEnemies) && (iEnemiesToSpawn != 0))
 	{
 		// Give a random location per Enemy.
 		FVector CurrentLocation = GetActorLocation();
@@ -159,11 +169,15 @@ void ABaseEnemySpawner::SpawnSpecial()
 	}
 }
 
+/*
+Description: Spawn the boss enemy using a random location near the spawner, make sure not to spawn too many at once.
+Author: Crystal Seymour
+*/
 void ABaseEnemySpawner::SpawnBoss()
 {
 	int CurrentEnemyCount = CurrentGameMode->GetCurrentEnemies();
 
-	if ((CurrentEnemyCount <= 50) && (iEnemiesToSpawn != 0))
+	if ((CurrentEnemyCount <= iMaxEnemies) && (iEnemiesToSpawn != 0))
 	{
 		// Give a random location per Enemy.
 		FVector CurrentLocation = GetActorLocation();

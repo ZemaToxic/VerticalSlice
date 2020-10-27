@@ -49,12 +49,6 @@ class VERTICALSLICE_API AUpgradePedestal : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-	// Sets default values for this actor's properties
-	AUpgradePedestal();
-	void SetUpgrade();
-
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* UpgradeMesh;
 	UPROPERTY(EditAnywhere)
@@ -63,24 +57,31 @@ public:
 		AInteractableVolume* Interactable;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTextRenderComponent* Text;
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+	// Sets default values for this actor's properties
+	AUpgradePedestal();
+	void SetUpgrade();
 private:
-	UFUNCTION()
-		void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	UFUNCTION()
-		void OnBoxEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	void CanPurchase();
-	void ConfirmPurchase(AGM_HordeMode* const& GameMode);
-	void UpgradeMech(int _iChoosenUpgade);
-
-	void PopulateUpgradeArray();
 
 	TArray<FString> Upgrades;
 
 	float fUpgradeCost;
 	int iCurrentUpgrade;
 	bool bSinglePurchase;
+	float fBaseCost;
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+		void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnBoxEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
+	void PopulateUpgradeArray();
+	void CanPurchase();
+	void ConfirmPurchase(AGM_HordeMode* const& GameMode);
+	void UpgradeMech(int _iChoosenUpgade);
 };

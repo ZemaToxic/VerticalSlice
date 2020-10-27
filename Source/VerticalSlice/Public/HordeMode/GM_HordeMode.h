@@ -74,18 +74,25 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void PlayerDead();
-
-private:
-	
-	void BeginPlay() override;
-	void StartGame();
-	void NextWave(int _roundCount);;
-	void BuffPlayer()
-
-	void SpawnEnemies(int _enemyCount, int _enemyType);
-
 	UFUNCTION(BlueprintCallable)
 		void DecrementEnemies();
+	
+
+private:
+	FTimerHandle PlayerBuff;
+
+	void BeginPlay() override;
+	void StartGame();
+	void BuffPlayer();
 	void SetupNextWave();
+	void NextWave(int _roundCount);;
+	void SpawnEnemies(int _enemyCount, int _enemyType);
 };
 
+
+// TEMPLATE
+
+/*
+Description:
+Author: Crystal Seymour
+*/

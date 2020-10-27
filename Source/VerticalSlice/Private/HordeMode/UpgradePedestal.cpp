@@ -32,16 +32,16 @@ AUpgradePedestal::AUpgradePedestal()
 	Text->bHiddenInGame = false;
 	// Set defualt values just incase.
 	fUpgradeCost = 250.0f;
-	iCurrentUpgrade = 2;
+	fBaseCost = 250.0f;
+	iCurrentUpgrade = 1;
 }
 
 // Called when the game starts or when spawned
 void AUpgradePedestal::BeginPlay()
 {
 	Super::BeginPlay();
-	// Create upgrade display Text array.
+	// Create upgrade display Text array Set the current Upgrade.
 	PopulateUpgradeArray();
-	// Set the current Upgrade.
 	SetUpgrade();
 }
 
@@ -61,6 +61,10 @@ void AUpgradePedestal::Tick(float DeltaTime)
 	}
 }
 
+/*
+Description: Fill the Array of possible upgrades.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::PopulateUpgradeArray()
 {
 	// Add all possible upgrade descriptions to the `Upgrades` array.
@@ -92,6 +96,10 @@ void AUpgradePedestal::PopulateUpgradeArray()
 	Upgrades.Add("Rocket Radius Fire Damage Upgrade");
 }
 
+/*
+Description: Display the current cost to purchase the upgrade when the player overlaps.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Check if the overlapping Actor is the Player Character.
@@ -103,6 +111,10 @@ void AUpgradePedestal::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 	}
 }
 
+/*
+Description: Hide the text when the player leaves the pedestal.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	// Check if the overlapping Actor is the Player Character.
@@ -114,6 +126,10 @@ void AUpgradePedestal::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAct
 	}
 }
 
+/*
+Description: Check if the player has enough money to purchase the current upgrade.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::CanPurchase()
 {
 	// Make sure upgrade can only be purchased once.
@@ -132,6 +148,10 @@ void AUpgradePedestal::CanPurchase()
 	}
 }
 
+/*
+Description: Confirm the upgrade purchase then call UpgradeMech().
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::ConfirmPurchase(AGM_HordeMode* const& GameMode)
 {
 	// Upgrade the Mech with the current Upgrade then deduct cost from players total.
@@ -143,6 +163,10 @@ void AUpgradePedestal::ConfirmPurchase(AGM_HordeMode* const& GameMode)
 	Text->bHiddenInGame = true;
 }
 
+/*
+Description: Call the mech upgrade functions based on the current upgrade that is purchased.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::UpgradeMech(int _iChoosenUpgade)
 {
 	AVerticalSliceCharacter* currentChar = Cast<AVerticalSliceCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
@@ -267,6 +291,10 @@ void AUpgradePedestal::UpgradeMech(int _iChoosenUpgade)
 	}
 }
 
+/*
+Description: Set the current upgrade to be purchased from the Pedestal when the player interacts with it.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::SetUpgrade()
 {
 	// Pick next Upgrade.
@@ -277,7 +305,7 @@ void AUpgradePedestal::SetUpgrade()
 	Text->bHiddenInGame = false;
 	// Set the price of the Upgrade.
 	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
-	if (GameMode) { fUpgradeCost = GameMode->iCurrentRound * 250.0f; }
+	if (GameMode) { fUpgradeCost = GameMode->iCurrentRound * fBaseCost; }
 	// Allow purchase of upgrade again.
 	bSinglePurchase = false;
 }
