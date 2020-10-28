@@ -404,6 +404,8 @@ void AMech::UpgradeFeatures(FeatureUpgrades _Upgrade, bool _Enable = true)
 {
 	FeatureUpgradesMap[_Upgrade] = _Enable;
 
+	if (!_Enable) { return; }
+
 	switch (_Upgrade)
 	{
 	case FeatureUpgrades::Boosters:
@@ -673,7 +675,7 @@ void AMech::Dismount_Implementation()
 		GetWorld()->SweepSingleByChannel(SweepHit, GetActorLocation(), spawnLoc, FQuat::Identity, ECollisionChannel::ECC_Pawn, PlayerChar->GetCapsuleComponent()->GetCollisionShape(), Gun->ignoredActors);
 		if (SweepHit.bBlockingHit)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, SweepHit.Actor.Get()->GetName());
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, SweepHit.Actor.Get()->GetName());
 			return;
 		}
 
