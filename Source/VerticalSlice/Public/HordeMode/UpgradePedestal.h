@@ -40,7 +40,8 @@ enum MechUpgrades {
 	FlamethrowerDamage,
 	FlamethrowerFireDamage,
 	RocketAmount,
-	RocketRadius
+	RocketRadius,
+	MaxNumber
 };
 
 UCLASS()
@@ -48,7 +49,7 @@ class VERTICALSLICE_API AUpgradePedestal : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
+protected:	
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* UpgradeMesh;
 	UPROPERTY(EditAnywhere)
@@ -62,9 +63,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	// Sets default values for this actor's properties
 	AUpgradePedestal();
+public:
 	void SetUpgrade();
-private:
 
+private:
 	TArray<FString> Upgrades;
 
 	float fUpgradeCost;
@@ -74,14 +76,14 @@ private:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void PopulateUpgradeArray();
+	bool CanPurchase();
+	void ConfirmPurchase();
+	void UpgradeMech(int _iChoosenUpgade);
 
 	UFUNCTION()
 		void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnBoxEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
-	void PopulateUpgradeArray();
-	void CanPurchase();
-	void ConfirmPurchase(AGM_HordeMode* const& GameMode);
-	void UpgradeMech(int _iChoosenUpgade);
 };

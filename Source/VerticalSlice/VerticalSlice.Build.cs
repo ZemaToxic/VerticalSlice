@@ -8,7 +8,7 @@ public class VerticalSlice : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "QuestPlugin", "Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "QuestPlugin", "Niagara", "UMG" });
 		PublicIncludePaths.AddRange(new string[] { "QuestPlugin/Public", "Questplugin/Classes"});
 		PublicIncludePaths.AddRange(new string[] { "Niagara/Public", "Niagara/Classes" });
 	}

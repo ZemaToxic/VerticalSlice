@@ -96,21 +96,24 @@ Author: Crystal Seymour
 */
 void APurchasableDoors::CanPurchase()
 {
-	// Get the current GameMode.
-	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
-	if (GameMode)
+	if (GetWorld())
 	{
-		// Get the Players current money.
-		float currentCash = GameMode->GetCurrency();
-		// If the player has more money then the cost of the upgrade.
-		if (currentCash >= fDoorCost)
+		// Get the current GameMode.
+		AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+		if (GameMode)
 		{
-			ConfirmPurchase(GameMode);
-		}
-		else
-		{
-			Text->SetWorldSize(15);
-			Text->SetText(TEXT("You do not have enough Cash to unlock this."));
+			// Get the Players current money.
+			float currentCash = GameMode->GetCurrency();
+			// If the player has more money then the cost of the upgrade.
+			if (currentCash >= fDoorCost)
+			{
+				ConfirmPurchase();
+			}
+			else
+			{
+				Text->SetWorldSize(15);
+				Text->SetText(TEXT("You do not have enough Cash to unlock this."));
+			}
 		}
 	}
 }
@@ -119,14 +122,21 @@ void APurchasableDoors::CanPurchase()
 Description: Unlock the door then remove it from the level so that the player can walk through.
 Author: Crystal Seymour
 */
-void APurchasableDoors::ConfirmPurchase(AGM_HordeMode* const& GameMode)
+void APurchasableDoors::ConfirmPurchase()
 {
-	// Deduct cost of door from players money.
-	GameMode->SetCurrency(fDoorCost);
-	// Remove Door Mesh and allow play to walk through.
-	DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	DoorMesh->SetVisibility(false);
-	Text->bHiddenInGame = true;
-	Interactable->Destroy();
-	Destroy();
+	if (GetWorld())
+	{
+		AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+		if (GameMode)
+		{
+			// Deduct cost of door from players money.
+			GameMode->SetCurrency(fDoorCost);
+			// Remove Door Mesh and allow play to walk through.
+			DoorMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			DoorMesh->SetVisibility(false);
+			Text->bHiddenInGame = true;
+			Interactable->Destroy();
+			Destroy();
+		}
+	}
 }

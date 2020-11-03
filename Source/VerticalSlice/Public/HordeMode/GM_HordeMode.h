@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blueprint/UserWidget.h"
 #include "GameFramework/GameModeBase.h"
 #include "GM_HordeMode.generated.h"
 
 class ABaseEnemySpawner;
 class APurchasableDoors;
 class AUpgradePedestal;
+//class UUserWidget;
 
 /**
  * 
@@ -27,7 +29,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AUpgradePedestal> _updradePedestals;
 
-public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<UUserWidget> _widget;
+
 	// Round Data
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Round Data")
 		int iCurrentRound;
@@ -42,10 +46,6 @@ public:
 
 	// Game Data
 	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
-		float fPlayerHealthOverride;
-	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
-		float fPlayerDamageOverride;
-	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
 		float fEnemyHealthOverride;
 	UPROPERTY(BlueprintReadWrite, Category = "Game Data")
 		float fEnemyDamageOverride;
@@ -57,16 +57,15 @@ public:
 		FTimerHandle StartTimer;
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
 		FTimerHandle RoundTimer;
-	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
-		FTimerHandle ShopTimer;
+	FTimerHandle PlayerBuff;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
 		float fStartTime = 10.0f;
 	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
 		float fRoundCooldown = 15.0f;
-	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
-		float fShopCooldown = 45.0f;
 
+public:
+	int GetCurrentRound();
 	float GetCurrency();
 	void SetCurrency(float _newCurrency);
 	int GetCurrentEnemies();
@@ -79,8 +78,6 @@ public:
 	
 
 private:
-	FTimerHandle PlayerBuff;
-
 	void BeginPlay() override;
 	void StartGame();
 	void BuffPlayer();
@@ -88,7 +85,6 @@ private:
 	void NextWave(int _roundCount);;
 	void SpawnEnemies(int _enemyCount, int _enemyType);
 };
-
 
 // TEMPLATE
 

@@ -6,6 +6,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Misc/OutputDeviceNull.h"
 
 AGM_HordeMode::AGM_HordeMode()
 {
@@ -23,9 +24,6 @@ void AGM_HordeMode::BeginPlay()
 	// Set Defaults.
 	iCurrentRound = 0;
 	iCurrentScore = 0;
-	// Override player Health & Damage.
-	fPlayerHealthOverride = 100.0f;
-	fPlayerDamageOverride = 15.0f;
 	// Override base enemy Health & Damage.
 	fEnemyHealthOverride = 50.0f;
 	fEnemyDamageOverride = 10.0f;
@@ -33,10 +31,13 @@ void AGM_HordeMode::BeginPlay()
 	iWaveEnemies = 0;
 	iCurrentEnemies = 1;
 	iInitialEnemies = 8;
-	// Buff the player initially 
-	GetWorld()->GetTimerManager().SetTimer(PlayerBuff, this, &AGM_HordeMode::BuffPlayer, 0.2f, true);
-	// Start a time to countdown for 30s then Start the game.
-	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::StartGame, fStartTime, true);
+	if (GetWorld())
+	{
+		// Buff the player initially 
+		GetWorld()->GetTimerManager().SetTimer(PlayerBuff, this, &AGM_HordeMode::BuffPlayer, 0.2f, true);
+		// Start a time to countdown for 30s then Start the game.
+		GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::StartGame, fStartTime, true);
+	}
 }
 
 /*
@@ -51,7 +52,10 @@ void AGM_HordeMode::BuffPlayer()
 		if (player) {
 			player->PlayerMech->UpgradeStats(StatUpgrades::RifleReserveAmmo, 2, true); // 2 = 80 bullets
 		}
-		GetWorld()->GetTimerManager().ClearTimer(PlayerBuff);
+		if (GetWorld())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(PlayerBuff);
+		}
 	}
 }
 
@@ -63,8 +67,11 @@ void AGM_HordeMode::StartGame()
 {
 	// Start the first round
 	NextWave(iCurrentRound);
-	// Clear the GameStart timer for memory reasons.
-	GetWorld()->GetTimerManager().ClearTimer(StartTimer);
+	if (GetWorld())
+	{
+		// Clear the GameStart timer for memory reasons.
+		GetWorld()->GetTimerManager().ClearTimer(StartTimer);
+	}
 }
 
 /*
@@ -73,6 +80,9 @@ Author: Crystal Seymour
 */
 void AGM_HordeMode::NextWave(int _roundCount)
 {
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), _spawners, FoundActors);
+
 	iCurrentRound ++;
 	iCurrentEnemies = 1;
 	// Spawn the boss enemy wave
@@ -80,27 +90,48 @@ void AGM_HordeMode::NextWave(int _roundCount)
 	{
 		iWaveEnemies = 1;
 		SpawnEnemies(iWaveEnemies, 4);
+		// Set subsequent waves to include the boss enemy
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
+			tempSpawner->SetSpawnMode(quadEnemies);
+		}
 	}
 	// Spawn the special enemy wave
 	else if (iCurrentRound % 25 == 0)
 	{
 		iWaveEnemies = 4;
 		SpawnEnemies(iWaveEnemies, 3);
+		// Set subsequent waves to include the special enemy
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
+			tempSpawner->SetSpawnMode(tripleEnemies);
+		}
 	}	
 	// Spawn the secondary enemy wave.
 	else if (iCurrentRound % 5 == 0)
 	{
 		iWaveEnemies = 4;
 		SpawnEnemies(iWaveEnemies, 2);
+		// Set subsequent waves to include the secondary enemy
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
+			tempSpawner->SetSpawnMode(dualEnemies); 
+		}
 	}
-	// Spawn the First enemy wave.
+	// Spawn each enemy wave.
 	else
 	{ 
 		int enemyCount = (_roundCount * 4) + iInitialEnemies;
 		iWaveEnemies = enemyCount;
-		SpawnEnemies(iWaveEnemies, 1);
+		SpawnEnemies(iWaveEnemies, 5);
 	}
-	GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
+	}
 }
 
 /*
@@ -134,6 +165,11 @@ void AGM_HordeMode::SpawnEnemies(int _enemyCount, int _enemyType)
 		ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
 		tempSpawner->SpawnEnemies(_enemyCount, fEnemyHealthOverride, fEnemyDamageOverride, _enemyType);
 	}
+}
+
+int AGM_HordeMode::GetCurrentRound()
+{
+	return iCurrentRound;
 }
 
 /*
@@ -208,5 +244,8 @@ void AGM_HordeMode::SetupNextWave()
 	}
 	// Delay the next round to allow shopping 
 	FTimerDelegate waveTimer = FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
-	GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
+	}
 }

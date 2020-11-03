@@ -56,8 +56,11 @@ void AUpgradePedestal::Tick(float DeltaTime)
 		if (Interactable->GetActivated() && !bSinglePurchase)
 		{
 			// Check if player can buy the upgrade.
-			CanPurchase();
-		}
+			if (CanPurchase())
+			{
+				ConfirmPurchase();
+			}
+		} 
 	}
 }
 
@@ -130,37 +133,56 @@ void AUpgradePedestal::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAct
 Description: Check if the player has enough money to purchase the current upgrade.
 Author: Crystal Seymour
 */
-void AUpgradePedestal::CanPurchase()
+bool AUpgradePedestal::CanPurchase()
 {
-	// Make sure upgrade can only be purchased once.
-	bSinglePurchase = true;
-	// Get the current GameMode.
-	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
-	if (GameMode)
+	if (GetWorld())
 	{
-		// Get the Players current money.
-		float currentCash = GameMode->GetCurrency();
-		// If the player has more money then the cost of the upgrade.
-		if (currentCash >= fUpgradeCost)
+		// Make sure upgrade can only be purchased once.
+		bSinglePurchase = true;
+		// Get the current GameMode.
+		AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+		if (GameMode)
 		{
-			ConfirmPurchase(GameMode);
+			// Get the Players current money.
+			float currentCash = GameMode->GetCurrency();
+			// If the player has more money then the cost of the upgrade.
+			if (currentCash >= fUpgradeCost)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
 		}
 	}
+	return false;
 }
 
 /*
 Description: Confirm the upgrade purchase then call UpgradeMech().
 Author: Crystal Seymour
 */
-void AUpgradePedestal::ConfirmPurchase(AGM_HordeMode* const& GameMode)
+void AUpgradePedestal::ConfirmPurchase()
 {
-	// Upgrade the Mech with the current Upgrade then deduct cost from players total.
-	UpgradeMech(iCurrentUpgrade);
-	GameMode->SetCurrency(fUpgradeCost);
-	// Remove Upgrade Mesh and hide text.
-	UpgradeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UpgradeMesh->SetVisibility(false);
-	Text->bHiddenInGame = true;
+	if (GetWorld())
+	{
+		AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+		if (GameMode)
+		{
+			// Upgrade the Mech with the current Upgrade then deduct cost from players total.
+			UpgradeMech(iCurrentUpgrade);
+			GameMode->SetCurrency(fUpgradeCost);
+			// Remove Upgrade Mesh and hide text.
+			UpgradeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			UpgradeMesh->SetVisibility(false);
+			Text->bHiddenInGame = true;
+		}
+	}
 }
 
 /*
@@ -305,7 +327,7 @@ void AUpgradePedestal::SetUpgrade()
 	Text->bHiddenInGame = false;
 	// Set the price of the Upgrade.
 	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
-	if (GameMode) { fUpgradeCost = GameMode->iCurrentRound * fBaseCost; }
+	if (GameMode) { fUpgradeCost = GameMode->GetCurrentRound() * fBaseCost; }
 	// Allow purchase of upgrade again.
 	bSinglePurchase = false;
 }

@@ -16,7 +16,7 @@ class VERTICALSLICE_API APurchasableDoors : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
+protected:	
 	UPROPERTY(EditAnywhere)
 		UStaticMeshComponent* DoorMesh;
 	UPROPERTY(EditAnywhere)
@@ -26,22 +26,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTextRenderComponent* Text;
 
-	// Sets default values for this actor's properties
-	APurchasableDoors();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 private:
 	float fDoorCost;
 
+	// Sets default values for this actor's properties
+	APurchasableDoors();
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 	void CanPurchase();
-	void ConfirmPurchase(AGM_HordeMode* const& GameMode);
+	void ConfirmPurchase();
 	void SetDoorCost(float _newCost);
 	UFUNCTION()
 		void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
