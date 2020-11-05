@@ -240,7 +240,14 @@ void AGM_HordeMode::SetupNextWave()
 	for (int i = 0; i < FoundActors.Num(); i++)
 	{
 		AUpgradePedestal* tempUpgradePedestal = Cast<AUpgradePedestal>(FoundActors[i]);
-		tempUpgradePedestal->SetUpgrade();
+		if (tempUpgradePedestal->bAmmoBox == true) 
+		{
+			tempUpgradePedestal->AmmoBox();
+		}
+		else
+		{
+			tempUpgradePedestal->SetUpgrade();
+		}
 	}
 	// Delay the next round to allow shopping 
 	FTimerDelegate waveTimer = FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);

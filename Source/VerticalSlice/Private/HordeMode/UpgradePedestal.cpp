@@ -34,6 +34,8 @@ AUpgradePedestal::AUpgradePedestal()
 	fUpgradeCost = 250.0f;
 	fBaseCost = 250.0f;
 	iCurrentUpgrade = 1;
+
+	bAmmoBox = false;
 }
 
 // Called when the game starts or when spawned
@@ -84,8 +86,8 @@ void AUpgradePedestal::PopulateUpgradeArray()
 	Upgrades.Add("Rifle Damage Upgrade");
 	Upgrades.Add("Rifle Reload Upgrade");
 	Upgrades.Add("Rifle Clip Upgrade");
-	Upgrades.Add("Rifle Reserve Upgrade");
-	Upgrades.Add("Shotgun Dammage Upgrade");
+	Upgrades.Add("Rifle Ammo");
+	Upgrades.Add("Shotgun Damage Upgrade");
 	Upgrades.Add("Shotgun Charges Upgrade");
 	Upgrades.Add("Shotgun Pellets Upgrade");
 	Upgrades.Add("Shotgun Range Upgrade");
@@ -255,7 +257,7 @@ void AUpgradePedestal::UpgradeMech(int _iChoosenUpgade)
 			break;
 		}
 		case RifleReserveAmmo: {
-			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleReserveAmmo, 1, true);
+			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleReserveAmmo, 2, true);
 			break;
 		}
 		case ShotgunDamage: {
@@ -321,6 +323,21 @@ void AUpgradePedestal::SetUpgrade()
 {
 	// Pick next Upgrade.
 	iCurrentUpgrade = FMath::RandRange(1, (Upgrades.Num() - 1));
+	// Hide Upgrade "Box" and Text.
+	UpgradeMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	UpgradeMesh->SetVisibility(true);
+	Text->bHiddenInGame = false;
+	// Set the price of the Upgrade.
+	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+	if (GameMode) { fUpgradeCost = GameMode->GetCurrentRound() * fBaseCost; }
+	// Allow purchase of upgrade again.
+	bSinglePurchase = false;
+}
+
+void AUpgradePedestal::AmmoBox()
+{
+	// Pick next Upgrade.
+	iCurrentUpgrade = 14;
 	// Hide Upgrade "Box" and Text.
 	UpgradeMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	UpgradeMesh->SetVisibility(true);

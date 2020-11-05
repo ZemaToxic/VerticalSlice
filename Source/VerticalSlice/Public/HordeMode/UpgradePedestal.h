@@ -64,7 +64,12 @@ protected:
 	// Sets default values for this actor's properties
 	AUpgradePedestal();
 public:
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool bAmmoBox;
+
 	void SetUpgrade();
+	void AmmoBox();
 
 private:
 	TArray<FString> Upgrades;
