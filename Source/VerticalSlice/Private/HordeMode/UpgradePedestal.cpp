@@ -32,16 +32,16 @@ AUpgradePedestal::AUpgradePedestal()
 	Text->bHiddenInGame = false;
 	// Set defualt values just incase.
 	fUpgradeCost = 250.0f;
-	iCurrentUpgrade = 2;
+	fBaseCost = 250.0f;
+	iCurrentUpgrade = 1;
 }
 
 // Called when the game starts or when spawned
 void AUpgradePedestal::BeginPlay()
 {
 	Super::BeginPlay();
-	// Create upgrade display Text array.
+	// Create upgrade display Text array Set the current Upgrade.
 	PopulateUpgradeArray();
-	// Set the current Upgrade.
 	SetUpgrade();
 }
 
@@ -49,12 +49,25 @@ void AUpgradePedestal::BeginPlay()
 void AUpgradePedestal::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (Interactable->GetActivated())
+	// Check if Interactable exists.
+	if (Interactable)
 	{
-		CheckPurchase();
+		// Check if the Interactable is Activated. Check if the upgrade has not been purchased already.
+		if (Interactable->GetActivated() && !bSinglePurchase)
+		{
+			// Check if player can buy the upgrade.
+			if (CanPurchase())
+			{
+				ConfirmPurchase();
+			}
+		} 
 	}
 }
 
+/*
+Description: Fill the Array of possible upgrades.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::PopulateUpgradeArray()
 {
 	// Add all possible upgrade descriptions to the `Upgrades` array.
@@ -86,17 +99,25 @@ void AUpgradePedestal::PopulateUpgradeArray()
 	Upgrades.Add("Rocket Radius Fire Damage Upgrade");
 }
 
+/*
+Description: Display the current cost to purchase the upgrade when the player overlaps.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Check if the overlapping Actor is the Player Character.
 	if (OtherActor == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 	{
 		// Display the current Price of the Upgrade.
-		Text->SetText(TEXT("$ " + FString::FromInt(fUpgradeCost) + " to unlock - " + Upgrades[iCurrentUpgrade]));
+		Text->SetText(TEXT("$ " + FString::FromInt(fUpgradeCost) + " to unlock - " + Upgrades[iCurrentUpgrade - 1]));
 		Text->SetVisibility(true);
 	}
 }
 
+/*
+Description: Hide the text when the player leaves the pedestal.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	// Check if the overlapping Actor is the Player Character.
@@ -108,15 +129,50 @@ void AUpgradePedestal::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAct
 	}
 }
 
-void AUpgradePedestal::CheckPurchase()
+/*
+Description: Check if the player has enough money to purchase the current upgrade.
+Author: Crystal Seymour
+*/
+bool AUpgradePedestal::CanPurchase()
 {
-	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
-	if (GameMode)
+	if (GetWorld())
 	{
-		// Get the Players current money.
-		float currentCash = GameMode->GetCurrency();
-		// If the player has more money then the cost of the upgrade.
-		if (currentCash >= fUpgradeCost)
+		// Make sure upgrade can only be purchased once.
+		bSinglePurchase = true;
+		// Get the current GameMode.
+		AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+		if (GameMode)
+		{
+			// Get the Players current money.
+			float currentCash = GameMode->GetCurrency();
+			// If the player has more money then the cost of the upgrade.
+			if (currentCash >= fUpgradeCost)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return false;
+}
+
+/*
+Description: Confirm the upgrade purchase then call UpgradeMech().
+Author: Crystal Seymour
+*/
+void AUpgradePedestal::ConfirmPurchase()
+{
+	if (GetWorld())
+	{
+		AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
+		if (GameMode)
 		{
 			// Upgrade the Mech with the current Upgrade then deduct cost from players total.
 			UpgradeMech(iCurrentUpgrade);
@@ -129,127 +185,138 @@ void AUpgradePedestal::CheckPurchase()
 	}
 }
 
+/*
+Description: Call the mech upgrade functions based on the current upgrade that is purchased.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::UpgradeMech(int _iChoosenUpgade)
 {
 	AVerticalSliceCharacter* currentChar = Cast<AVerticalSliceCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	MechUpgrades eChoosenUpgrade = (MechUpgrades)_iChoosenUpgade;
+	
 	if (currentChar)
 	{
-		switch (_iChoosenUpgade)
+		switch (eChoosenUpgrade)
 		{
-		case 1: {
+		case Boosters: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::Boosters, true);
 			break;
 		}
-		case 2: {
+		case Shotgun: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::Shotgun, true);
 			break;
 		}
-		case 3: {
+		case Dash: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::Dash, true);
 			break;
 		}
-		case 4: {
+		case GroundPound: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::GroundPound, true);
 			break;
 		}
-		case 5: {
+		case NoChargeRegenDelay: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::NoChargeRegenDelay, true);
 			break;
 		}
-		case 6: {
+		case HPRegen: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::HPRegen, true);
 			break;
 		}
-		case 7: {
+		case HPPotion: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::HPPotion, true);
 			break;
 		}
-		case 8: {
+		case Flamethrower: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::Flamethrower, true);
 			break;
 		}
-		case 9: {
+		case RocketLauncher: {
 			currentChar->PlayerMech->UpgradeFeatures(FeatureUpgrades::RocketLauncher, true);
 			break;
 		}
-		case 10: {
+		case MaxAmmo: {
 			currentChar->PlayerMech->giveAmmo(true);
 			break;
 		}
-		case 11: {
+		case MaxHealth: {
 			currentChar->PlayerMech->giveHealth(true);
 			break;
 		}
-		case 12: {
+		case RifleDamage: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleDamage, 1, true);
 			break;
 		}
-		case 13: {
+		case RifleReload: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleReload, 1, true);
 			break;
 		}
-		case 14: {
+		case RifleClipSize: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleClipSize, 1, true);
 			break;
 		}
-		case 15: {
+		case RifleReserveAmmo: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RifleReserveAmmo, 1, true);
 			break;
 		}
-		case 16: {
+		case ShotgunDamage: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::ShotgunDamage, 1, true);
 			break;
 		}
-		case 17: {
+		case ShotgunCharges: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::ShotgunCharges, 1, true);
 			break;
 		}
-		case 18: {
+		case ShotgunPellets: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::ShotgunPellets, 1, true);
 			break;
 		}
-		case 19: {
+		case ShotgunRange: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::ShotgunRange, 1, true);
 			break;
 		}
-		case 20: {
+		case MechMaxHP: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::MechMaxHP, 1, true);
 			break;
 		}
-		case 21: {
+		case MechMaxCharge: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::MechMaxCharge, 1, true);
 			break;
 		}
-		case 22: {
+		case MechHPRegen: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::MechHPRegen, 1, true);
 			break;
 		}
-		case 23: {
+		case MechChargeRegen: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::MechChargeRegen, 1, true);
 			break;
 		}
-		case 24: {
+		case FlamethrowerDamage: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::FlamethrowerDamage, 1, true);
 			break;
 		}
-		case 25: {
+		case FlamethrowerFireDamage: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::FlamethrowerFireDamage, 1, true);
 			break;
 		}
-		case 26: {
+		case RocketAmount: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RocketAmount, 1, true);
 			break;
 		}
-		case 27: {
+		case RocketRadius: {
 			currentChar->PlayerMech->UpgradeStats(StatUpgrades::RocketRadius, 1, true);
 			break;
 		}
 		default:
+		// If I hit this, error out
 			break;
 		}
 	}
 }
 
+/*
+Description: Set the current upgrade to be purchased from the Pedestal when the player interacts with it.
+Author: Crystal Seymour
+*/
 void AUpgradePedestal::SetUpgrade()
 {
 	// Pick next Upgrade.
@@ -260,8 +327,7 @@ void AUpgradePedestal::SetUpgrade()
 	Text->bHiddenInGame = false;
 	// Set the price of the Upgrade.
 	AGM_HordeMode* const GameMode = GetWorld()->GetAuthGameMode<AGM_HordeMode>();
-	if (GameMode)
-	{
-		fUpgradeCost = GameMode->iCurrentRound * 250.0f;
-	}
+	if (GameMode) { fUpgradeCost = GameMode->GetCurrentRound() * fBaseCost; }
+	// Allow purchase of upgrade again.
+	bSinglePurchase = false;
 }

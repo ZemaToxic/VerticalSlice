@@ -6,6 +6,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Misc/OutputDeviceNull.h"
 
 AGM_HordeMode::AGM_HordeMode()
 {
@@ -23,30 +24,65 @@ void AGM_HordeMode::BeginPlay()
 	// Set Defaults.
 	iCurrentRound = 0;
 	iCurrentScore = 0;
-	// Override player Health & Damage.
-	fPlayerHealthOverride = 100.0f;
-	fPlayerDamageOverride = 15.0f;
 	// Override base enemy Health & Damage.
-	fEnemyHealthOverride = 10.0f;// 50.0f;
+	fEnemyHealthOverride = 50.0f;
 	fEnemyDamageOverride = 10.0f;
 	// Set Starting Enemy count.
 	iWaveEnemies = 0;
 	iCurrentEnemies = 1;
 	iInitialEnemies = 8;
-	// Start a time to countdown for 30s then Start the game.
-	GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::StartGame, fStartTime, true);
+	if (GetWorld())
+	{
+		// Buff the player initially 
+		GetWorld()->GetTimerManager().SetTimer(PlayerBuff, this, &AGM_HordeMode::BuffPlayer, 0.2f, true);
+		// Start a time to countdown for 30s then Start the game.
+		GetWorld()->GetTimerManager().SetTimer(StartTimer, this, &AGM_HordeMode::StartGame, fStartTime, true);
+	}
 }
 
+/*
+Description: Increase the players base stats and ammo before the game starts.
+Author: Crystal Seymour
+*/
+void AGM_HordeMode::BuffPlayer()
+{
+	{
+		// Increase the Default Ammo the player has.
+		AVerticalSliceCharacter* player = Cast<AVerticalSliceCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		if (player) {
+			player->PlayerMech->UpgradeStats(StatUpgrades::RifleReserveAmmo, 2, true); // 2 = 80 bullets
+		}
+		if (GetWorld())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(PlayerBuff);
+		}
+	}
+}
+
+/*
+Description: Start the game by calling NextWave()
+Author: Crystal Seymour
+*/
 void AGM_HordeMode::StartGame()
 {
 	// Start the first round
 	NextWave(iCurrentRound);
-	// Clear the GameStart timer for memory reasons.
-	GetWorld()->GetTimerManager().ClearTimer(StartTimer);
+	if (GetWorld())
+	{
+		// Clear the GameStart timer for memory reasons.
+		GetWorld()->GetTimerManager().ClearTimer(StartTimer);
+	}
 }
 
+/*
+Description: Determine the amount of enemies to pass into SpawnEnemies()
+Author: Crystal Seymour
+*/
 void AGM_HordeMode::NextWave(int _roundCount)
 {
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), _spawners, FoundActors);
+
 	iCurrentRound ++;
 	iCurrentEnemies = 1;
 	// Spawn the boss enemy wave
@@ -54,32 +90,60 @@ void AGM_HordeMode::NextWave(int _roundCount)
 	{
 		iWaveEnemies = 1;
 		SpawnEnemies(iWaveEnemies, 4);
+		// Set subsequent waves to include the boss enemy
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
+			tempSpawner->SetSpawnMode(quadEnemies);
+		}
 	}
 	// Spawn the special enemy wave
 	else if (iCurrentRound % 25 == 0)
 	{
 		iWaveEnemies = 4;
 		SpawnEnemies(iWaveEnemies, 3);
+		// Set subsequent waves to include the special enemy
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
+			tempSpawner->SetSpawnMode(tripleEnemies);
+		}
 	}	
 	// Spawn the secondary enemy wave.
 	else if (iCurrentRound % 5 == 0)
 	{
 		iWaveEnemies = 4;
 		SpawnEnemies(iWaveEnemies, 2);
+		// Set subsequent waves to include the secondary enemy
+		for (int i = 0; i < FoundActors.Num(); i++)
+		{
+			ABaseEnemySpawner* tempSpawner = Cast<ABaseEnemySpawner>(FoundActors[i]);
+			tempSpawner->SetSpawnMode(dualEnemies); 
+		}
 	}
-	// Spawn the First enemy wave.
+	// Spawn each enemy wave.
 	else
 	{ 
 		int enemyCount = (_roundCount * 4) + iInitialEnemies;
 		iWaveEnemies = enemyCount;
-		SpawnEnemies(iWaveEnemies, 1);
+		SpawnEnemies(iWaveEnemies, 5);
 	}
-	GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(RoundTimer);
+	}
 }
 
+/*
+Description: Get the current spawners in the level and pass in the amount of enemies determined in NextWave()
+Author: Crystal Seymour
+*/
 void AGM_HordeMode::SpawnEnemies(int _enemyCount, int _enemyType)
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("GM Spawning Enemies")); }
+
+	// Modify Health for the Enemies each wave.
+	fEnemyHealthOverride = fEnemyHealthOverride + (iCurrentRound * 5.0f);
 
 	// Find all Monster Spawn locations and Put them in an Array.
 	TArray<AActor*> FoundActors;
@@ -103,27 +167,52 @@ void AGM_HordeMode::SpawnEnemies(int _enemyCount, int _enemyType)
 	}
 }
 
+int AGM_HordeMode::GetCurrentRound()
+{
+	return iCurrentRound;
+}
+
+/*
+Description: Get the current amount of Money the player has.
+Author: Crystal Seymour
+*/
 float AGM_HordeMode::GetCurrency()
 {
 	return fCurrentMoney;
 }
 
+/*
+Description: Set the current amount of Money the player has.
+Author: Crystal Seymour
+*/
 void AGM_HordeMode::SetCurrency(float _newCurrency)
 {
 	fCurrentMoney = fCurrentMoney - _newCurrency;
 }
 
+/*
+Description: Get the current alive enemies currently in the level.
+Author: Crystal Seymour
+*/
 int AGM_HordeMode::GetCurrentEnemies()
 {
 	return iCurrentEnemies;
 }
 
+/*
+Description: Increase the current enemy in the level count
+Author: Crystal Seymour
+*/
 void AGM_HordeMode::SetCurrentEnemies()
 {
 	iCurrentEnemies ++;
 }
 
-void AGM_HordeMode::RemoveEnemy()
+/*
+Description: Remove an Enemy from the current total in the level aswell as wave total.
+Author: Crystal Seymour
+*/
+void AGM_HordeMode::DecrementEnemies()
 {
 	if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue, TEXT("GM Removing Enemy")); }
 
@@ -131,19 +220,32 @@ void AGM_HordeMode::RemoveEnemy()
 	iCurrentEnemies--;
 	float rewardCurrency = FMath::FRandRange(50.0f, 150.0f);
 	fCurrentMoney += rewardCurrency;
+	// If no more enemies remaining setup for the next wave.
 	if (iWaveEnemies <= 0)
 	{
-		// Setup shops 
-		// Find all upgrade Pedestals and Put them in an Array.
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), _updradePedestals, FoundActors);
-		for (int i = 0; i < FoundActors.Num(); i++)
-		{
-			AUpgradePedestal* tempUpgradePedestal = Cast<AUpgradePedestal>(FoundActors[i]);
-			tempUpgradePedestal->SetUpgrade();
-		}
-		// Delay the next round to allow shopping 
-		FTimerDelegate waveTimer =  FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
+		SetupNextWave();
+	}
+}
+
+/*
+Description: Setup for the next wave by setting the purchasable upgrades
+Author: Crystal Seymour
+*/
+void AGM_HordeMode::SetupNextWave()
+{
+	// Setup shops 
+	// Find all upgrade Pedestals and Put them in an Array.
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), _updradePedestals, FoundActors);
+	for (int i = 0; i < FoundActors.Num(); i++)
+	{
+		AUpgradePedestal* tempUpgradePedestal = Cast<AUpgradePedestal>(FoundActors[i]);
+		tempUpgradePedestal->SetUpgrade();
+	}
+	// Delay the next round to allow shopping 
+	FTimerDelegate waveTimer = FTimerDelegate::CreateUObject(this, &AGM_HordeMode::NextWave, iCurrentRound);
+	if (GetWorld())
+	{
 		GetWorld()->GetTimerManager().SetTimer(RoundTimer, waveTimer, fRoundCooldown, true);
 	}
 }

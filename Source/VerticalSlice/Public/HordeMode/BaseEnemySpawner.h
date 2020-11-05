@@ -11,6 +11,14 @@
 class AMonsterBase;
 class AGM_HordeMode;
 
+enum SpawnMode {
+	singleEnemy,
+	dualEnemies,
+	tripleEnemies,
+	quadEnemies
+};
+
+
 UCLASS()
 class VERTICALSLICE_API ABaseEnemySpawner : public AActor
 {
@@ -20,44 +28,44 @@ public:
 	// Sets default values for this actor's properties
 	ABaseEnemySpawner();
 
+	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride, int _enemyType);
+	void SetSpawnMode(SpawnMode _eSpawnMode);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ACharacter> _mainEnemy;	
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ACharacter> _secondEnemy;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ACharacter> _specialEnemy;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ACharacter> _bossEnemy;
 
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<ACharacter> mainEnemy;	
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<ACharacter> secondEnemy;
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<ACharacter> specialEnemy;
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<ACharacter> bossEnemy;
-
+private:
 	AGM_HordeMode* CurrentGameMode;
-
-	void SpawnEnemies(int _enemyCount, float _HealthOverride, float _DamageOverride, int _enemyType);
-
-	void SpawnDefault();
-	void SpawnSecondary();
-	void SpawnSpecial();
-	void SpawnBoss();
-
 	FTransform SpawnLocation;
 	FRotator CurrentRotation;
 	FActorSpawnParameters SpawnInfo;
 
 	// Timer Data
-	UPROPERTY(BlueprintReadWrite, Category = "Timer Data")
-		FTimerHandle SpawnTimer;
+	FTimerHandle SpawnTimer;
 	float fSpawnTime;
 
 	// Overrides
+	int iMaxEnemies;
 	int iEnemiesToSpawn;
 	float fEnemyHealth;
 	float fEnemyDamage;
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	float fspawnRange;
+	SpawnMode eSpawnMode;
+
+	void SpawnDefault();
+	void SpawnSecondary();
+	void SpawnSpecial();
+	void SpawnBoss();
+	void SpawnRange();
 };
